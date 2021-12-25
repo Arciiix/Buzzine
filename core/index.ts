@@ -36,3 +36,10 @@ class Buzzine {
 }
 
 export { io };
+
+Buzzine.alarms.push(
+  new Alarm({
+    hour: 23,
+    minute: 20,
+  })
+);

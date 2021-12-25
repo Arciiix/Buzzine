@@ -6,3 +6,13 @@
 #### Under development
 
 Everything is under development, the app will evolve slowly, step by step. Even the read me file is under construction and will be better :)
+
+### Environment variables
+
+#### Core
+
+| Name            | Default value | Description                                                                 | Unit    |
+| --------------- | ------------- | --------------------------------------------------------------------------- | ------- |
+| PORT            | 5555          | A port the core will run on                                                 |         |
+| MUTE_AFTER      | 15            | The alarm will mute itself after that time if no user action is performed   | minutes |
+| RESEND_INTERVAL | 30            | The core will resend the socket ALARM_RINGING event every specified seconds | seconds |

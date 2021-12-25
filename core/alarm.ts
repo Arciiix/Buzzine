@@ -7,8 +7,12 @@ import {
 import { io } from "./index";
 import { formatDate, formatTime } from "./utils/format";
 import logger from "./utils/logger";
+import dotenv from "dotenv";
 
 const { info, error, warn, debug } = logger;
+
+//Load environment variables from file
+dotenv.config();
 
 class Alarm {
   id: string;
@@ -17,9 +21,11 @@ class Alarm {
   minute: number;
   name?: string;
   repeat?: RecurrenceObject;
+  ringingStats: IRingingStats;
 
   private isNextInvocationCancelled: { isCancelled: boolean; clearJob: Job }; //clearJob is a Job which removes the isNextInvocationCancelled object
   private jobObject: Job;
+  private;
 
   constructor({
     hour,
@@ -83,7 +89,7 @@ class Alarm {
 
       this.jobObject = scheduleJob(alarmDate, this.onAlarmRinging.bind(this));
       info(
-        `Alarm ${this.name ?? "UNTITLED"} scheduled for ${formatTime(
+        `Alarm ${this.id} scheduled for ${formatTime(
           this.hour,
           this.minute
         )}. Next invocation: ${formatDate(alarmDate)}`
@@ -103,7 +109,7 @@ class Alarm {
 
       this.jobObject = scheduleJob(rule, this.onAlarmRinging.bind(this));
       info(
-        `Repeating alarm ${this.name} scheduled for ${formatTime(
+        `Repeating alarm ${this.id} scheduled for ${formatTime(
           this.hour,
           this.minute
         )}. Next invocation: ${formatDate(this.jobObject.nextInvocation())}`
@@ -116,8 +122,22 @@ class Alarm {
     this.createJob();
     io.emit("ALARM_ON", this.toObject());
   }
+  mute(): void {
+    if (this.ringingStats) {
+      clearInterval(this.ringingStats?.eventResendingInterval);
+      clearTimeout(this.ringingStats?.alarmSilentTimeout);
+    }
+    if (!this.repeat) {
+      this.turnOff();
+    }
+    io.emit("ALARM_MUTE", this.toObject());
+  }
   turnOff(): void {
     this.cancelJob();
+    if (this.ringingStats) {
+      clearInterval(this.ringingStats?.eventResendingInterval);
+      clearTimeout(this.ringingStats?.alarmSilentTimeout);
+    }
     io.emit("ALARM_OFF", this.toObject());
   }
 
@@ -148,9 +168,40 @@ class Alarm {
   }
 
   onAlarmRinging(): void {
+    if (this.ringingStats) {
+      clearInterval(this.ringingStats?.eventResendingInterval);
+      clearTimeout(this.ringingStats?.alarmSilentTimeout);
+    }
+    this.ringingStats = {
+      timeElapsed: 0,
+      dateStarted: new Date(),
+      eventResendingInterval: setInterval(() => {
+        //Resend the ALARM_RINGING event in case some socket would disconnect for a while or something else happened
+        this.ringingStats.timeElapsed = Math.floor(
+          (new Date().getTime() - this.ringingStats.dateStarted.getTime()) /
+            1000
+        );
+
+        io.emit("ALARM_RINGING", {
+          ...this.toObject(),
+          ...{ timeElapsed: this.ringingStats.timeElapsed },
+        });
+
+        logger.info(
+          `Resent ALARM_RINGING event of alarm ${this.id}. Time elapsed: ${this.ringingStats.timeElapsed}`
+        );
+      }, (parseInt(process.env.RESEND_INTERVAL) || 30) * 1000),
+      alarmSilentTimeout: setTimeout(() => {
+        //TODO: Mute the alarm and send an appropriate event (or send events repeatedly)
+        logger.warn("DEV: MUTE ALARM");
+        logger.warn(`Alarm ${this.id} was muted due to user inactivity!`);
+        this.mute();
+      }, (parseInt(process.env.MUTE_AFTER) || 15) * 1000 * 60),
+    };
+
     //DEV
-    io.emit("ALARM_RINGING", this.toObject());
-    info(`Alarm "${this.name}" is ringing!`);
+    io.emit("ALARM_RINGING", { ...this.toObject(), ...{ timeElapsed: 0 } });
+    info(`Alarm "${this.id}" is ringing!`);
   }
 }
 
@@ -172,6 +223,13 @@ interface IAlarm {
   minute: number;
   name?: string;
   repeat?: RecurrenceObject;
+}
+
+interface IRingingStats {
+  timeElapsed: number;
+  dateStarted: Date;
+  eventResendingInterval: ReturnType<typeof setInterval>;
+  alarmSilentTimeout: ReturnType<typeof setTimeout>;
 }
 
 export default Alarm;

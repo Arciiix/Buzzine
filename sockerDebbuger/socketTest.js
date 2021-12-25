@@ -7,7 +7,7 @@ io.on("connect", () => {
 });
 
 io.onAny((e, data) => {
-  console.log("\nNEW EVENT");
+  console.log("\n");
   console.log(e);
   console.log(data);
 });
