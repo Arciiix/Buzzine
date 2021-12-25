@@ -2,6 +2,7 @@ import express from "express";
 import { Server as SocketServer, Socket } from "socket.io";
 import dotenv from "dotenv";
 import logger from "./utils/logger";
+import Alarm from "./alarm";
 
 const { info, error, warn, debug } = logger;
 
@@ -21,9 +22,17 @@ const io = new SocketServer(server, {
 });
 
 io.on("connection", (socket: Socket) => {
+  //Send initial message, to let the client know everything's working
+  socket.emit("hello");
+
   info(
     `New socket with id ${
       socket.id
     } has connected! Request object: ${JSON.stringify(socket.handshake)}`
   );
 });
+class Buzzine {
+  static alarms: Alarm[] = [];
+}
+
+export { io };
