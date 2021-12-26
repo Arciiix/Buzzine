@@ -8,8 +8,7 @@ import { io } from "./index";
 import { formatDate, formatTime } from "./utils/format";
 import logger from "./utils/logger";
 import dotenv from "dotenv";
-
-const { info, error, warn, debug } = logger;
+import Snooze from "./snooze";
 
 //Load environment variables from file
 dotenv.config();
@@ -21,7 +20,11 @@ class Alarm {
   minute: number;
   name?: string;
   repeat?: RecurrenceObject;
+
   ringingStats: IRingingStats;
+  snoozes: Snooze[] = [];
+
+  maxTotalSnoozeDuration: number; //In seconds
 
   private isNextInvocationCancelled: { isCancelled: boolean; clearJob: Job }; //clearJob is a Job which removes the isNextInvocationCancelled object
   private jobObject: Job;
@@ -30,28 +33,32 @@ class Alarm {
     hour,
     minute,
     id,
+    maxTotalSnoozeDuration,
     name,
     repeat,
   }: {
     hour: number;
     minute: number;
-    id?: string;
+    id: string;
+    maxTotalSnoozeDuration?: number;
     name?: string;
     repeat?: RecurrenceObject;
   }) {
     if (name) {
       this.name = name;
     }
-    if (id) {
-      this.id = id;
-    }
+    this.id = id;
     this.hour = hour;
     this.minute = minute;
+    this.maxTotalSnoozeDuration =
+      maxTotalSnoozeDuration ||
+      parseInt(process.env.MAX_TOTAL_SNOOZE_DURATION) ||
+      900;
     if (repeat) {
       this.repeat = {
         ...repeat,
         ...{
-          second: 5,
+          second: 0,
           minute: minute,
           hour: hour,
         },
@@ -87,7 +94,7 @@ class Alarm {
       }
 
       this.jobObject = scheduleJob(alarmDate, this.onAlarmRinging.bind(this));
-      info(
+      logger.info(
         `Alarm ${this.id} scheduled for ${formatTime(
           this.hour,
           this.minute
@@ -107,7 +114,7 @@ class Alarm {
       );
 
       this.jobObject = scheduleJob(rule, this.onAlarmRinging.bind(this));
-      info(
+      logger.info(
         `Repeating alarm ${this.id} scheduled for ${formatTime(
           this.hour,
           this.minute
@@ -126,18 +133,93 @@ class Alarm {
       clearInterval(this.ringingStats?.eventResendingInterval);
       clearTimeout(this.ringingStats?.alarmSilentTimeout);
     }
-    if (!this.repeat) {
-      this.turnOff();
-    }
     io.emit("ALARM_MUTE", this.toObject());
   }
   turnOff(): void {
-    this.cancelJob();
     if (this.ringingStats) {
       clearInterval(this.ringingStats?.eventResendingInterval);
       clearTimeout(this.ringingStats?.alarmSilentTimeout);
     }
+    this.ringingStats = null;
+    if (!this.repeat) {
+      this.cancelJob();
+      this.isActive = false;
+    }
+
+    this.snoozes.forEach((e) => {
+      e.cancelJob();
+    });
+
     io.emit("ALARM_OFF", this.toObject());
+    logger.info(
+      `Turned the alarm ${this.id} ${
+        this.repeat ? "(repeating)" : "(manual)"
+      } off`
+    );
+  }
+
+  disableAlarm(): void {
+    if (this.ringingStats) {
+      clearInterval(this.ringingStats?.eventResendingInterval);
+      clearTimeout(this.ringingStats?.alarmSilentTimeout);
+    }
+    this.ringingStats = null;
+    this.cancelJob();
+    this.isActive = false;
+
+    io.emit("ALARM_DISABLE", this.toObject());
+    logger.info(
+      `Disabled the alarm ${this.id} ${
+        this.repeat ? "(repeating)" : "(manual)"
+      } off`
+    );
+  }
+
+  snoozeAlarm(
+    snoozeLengthSeconds: number = parseInt(process.env.DEFAULT_SNOOZE_LENGTH) ||
+      300
+  ): void {
+    if (!this.ringingStats) {
+      logger.warn(
+        `Tried to snooze alarm with id ${this.id} which isn't ringing!`
+      );
+      return;
+    }
+
+    //Check if the latest snooze has already been triggered (there cannot be two snoozes at once)
+    if (
+      this.snoozes.length === 0 ||
+      this.snoozes[this.snoozes.length - 1].invocationDate < new Date()
+    ) {
+      if (
+        this.snoozes.length !== 0 &&
+        new Date().getTime() -
+          this.snoozes[0].startDate.getTime() +
+          snoozeLengthSeconds * 1000 >
+          this.maxTotalSnoozeDuration * 1000
+      ) {
+        //If the total max snooze time is exceeded (current time - first snooze time + next snooze time > max total snooze duration)
+        logger.info(
+          `Disallowed snooze since the total snooze duration is exceeded! Alarm id: ${this.id}`
+        );
+        //TODO: Emit an appropriate event
+        return;
+      }
+      this.mute();
+      this.snoozes.push(
+        //TODO: Generate the id
+        new Snooze({
+          alarmInstance: this,
+          id: "DEV",
+          length: snoozeLengthSeconds,
+        })
+      );
+      logger.info(
+        `Snooze (id: ${this.snoozes[this.snoozes.length - 1].id}) of alarm ${
+          this.id
+        } has started!`
+      );
+    }
   }
 
   cancelJob(): void {
@@ -162,7 +244,6 @@ class Alarm {
 
   recreateJob(): void {
     this.cancelJob();
-
     this.createJob();
   }
 
@@ -191,16 +272,17 @@ class Alarm {
         );
       }, (parseInt(process.env.RESEND_INTERVAL) || 30) * 1000),
       alarmSilentTimeout: setTimeout(() => {
-        //TODO: Mute the alarm and send an appropriate event (or send events repeatedly)
-        logger.warn("DEV: MUTE ALARM");
         logger.warn(`Alarm ${this.id} was muted due to user inactivity!`);
         this.mute();
       }, (parseInt(process.env.MUTE_AFTER) || 15) * 1000 * 60),
     };
 
-    //DEV
     io.emit("ALARM_RINGING", { ...this.toObject(), ...{ timeElapsed: 0 } });
-    info(`Alarm "${this.id}" is ringing!`);
+    logger.info(`Alarm "${this.id}" is ringing!`);
+  }
+
+  onSnoozeRinging(snooze: Snooze): void {
+    this.onAlarmRinging();
   }
 }
 

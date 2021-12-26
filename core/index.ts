@@ -3,6 +3,7 @@ import { Server as SocketServer, Socket } from "socket.io";
 import dotenv from "dotenv";
 import logger from "./utils/logger";
 import Alarm from "./alarm";
+import Snooze from "./snooze";
 
 const { info, error, warn, debug } = logger;
 

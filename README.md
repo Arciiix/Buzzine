@@ -11,8 +11,10 @@ Everything is under development, the app will evolve slowly, step by step. Even 
 
 #### Core
 
-| Name            | Default value | Description                                                                 | Unit    |
-| --------------- | ------------- | --------------------------------------------------------------------------- | ------- |
-| PORT            | 5555          | A port the core will run on                                                 |         |
-| MUTE_AFTER      | 15            | The alarm will mute itself after that time if no user action is performed   | minutes |
-| RESEND_INTERVAL | 30            | The core will resend the socket ALARM_RINGING event every specified seconds | seconds |
+| Name                      | Default value | Description                                                                                                                      | Unit    |
+| ------------------------- | ------------- | -------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| PORT                      | 5555          | A port the core will run on                                                                                                      |         |
+| MUTE_AFTER                | 15            | The alarm will mute itself after that time if no user action is performed                                                        | minutes |
+| RESEND_INTERVAL           | 30            | The core will resend the socket ALARM_RINGING event every specified seconds                                                      | seconds |
+| DEFAULT_SNOOZE_LENGTH     | 300           | Default snooze length if nothing is provided as `Alarm.snoozeAlarm()` method param                                               | seconds |
+| MAX_TOTAL_SNOOZE_DURATION | 900           | App won't allow to snooze longer than the provided time - the `Alarm` class param, and if it's null - this environment variable. | seconds |
