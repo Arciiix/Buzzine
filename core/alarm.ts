@@ -270,7 +270,7 @@ class Alarm {
         logger.info(
           `Resent ALARM_RINGING event of alarm ${this.id}. Time elapsed: ${this.ringingStats.timeElapsed}`
         );
-      }, (parseInt(process.env.RESEND_INTERVAL) || 30) * 1000),
+      }, (parseInt(process.env.RESEND_INTERVAL) || 10) * 1000),
       alarmSilentTimeout: setTimeout(() => {
         logger.warn(`Alarm ${this.id} was muted due to user inactivity!`);
         this.mute();
