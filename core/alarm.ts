@@ -25,7 +25,6 @@ class Alarm {
 
   private isNextInvocationCancelled: { isCancelled: boolean; clearJob: Job }; //clearJob is a Job which removes the isNextInvocationCancelled object
   private jobObject: Job;
-  private;
 
   constructor({
     hour,
