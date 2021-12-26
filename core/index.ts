@@ -3,7 +3,8 @@ import { Server as SocketServer, Socket } from "socket.io";
 import dotenv from "dotenv";
 import logger from "./utils/logger";
 import Alarm from "./alarm";
-import Snooze from "./snooze";
+import { initDatabase } from "./utils/db";
+import GetDatabaseData from "./utils/loadFromDb";
 
 const { info, error, warn, debug } = logger;
 
@@ -35,5 +36,18 @@ io.on("connection", (socket: Socket) => {
 class Buzzine {
   static alarms: Alarm[] = [];
 }
+
+async function init() {
+  await initDatabase();
+  const { alarms } = await GetDatabaseData.getAll();
+
+  Buzzine.alarms = alarms.map((e) => {
+    return new Alarm(e);
+  });
+
+  logger.info("Got database data");
+}
+
+init();
 
 export { io };

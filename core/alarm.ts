@@ -18,7 +18,9 @@ class Alarm {
   isActive: boolean;
   hour: number;
   minute: number;
+  deleteAfterRinging: boolean;
   name?: string;
+  notes?: string;
   repeat?: RecurrenceObject;
 
   ringingStats: IRingingStats;
@@ -34,19 +36,27 @@ class Alarm {
     minute,
     id,
     maxTotalSnoozeDuration,
+    deleteAfterRinging = false,
     name,
+    notes,
     repeat,
   }: {
     hour: number;
     minute: number;
     id: string;
     maxTotalSnoozeDuration?: number;
+    deleteAfterRinging: boolean;
     name?: string;
+    notes?: string;
     repeat?: RecurrenceObject;
   }) {
     if (name) {
       this.name = name;
     }
+    if (notes) {
+      this.notes = notes;
+    }
+    this.deleteAfterRinging = deleteAfterRinging;
     this.id = id;
     this.hour = hour;
     this.minute = minute;
@@ -73,7 +83,9 @@ class Alarm {
       isActive: this.isActive,
       hour: this.hour,
       minute: this.minute,
+      deleteAfterRinging: this.deleteAfterRinging,
       name: this.name,
+      notes: this.notes,
       repeat: this.repeat,
     };
   }
@@ -302,7 +314,9 @@ interface IAlarm {
   isActive: boolean;
   hour: number;
   minute: number;
+  deleteAfterRinging: boolean;
   name?: string;
+  notes?: string;
   repeat?: RecurrenceObject;
 }
 
@@ -314,3 +328,4 @@ interface IRingingStats {
 }
 
 export default Alarm;
+export { IAlarm };

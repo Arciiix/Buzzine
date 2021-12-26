@@ -28,6 +28,7 @@ const logger = winston.createLogger({
         winston.format.timestamp({ format: "DD.MM.YYYY HH:mm:ss" }),
         format
       ),
+      level: "debug",
     }),
   ],
 });
