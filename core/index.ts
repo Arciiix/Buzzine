@@ -5,6 +5,7 @@ import logger from "./utils/logger";
 import Alarm from "./alarm";
 import { initDatabase } from "./utils/db";
 import GetDatabaseData from "./utils/loadFromDb";
+import { saveUpcomingAlarms } from "./utils/alarmProtection";
 
 const { info, error, warn, debug } = logger;
 
@@ -45,9 +46,11 @@ async function init() {
     return new Alarm(e);
   });
 
+  await saveUpcomingAlarms();
+
   logger.info("Got database data");
 }
 
 init();
 
-export { io };
+export { Buzzine, io };

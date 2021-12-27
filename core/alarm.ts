@@ -35,6 +35,7 @@ class Alarm {
     hour,
     minute,
     id,
+    isActive,
     maxTotalSnoozeDuration,
     deleteAfterRinging = false,
     name,
@@ -44,8 +45,9 @@ class Alarm {
     hour: number;
     minute: number;
     id: string;
+    isActive: boolean;
     maxTotalSnoozeDuration?: number;
-    deleteAfterRinging: boolean;
+    deleteAfterRinging?: boolean;
     name?: string;
     notes?: string;
     repeat?: RecurrenceObject;
@@ -60,6 +62,7 @@ class Alarm {
     this.id = id;
     this.hour = hour;
     this.minute = minute;
+    this.isActive = isActive;
     this.maxTotalSnoozeDuration =
       maxTotalSnoozeDuration ||
       parseInt(process.env.MAX_TOTAL_SNOOZE_DURATION) ||
@@ -74,7 +77,9 @@ class Alarm {
         },
       };
     }
-    this.turnOn();
+    if (this.isActive) {
+      this.turnOn();
+    }
   }
 
   toObject(): IAlarm {
@@ -88,6 +93,16 @@ class Alarm {
       notes: this.notes,
       repeat: this.repeat,
     };
+  }
+
+  getNextInvocation(): Date | null {
+    if (this.isActive) {
+      let date = this.jobObject.nextInvocation();
+      if (date) {
+        return new Date(date);
+      }
+    }
+    return null;
   }
 
   createJob(): void {
