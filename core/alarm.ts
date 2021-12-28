@@ -365,7 +365,7 @@ interface RecurrenceObject {
   month?: RecurrenceSegment;
   year?: RecurrenceSegment;
   dayOfWeek?: RecurrenceSegment;
-  tz?: string;
+  tz: string;
 }
 
 interface IAlarm {
