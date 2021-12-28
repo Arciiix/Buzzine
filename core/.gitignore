@@ -9,3 +9,6 @@ logs/
 
 # db
 buzzine.db
+
+# build
+dist/

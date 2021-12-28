@@ -1,9 +1,68 @@
-import { Buzzine } from "..";
+import { Buzzine, io } from "..";
 import Alarm from "../alarm";
+import AlarmModel from "../models/Alarm.model";
 import UpcomingAlarmModel from "../models/UpcomingAlarm.model";
+import logger from "./logger";
+
+let emergency: IEmergency = {
+  interval: null,
+  startDate: null,
+  timeElapsed: 0,
+};
 
 async function checkForAlarmProtection() {
-  //TODO: Fetch UpcomingAlarms from the db and check if any of them has been omitted
+  let fetchedUpcomingAlarms = await UpcomingAlarmModel.findAll({
+    include: AlarmModel,
+  });
+  let missedAlarms = fetchedUpcomingAlarms.filter(
+    (e: any) => e.invocationDate < new Date()
+  );
+
+  if (missedAlarms.length > 0) {
+    io.emit("EMERGENCY_ALARM", {
+      missedAlarms: missedAlarms,
+    });
+    sendEmergnecy(missedAlarms);
+    logger.warn(
+      `Missed alarms. Count: ${
+        missedAlarms.length
+      }, the first: ${JSON.stringify(missedAlarms[0])}`
+    );
+  } else {
+    logger.info("No missed alarms found");
+  }
+}
+
+function sendEmergnecy(missedAlarms: any) {
+  if (emergency) {
+    clearInterval(emergency.interval);
+    emergency = null;
+  }
+
+  emergency = {
+    startDate: new Date(),
+    timeElapsed: 0,
+    interval: setInterval(() => {
+      emergency.timeElapsed = Math.floor(
+        (new Date().getTime() - emergency.startDate.getTime()) / 1000
+      );
+      io.emit("EMERGENCY_ALARM", {
+        missedAlarms: missedAlarms,
+        timeElapsed: emergency.timeElapsed,
+      });
+      logger.info(
+        `Resent emergency event. Time elapsed: ${emergency.timeElapsed}`
+      );
+
+      if (
+        emergency.timeElapsed >=
+        (parseInt(process.env.MUTE_AFTER) || 15) * 60
+      ) {
+        clearInterval(emergency.interval);
+        emergency = null;
+      }
+    }, (parseInt(process.env.RESEND_INTERVAL) || 10) * 1000),
+  };
 }
 
 function getUpcomingAlarms() {
@@ -53,9 +112,16 @@ async function saveUpcomingAlarms() {
   }
 }
 
+//TODO: Send emergency alarm on exit
+
 interface IUpcomingAlarm {
   alarmId: string;
   invocationDate: Date;
 }
+interface IEmergency {
+  interval: ReturnType<typeof setInterval>;
+  startDate: Date;
+  timeElapsed: number;
+}
 
-export { getUpcomingAlarms, saveUpcomingAlarms };
+export { checkForAlarmProtection, getUpcomingAlarms, saveUpcomingAlarms };

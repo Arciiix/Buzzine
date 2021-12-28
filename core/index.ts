@@ -5,7 +5,10 @@ import logger from "./utils/logger";
 import Alarm from "./alarm";
 import { initDatabase } from "./utils/db";
 import GetDatabaseData from "./utils/loadFromDb";
-import { saveUpcomingAlarms } from "./utils/alarmProtection";
+import {
+  checkForAlarmProtection,
+  saveUpcomingAlarms,
+} from "./utils/alarmProtection";
 
 //Load environment variables from file
 dotenv.config();
@@ -38,6 +41,7 @@ class Buzzine {
 
 async function init() {
   await initDatabase();
+  await checkForAlarmProtection();
   const { alarms } = await GetDatabaseData.getAll();
 
   Buzzine.alarms = alarms.map((e) => {
