@@ -10,6 +10,8 @@ let emergency: IEmergency = {
   timeElapsed: 0,
 };
 
+let isSavingUpcomingAlarms: boolean = false;
+
 async function checkForAlarmProtection() {
   let fetchedUpcomingAlarms = await UpcomingAlarmModel.findAll({
     include: AlarmModel,
@@ -99,7 +101,13 @@ function getUpcomingAlarms() {
 }
 
 async function saveUpcomingAlarms() {
-  //TODO: Save the upcomingAlarms from getUpcomingAlarms() method
+  if (isSavingUpcomingAlarms) {
+    //It means that the method is invocated somewhere else in the app
+    logger.info(`Multiple saving of upcoming alarms; skipping them`);
+    return;
+  }
+
+  isSavingUpcomingAlarms = true;
   let upcomingAlarms: IUpcomingAlarm[] = await getUpcomingAlarms();
 
   await UpcomingAlarmModel.destroy({ where: {} });
@@ -110,6 +118,8 @@ async function saveUpcomingAlarms() {
       AlarmId: upcomingAlarm.alarmId,
     });
   }
+
+  isSavingUpcomingAlarms = false;
 }
 
 //TODO: Send emergency alarm on exit

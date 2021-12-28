@@ -216,6 +216,8 @@ class Alarm {
       } off`
     );
 
+    this.mute();
+
     if (this.deleteAfterRinging) {
       await this.dbObject.destroy();
     }
@@ -300,7 +302,7 @@ class Alarm {
   }
 
   cancelJob(): void {
-    this.isActive = false;
+    if (!this.jobObject) return;
 
     this.isNextInvocationCancelled?.clearJob.cancel();
     this.isNextInvocationCancelled = null;
@@ -317,6 +319,7 @@ class Alarm {
       }),
     };
     this.jobObject.cancelNext();
+    saveUpcomingAlarms();
   }
 
   recreateJob(): void {

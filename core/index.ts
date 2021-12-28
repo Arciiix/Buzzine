@@ -9,6 +9,7 @@ import {
   checkForAlarmProtection,
   saveUpcomingAlarms,
 } from "./utils/alarmProtection";
+import AlarmModel from "./models/Alarm.model";
 
 //Load environment variables from file
 dotenv.config();
@@ -34,6 +35,121 @@ io.on("connection", (socket: Socket) => {
       socket.id
     } has connected! Request object: ${JSON.stringify(socket.handshake)}`
   );
+
+  socket.on("CMD/CREATE_ALARM", async (payload: any, cb?: any) => {
+    if (payload?.repeat && !payload.repeat?.tz) {
+      logger.warn(
+        `Missing timezone in the repeat object when creating alarm! ${JSON.stringify(
+          payload
+        )}`
+      );
+      if (cb) {
+        cb({ error: true, errorCode: "MISSING_TIMEZONE" });
+      }
+      return;
+    }
+    try {
+      let newAlarm: any = await AlarmModel.create({
+        isActive: payload.isActive,
+        name: payload?.name,
+        notes: payload?.notes,
+        hour: payload.hour,
+        minute: payload.minute,
+        repeat: payload?.repeat,
+        maxTotalSnoozeDuration: payload?.maxTotalSnoozeDuration,
+        deleteAfterRinging: payload?.deleteAfterRinging ?? false,
+      });
+      if (cb) {
+        cb(newAlarm);
+      }
+      logger.info(`Added new alarm ${newAlarm.id}`);
+      const alarms = await GetDatabaseData.getAlarms();
+      Buzzine.alarms.forEach((elem) => {
+        elem.cancelJob();
+      });
+      Buzzine.alarms = alarms.map((e) => {
+        return new Alarm(e);
+      });
+      logger.info(`Refetched alarms from the db`);
+    } catch (err) {
+      logger.warn(
+        `Tried to create an alarm with probably wrong payload! ${JSON.stringify(
+          payload
+        )}; err: ${err.toString()}`
+      );
+      if (cb) {
+        cb({ error: true });
+      }
+    }
+  });
+
+  socket.on("CMD/TOOGLE_ALARM", async (payload: any, cb?: any) => {
+    let alarm: Alarm = Buzzine.alarms.find((e) => e.id === payload.id);
+    if (!alarm) {
+      if (cb) {
+        cb({ error: true, errorMessage: "WRONG_ID" });
+      }
+      logger.warn("Trying to toogle alarm with a wrong id!");
+      return;
+    }
+    if (payload.status) {
+      alarm.turnOn();
+    } else {
+      alarm.disableAlarm();
+    }
+
+    logger.info(
+      `Successfully turned alarm ${payload.id} ${payload.status ? "on" : "off"}`
+    );
+    if (cb) {
+      cb(alarm.toObject());
+    }
+  });
+
+  socket.on("CMD/CANCEL_NEXT_INVOCATION", async (payload: any, cb?: any) => {
+    let alarm: Alarm = Buzzine.alarms.find((e) => e.id === payload.id);
+    if (!alarm) {
+      if (cb) {
+        cb({ error: true, errorMessage: "WRONG_ID" });
+        logger.warn(
+          "Tried to cancel next invocation of an alarm with a wrong id!"
+        );
+      }
+      return;
+    }
+    if (!alarm.repeat) {
+      cb({ error: true, errorMessage: "NON_REPEATING_ALARM" });
+      logger.warn(
+        `Tried to cancel next invocation of a non-repeating alarm ${alarm.id}`
+      );
+      return;
+    }
+
+    alarm.cancelNextInvocation();
+    logger.info(
+      `Successfully cancelled the next invocation of alarm ${payload.id}`
+    );
+    if (cb) {
+      cb(alarm.toObject());
+    }
+  });
+
+  socket.on("CMD/TURN_ALARM_OFF", async (payload: any, cb?: any) => {
+    let alarm: Alarm = Buzzine.alarms.find((e) => e.id === payload.id);
+    if (!alarm) {
+      if (cb) {
+        cb({ error: true, errorMessage: "WRONG_ID" });
+      }
+      logger.warn("Trying to turn off an alarm with a wrong id!");
+      return;
+    }
+    alarm.turnOff();
+
+    logger.info(`Successfully turned alarm ${payload.id} off`);
+    if (cb) {
+      cb(alarm.toObject());
+    }
+  });
 });
 class Buzzine {
   static alarms: Alarm[] = [];

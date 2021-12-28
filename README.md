@@ -18,3 +18,10 @@ Everything is under development, the app will evolve slowly, step by step. Even 
 | RESEND_INTERVAL           | 10            | The core will resend the socket ALARM_RINGING event every specified seconds                                                      | seconds |
 | DEFAULT_SNOOZE_LENGTH     | 300           | Default snooze length if nothing is provided as `Alarm.snoozeAlarm()` method param                                               | seconds |
 | MAX_TOTAL_SNOOZE_DURATION | 900           | App won't allow to snooze longer than the provided time - the `Alarm` class param, and if it's null - this environment variable. | seconds |
+
+### API
+
+| Name     | Default value                                     | Description                   | Unit |
+| -------- | ------------------------------------------------- | ----------------------------- | ---- |
+| PORT     | 1111                                              | A port the API will run on    |      |
+| CORE_URL | http://localhost:5555 (to be changed with Docker) | Used for socket.io connection |      |
