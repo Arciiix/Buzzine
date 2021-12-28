@@ -184,6 +184,7 @@ class Alarm {
     }
     io.emit("ALARM_MUTE", this.toObject());
   }
+  //turnOff - used when alarm rings, not the list
   async turnOff(): Promise<void> {
     if (!this.isActive) {
       logger.warn(
@@ -217,6 +218,7 @@ class Alarm {
     saveUpcomingAlarms();
   }
 
+  //disableAlarm - used in the alarm list menu
   async disableAlarm(): Promise<void> {
     if (!this.isActive) {
       logger.warn(
