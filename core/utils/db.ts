@@ -16,7 +16,7 @@ async function initDatabase() {
     await db.sync();
   } catch (err) {
     logger.error(`Cannot connect to the database`, err);
-    //TODO: Maybe throw an error?
+    throw err;
   }
 }
 
