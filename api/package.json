@@ -4,6 +4,8 @@
   "description": "The Buzzine app API",
   "main": "dist/index.js",
   "scripts": {
+    "start": "tsc && node dist/index.js",
+    "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Arciiix",
