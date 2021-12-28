@@ -138,6 +138,117 @@ api.put("/cancelNextInvocation", (req, res) => {
   });
 });
 
+api.put("/snoozeAlarm", (req, res) => {
+  logger.http(`PUT /snoozeAlarm with data: ${JSON.stringify(req.body)}`);
+
+  if (!req.body)
+    return res.status(400).send({ error: true, errorCode: "EMPTY_PAYLOAD" });
+
+  //Validate the payload
+  if (!req.body.id) {
+    return res.status(400).send({ error: true, errorCode: "MISSING_ID" });
+  }
+
+  socket.emit("CMD/SNOOZE_ALARM", req.body, (response) => {
+    if (response.error) {
+      res.status(400).send(response);
+      logger.warn(
+        `Response error when snoozing an alarm: ${JSON.stringify(response)}`
+      );
+    } else {
+      if (response.didSnooze) {
+        res.status(200).send({ error: false, response });
+        logger.info(
+          `Snoozed alarm ${
+            req.body.id
+          } successfully. Response: ${JSON.stringify(response)}`
+        );
+      } else {
+        res.status(400).send({ error: false, response });
+        logger.info(
+          `Didn't snooze alarm ${req.body.id}. Response: ${JSON.stringify(
+            response
+          )}`
+        );
+      }
+    }
+  });
+});
+
+api.delete("/deleteAlarm", (req, res) => {
+  logger.http(`DELETE /deleteAlarm with data: ${JSON.stringify(req.body)}`);
+
+  if (!req.body)
+    return res.status(400).send({ error: true, errorCode: "EMPTY_PAYLOAD" });
+
+  //Validate the payload
+  if (!req.body.id) {
+    return res.status(400).send({ error: true, errorCode: "MISSING_ID" });
+  }
+
+  socket.emit("CMD/DELETE_ALARM", req.body, (response) => {
+    if (response.error) {
+      res.status(400).send(response);
+      logger.warn(
+        `Response error when deleting an alarm: ${JSON.stringify(response)}`
+      );
+    } else {
+      if (response.error) {
+        res.status(400).send(response);
+        logger.warn(
+          `Response error when deleting an alarm: ${JSON.stringify(response)}`
+        );
+      } else {
+        res.status(200).send({ error: false, response });
+        logger.info(
+          `Deleted alarm ${req.body.id}. Response: ${JSON.stringify(response)}`
+        );
+      }
+    }
+  });
+});
+
+api.put("/updateAlarm", async (req, res) => {
+  logger.http(`PUT /updateAlarm with data: ${JSON.stringify(req.body)}`);
+
+  if (!req.body)
+    return res.status(400).send({ error: true, errorCode: "EMPTY_PAYLOAD" });
+
+  //Validate the payload
+  if (!req.body.id) {
+    return res.status(400).send({ error: true, errorCode: "MISSING_ID" });
+  }
+
+  if (
+    req.body.hour === null ||
+    req.body.minute === null ||
+    isNaN(req.body.hour) ||
+    isNaN(req.body.minute)
+  ) {
+    return res.status(400).send({ error: true, errorCode: "WRONG_TIME" });
+  }
+
+  if (!req.body.hasOwnProperty("isActive")) {
+    return res.send(400).send({ error: true, errorCode: "MISSING_ISACTIVE" });
+  }
+
+  socket.emit("CMD/UPDATE_ALARM", req.body, (response) => {
+    if (response.error) {
+      res.status(400).send(response);
+      logger.warn(
+        `Response error when updating alarm ${req.body.id}: ${JSON.stringify(
+          response
+        )}`
+      );
+    } else {
+      res.status(200).send({ error: false, response });
+      logger.info(
+        `Updated alarm successfully. Response: ${JSON.stringify(response)}`
+      );
+    }
+  });
+});
+
 const socket = io(process.env.CORE_URL || "http://localhost:5555"); //DEV - to be changed with Docker
 
 socket.on("connect", () => {

@@ -220,6 +220,7 @@ class Alarm {
 
     if (this.deleteAfterRinging) {
       await this.dbObject.destroy();
+      logger.info(`Deleted alarm ${this.id}`);
     }
     saveUpcomingAlarms();
   }
@@ -257,12 +258,12 @@ class Alarm {
   snoozeAlarm(
     snoozeLengthSeconds: number = parseInt(process.env.DEFAULT_SNOOZE_LENGTH) ||
       300
-  ): void {
+  ): boolean {
     if (!this.ringingStats) {
       logger.warn(
         `Tried to snooze alarm with id ${this.id} which isn't ringing!`
       );
-      return;
+      return false;
     }
 
     //Check if the latest snooze has already been triggered (there cannot be two snoozes at once)
@@ -282,7 +283,7 @@ class Alarm {
           `Disallowed snooze since the total snooze duration is exceeded! Alarm id: ${this.id}`
         );
         //TODO: Emit an appropriate event
-        return;
+        return false;
       }
       this.mute();
       this.snoozes.push(
@@ -298,6 +299,7 @@ class Alarm {
           this.id
         } has started!`
       );
+      return true;
     }
   }
 
@@ -359,6 +361,18 @@ class Alarm {
 
     io.emit("ALARM_RINGING", { ...this.toObject(), ...{ timeElapsed: 0 } });
     logger.info(`Alarm "${this.id}" is ringing!`);
+  }
+
+  async deleteSelf() {
+    this.cancelJob();
+    if (this.ringingStats) {
+      this.mute();
+    }
+    this.snoozes.forEach((e) => {
+      e.cancelJob();
+    });
+    await this.dbObject.destroy();
+    logger.info(`Deleted alarm ${this.id}`);
   }
 
   onSnoozeRinging(snooze: Snooze): void {

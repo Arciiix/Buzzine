@@ -73,7 +73,7 @@ io.on("connection", (socket: Socket) => {
       logger.info(`Refetched alarms from the db`);
     } catch (err) {
       logger.warn(
-        `Tried to create an alarm with probably wrong payload! ${JSON.stringify(
+        `Tried to create an alarm with a probably wrong payload! ${JSON.stringify(
           payload
         )}; err: ${err.toString()}`
       );
@@ -148,6 +148,107 @@ io.on("connection", (socket: Socket) => {
     logger.info(`Successfully turned alarm ${payload.id} off`);
     if (cb) {
       cb(alarm.toObject());
+    }
+  });
+
+  socket.on("CMD/SNOOZE_ALARM", async (payload: any, cb?: any) => {
+    let alarm: Alarm = Buzzine.alarms.find((e) => e.id === payload.id);
+    if (!alarm) {
+      if (cb) {
+        cb({ error: true, errorMessage: "WRONG_ID" });
+      }
+      logger.warn("Trying to snooze an alarm with a wrong id!");
+      return;
+    }
+
+    let didSnooze = alarm.snoozeAlarm();
+
+    logger.info(
+      `${didSnooze ? "Snoozed" : "Couldn't snooze"} alarm ${alarm.id}`
+    );
+
+    if (cb) {
+      cb({
+        didSnooze: didSnooze,
+        snoozeInvocationDate:
+          alarm.snoozes?.[alarm.snoozes.length - 1]?.invocationDate,
+        totalSnoozes: alarm.snoozes?.length,
+        totalSnoozesTime:
+          alarm.snoozes?.length > 0
+            ? Math.floor(
+                (new Date().getTime() - alarm.snoozes[0].startDate.getTime()) /
+                  1000
+              )
+            : 0,
+        alarm: alarm.toObject(),
+      });
+    }
+  });
+
+  socket.on("CMD/DELETE_ALARM", async (payload: any, cb?: any) => {
+    let alarm: Alarm = Buzzine.alarms.find((e) => e.id === payload.id);
+    if (!alarm) {
+      if (cb) {
+        cb({ error: true, errorMessage: "WRONG_ID" });
+      }
+      logger.warn("Trying to delete an alarm with a wrong id!");
+      return;
+    }
+    alarm.deleteSelf();
+
+    logger.info(`Successfully deleted alarm ${payload.id}`);
+    if (cb) {
+      cb({});
+    }
+  });
+
+  socket.on("CMD/UPDATE_ALARM", async (payload: any, cb?: any) => {
+    if (payload?.repeat && !payload.repeat?.tz) {
+      logger.warn(
+        `Missing timezone in the repeat object when creating alarm! ${JSON.stringify(
+          payload
+        )}`
+      );
+      if (cb) {
+        cb({ error: true, errorCode: "MISSING_TIMEZONE" });
+      }
+      return;
+    }
+    try {
+      let alarm: any = await AlarmModel.findOne({ where: { id: payload.id } });
+      await alarm.set({
+        isActive: payload.isActive,
+        name: payload?.name,
+        notes: payload?.notes,
+        hour: payload.hour,
+        minute: payload.minute,
+        repeat: payload?.repeat,
+        maxTotalSnoozeDuration: payload?.maxTotalSnoozeDuration,
+        deleteAfterRinging: payload?.deleteAfterRinging ?? false,
+      });
+      await alarm.save();
+
+      if (cb) {
+        cb(alarm);
+      }
+      logger.info(`Updated alarm ${alarm.id}`);
+      logger.info(`Refetched alarms from the db`);
+      const alarms = await GetDatabaseData.getAlarms();
+      Buzzine.alarms.forEach((elem) => {
+        elem.cancelJob();
+      });
+      Buzzine.alarms = alarms.map((e) => {
+        return new Alarm(e);
+      });
+    } catch (err) {
+      logger.warn(
+        `Tried to update an alarm with a probably wrong payload! ${JSON.stringify(
+          payload
+        )}; err: ${err.toString()}`
+      );
+      if (cb) {
+        cb({ error: true });
+      }
     }
   });
 });
