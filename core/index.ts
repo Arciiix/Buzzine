@@ -7,15 +7,13 @@ import { initDatabase } from "./utils/db";
 import GetDatabaseData from "./utils/loadFromDb";
 import { saveUpcomingAlarms } from "./utils/alarmProtection";
 
-const { info, error, warn, debug } = logger;
-
 //Load environment variables from file
 dotenv.config();
 const PORT = process.env.PORT || 5555;
 
 const app = express();
 const server = app.listen(PORT, () => {
-  info(`Core has started on port ${PORT}.`);
+  logger.info(`Core has started on port ${PORT}.`);
 });
 
 const io = new SocketServer(server, {
@@ -28,7 +26,7 @@ io.on("connection", (socket: Socket) => {
   //Send initial message, to let the client know everything's working
   socket.emit("hello");
 
-  info(
+  logger.info(
     `New socket with id ${
       socket.id
     } has connected! Request object: ${JSON.stringify(socket.handshake)}`

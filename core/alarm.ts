@@ -215,6 +215,10 @@ class Alarm {
         this.repeat ? "(repeating)" : "(manual)"
       } off`
     );
+
+    if (this.deleteAfterRinging) {
+      await this.dbObject.destroy();
+    }
     saveUpcomingAlarms();
   }
 
