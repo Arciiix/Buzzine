@@ -7,6 +7,7 @@ import { initDatabase } from "./utils/db";
 import GetDatabaseData from "./utils/loadFromDb";
 import {
   checkForAlarmProtection,
+  getUpcomingAlarms,
   saveUpcomingAlarms,
 } from "./utils/alarmProtection";
 import AlarmModel from "./models/Alarm.model";
@@ -249,6 +250,16 @@ io.on("connection", (socket: Socket) => {
       if (cb) {
         cb({ error: true });
       }
+    }
+  });
+
+  socket.on("CMD/GET_UPCOMING_ALARMS", async (cb) => {
+    let upcomingAlarms = await getUpcomingAlarms();
+    saveUpcomingAlarms();
+    if (cb) {
+      cb(upcomingAlarms);
+    } else {
+      logger.warn("Missing callback on GET request - GET_UPCOMING_ALARMS");
     }
   });
 });

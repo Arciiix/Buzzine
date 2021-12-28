@@ -11,6 +11,9 @@ const PORT = process.env.PORT || 1111;
 const app = express();
 app.use(bodyParser.json());
 
+app.get("/", (req, res) => {
+  res.send({ error: false, currentVersion: "v1", timestamp: new Date() });
+});
 //REST API
 const api = express.Router();
 app.use("/v1", api);
@@ -236,7 +239,7 @@ api.put("/updateAlarm", async (req, res) => {
     if (response.error) {
       res.status(400).send(response);
       logger.warn(
-        `Response error when updating alarm ${req.body.id}: ${JSON.stringify(
+        `Response error when updating an alarm ${req.body.id}: ${JSON.stringify(
           response
         )}`
       );
@@ -244,6 +247,26 @@ api.put("/updateAlarm", async (req, res) => {
       res.status(200).send({ error: false, response });
       logger.info(
         `Updated alarm successfully. Response: ${JSON.stringify(response)}`
+      );
+    }
+  });
+});
+
+api.get("/getUpcomingAlarms", (req, res) => {
+  socket.emit("CMD/GET_UPCOMING_ALARMS", (response) => {
+    if (response.error) {
+      res.status(400).send(response);
+      logger.warn(
+        `Response error when getting upcoming alarms: ${JSON.stringify(
+          response
+        )}`
+      );
+    } else {
+      res.status(200).send({ error: false, response });
+      logger.info(
+        `Got upcoming alarms successfully. Response: ${JSON.stringify(
+          response
+        )}`
       );
     }
   });
