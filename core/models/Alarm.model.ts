@@ -1,5 +1,5 @@
 import { Sequelize, DataTypes, Model } from "sequelize";
-import short from "short-uuid";
+import shortUUID from "short-uuid";
 import db from "../utils/db";
 
 const AlarmModel = db.define("Alarm", {
@@ -7,7 +7,7 @@ const AlarmModel = db.define("Alarm", {
     primaryKey: true,
     allowNull: false,
     type: DataTypes.UUIDV4,
-    defaultValue: () => short.generate(),
+    defaultValue: () => shortUUID.generate(),
   },
   isActive: {
     type: DataTypes.BOOLEAN,

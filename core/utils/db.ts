@@ -12,6 +12,7 @@ async function initDatabase() {
   try {
     await db.authenticate();
     logger.info(`Connected to the database`);
+    //await db.sync({ force: true });
     await db.sync();
   } catch (err) {
     logger.error(`Cannot connect to the database`, err);

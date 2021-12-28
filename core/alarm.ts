@@ -9,6 +9,9 @@ import { formatDate, formatTime } from "./utils/format";
 import logger from "./utils/logger";
 import dotenv from "dotenv";
 import Snooze from "./snooze";
+import AlarmModel from "./models/Alarm.model";
+import { saveUpcomingAlarms } from "./utils/alarmProtection";
+import shortUUID from "short-uuid";
 
 //Load environment variables from file
 dotenv.config();
@@ -30,6 +33,8 @@ class Alarm {
 
   private isNextInvocationCancelled: { isCancelled: boolean; clearJob: Job }; //clearJob is a Job which removes the isNextInvocationCancelled object
   private jobObject: Job;
+
+  private dbObject;
 
   constructor({
     hour,
@@ -62,7 +67,6 @@ class Alarm {
     this.id = id;
     this.hour = hour;
     this.minute = minute;
-    this.isActive = isActive;
     this.maxTotalSnoozeDuration =
       maxTotalSnoozeDuration ||
       parseInt(process.env.MAX_TOTAL_SNOOZE_DURATION) ||
@@ -77,9 +81,14 @@ class Alarm {
         },
       };
     }
-    if (this.isActive) {
+    this.getDBObject();
+    if (isActive) {
       this.turnOn();
     }
+  }
+
+  async getDBObject() {
+    this.dbObject = await AlarmModel.findOne({ where: { id: this.id } });
   }
 
   toObject(): IAlarm {
@@ -150,9 +159,22 @@ class Alarm {
     }
   }
 
-  turnOn(): void {
+  async turnOn(): Promise<void> {
+    if (this.isActive) {
+      logger.warn(
+        `Tried to turn on an alarm ${this.id} which is already active.`
+      );
+      return;
+    }
     this.isActive = true;
     this.createJob();
+
+    if (!this.dbObject) await this.getDBObject();
+    this.dbObject.isActive = true;
+    this.dbObject.save();
+
+    saveUpcomingAlarms();
+
     io.emit("ALARM_ON", this.toObject());
   }
   mute(): void {
@@ -162,7 +184,13 @@ class Alarm {
     }
     io.emit("ALARM_MUTE", this.toObject());
   }
-  turnOff(): void {
+  async turnOff(): Promise<void> {
+    if (!this.isActive) {
+      logger.warn(
+        `Tried to turn off an alarm ${this.id} which is already inactive.`
+      );
+      return;
+    }
     if (this.ringingStats) {
       clearInterval(this.ringingStats?.eventResendingInterval);
       clearTimeout(this.ringingStats?.alarmSilentTimeout);
@@ -171,6 +199,9 @@ class Alarm {
     if (!this.repeat) {
       this.cancelJob();
       this.isActive = false;
+      if (!this.dbObject) await this.getDBObject();
+      this.dbObject.isActive = false;
+      this.dbObject.save();
     }
 
     this.snoozes.forEach((e) => {
@@ -183,9 +214,16 @@ class Alarm {
         this.repeat ? "(repeating)" : "(manual)"
       } off`
     );
+    saveUpcomingAlarms();
   }
 
-  disableAlarm(): void {
+  async disableAlarm(): Promise<void> {
+    if (!this.isActive) {
+      logger.warn(
+        `Tried to disable an alarm ${this.id} which is already disabled.`
+      );
+      return;
+    }
     if (this.ringingStats) {
       clearInterval(this.ringingStats?.eventResendingInterval);
       clearTimeout(this.ringingStats?.alarmSilentTimeout);
@@ -193,6 +231,12 @@ class Alarm {
     this.ringingStats = null;
     this.cancelJob();
     this.isActive = false;
+
+    if (!this.dbObject) await this.getDBObject();
+    this.dbObject.isActive = false;
+    this.dbObject.save();
+
+    saveUpcomingAlarms();
 
     io.emit("ALARM_DISABLE", this.toObject());
     logger.info(
@@ -234,13 +278,13 @@ class Alarm {
       }
       this.mute();
       this.snoozes.push(
-        //TODO: Generate the id
         new Snooze({
           alarmInstance: this,
-          id: "DEV",
+          id: shortUUID.generate(),
           length: snoozeLengthSeconds,
         })
       );
+      saveUpcomingAlarms();
       logger.info(
         `Snooze (id: ${this.snoozes[this.snoozes.length - 1].id}) of alarm ${
           this.id

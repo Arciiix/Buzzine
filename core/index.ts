@@ -46,7 +46,10 @@ async function init() {
     return new Alarm(e);
   });
 
-  await saveUpcomingAlarms();
+  //Delay it because it's ran every time the alarm turns on - the alarms are being created now
+  setTimeout(() => {
+    saveUpcomingAlarms();
+  }, 5000);
 
   logger.info("Got database data");
 }

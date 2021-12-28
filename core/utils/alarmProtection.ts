@@ -1,5 +1,6 @@
 import { Buzzine } from "..";
 import Alarm from "../alarm";
+import UpcomingAlarmModel from "../models/UpcomingAlarm.model";
 
 async function checkForAlarmProtection() {
   //TODO: Fetch UpcomingAlarms from the db and check if any of them has been omitted
@@ -40,6 +41,16 @@ function getUpcomingAlarms() {
 
 async function saveUpcomingAlarms() {
   //TODO: Save the upcomingAlarms from getUpcomingAlarms() method
+  let upcomingAlarms: IUpcomingAlarm[] = await getUpcomingAlarms();
+
+  await UpcomingAlarmModel.destroy({ where: {} });
+
+  for await (const upcomingAlarm of upcomingAlarms) {
+    await UpcomingAlarmModel.create({
+      invocationDate: upcomingAlarm.invocationDate,
+      AlarmId: upcomingAlarm.alarmId,
+    });
+  }
 }
 
 interface IUpcomingAlarm {
