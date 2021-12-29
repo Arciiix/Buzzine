@@ -169,6 +169,12 @@ async function init() {
   if (!fs.existsSync("audio")) {
     fs.mkdirSync("audio");
   }
+
+  if (!fs.existsSync("./audio/default.mp3")) {
+    logger.error("Cannot find audio/default.mp3!");
+    throw new Error("Cannot find audio/default.mp3!");
+  }
+
   await initDatabase();
 
   //Add the default audio to the table if it doesn't exist yet

@@ -103,7 +103,7 @@ function getUpcomingAlarms() {
 async function saveUpcomingAlarms() {
   if (isSavingUpcomingAlarms) {
     //It means that the method is invocated somewhere else in the app
-    logger.info(`Multiple saving of upcoming alarms; skipping them`);
+    logger.info(`Multiple savings of upcoming alarms; skipping them`);
     return;
   }
 

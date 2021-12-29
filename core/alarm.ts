@@ -105,7 +105,7 @@ class Alarm {
   }
 
   getNextInvocation(): Date | null {
-    if (this.isActive) {
+    if (this.isActive && this.jobObject) {
       let date = this.jobObject.nextInvocation();
       if (date) {
         return new Date(date);
