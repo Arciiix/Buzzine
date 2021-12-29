@@ -34,4 +34,5 @@ Everything is under development, the app will evolve slowly, step by step. Even 
 
 | Name     | Default value                                     | Description                   | Unit |
 | -------- | ------------------------------------------------- | ----------------------------- | ---- |
+| PORT     | 7777                                              | A port the API will run on    |      |
 | CORE_URL | http://localhost:5555 (to be changed with Docker) | Used for socket.io connection |      |
