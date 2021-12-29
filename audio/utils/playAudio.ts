@@ -16,7 +16,7 @@ class PlayAudio {
     } else {
       this.isPlaying = true;
       this.process = childProcess.spawn("ffplay", [
-        filename,
+        `./audio/${filename}`,
         "-nodisp",
         "-autoexit",
         // 'loop 0' doesn't work, it has to be separately
@@ -36,6 +36,7 @@ class PlayAudio {
 }
 
 async function getAlarmAudio(alarmId: string) {
+  if (!alarmId) return "default.mp3";
   let audio: any = await AlarmsAudioModel.findOne({
     where: { alarmId: alarmId },
     include: AudioNameMappingModel,

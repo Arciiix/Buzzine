@@ -2,13 +2,15 @@ import socketioClient from "socket.io-client";
 import dotenv from "dotenv";
 import logger from "./utils/logger";
 import { initDatabase } from "./utils/db";
-import PlaySound from "./utils/playAudio";
+import PlaySound, { getAlarmAudio } from "./utils/playAudio";
+import fs from "fs";
 
 //Load environment variables from file
 dotenv.config();
 
 const io = socketioClient(process.env.CORE_URL || "http://localhost:5555"); //DEV TODO: Change the default CORE_URL
 let audioInstance: PlaySound;
+let emergencyInstance: PlaySound;
 
 io.on("connect", () => {
   logger.info(
@@ -22,8 +24,21 @@ io.on("hello", () => {
 
 io.on("ALARM_RINGING", async (data) => {
   if (!audioInstance) {
-    //TODO: Select the proper audio
-    audioInstance = new PlaySound("test.mp3");
+    let audioFilename = await getAlarmAudio(data?.id);
+    audioInstance = new PlaySound(audioFilename);
+  } else {
+    logger.info(`Skipping playing audio since the audio is playing already...`);
+  }
+});
+
+io.on("EMERGENCY_ALARM", async (data) => {
+  if (!emergencyInstance) {
+    logger.info("EMERGENCY");
+    emergencyInstance = new PlaySound("../emergency.wav");
+  } else {
+    logger.info(
+      `Skipping playing the emergency audio since the audio is playing already...`
+    );
   }
 });
 
@@ -39,6 +54,9 @@ io.on("ALARM_MUTE", (data) => {
 });
 
 async function init() {
+  if (!fs.existsSync("audio")) {
+    fs.mkdirSync("audio");
+  }
   await initDatabase();
 }
 

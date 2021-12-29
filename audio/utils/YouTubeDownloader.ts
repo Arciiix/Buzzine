@@ -28,10 +28,6 @@ async function downloadFromYouTube(url) {
     return false;
   }
 
-  if (!fs.existsSync("audio")) {
-    fs.mkdirSync("audio");
-  }
-
   let newFileId = shortUUID.generate();
   let fileDirectory = path.join(__dirname, "../", "audio", newFileId + ".mp3");
   let fileStream = fs.createWriteStream(fileDirectory);
