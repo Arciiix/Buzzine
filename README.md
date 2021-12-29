@@ -7,6 +7,10 @@
 
 Everything is under development, the app will evolve slowly, step by step. Even the read me file is under construction and will be better :)
 
+## Important things
+
+1. Make a _default.mp3_ file in _audio/audio_ directory - it will be your default alarm tone
+
 ### Environment variables
 
 #### Core
@@ -24,4 +28,10 @@ Everything is under development, the app will evolve slowly, step by step. Even 
 | Name     | Default value                                     | Description                   | Unit |
 | -------- | ------------------------------------------------- | ----------------------------- | ---- |
 | PORT     | 1111                                              | A port the API will run on    |      |
+| CORE_URL | http://localhost:5555 (to be changed with Docker) | Used for socket.io connection |      |
+
+### AUDIO
+
+| Name     | Default value                                     | Description                   | Unit |
+| -------- | ------------------------------------------------- | ----------------------------- | ---- |
 | CORE_URL | http://localhost:5555 (to be changed with Docker) | Used for socket.io connection |      |

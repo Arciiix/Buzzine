@@ -1,0 +1,12 @@
+# modules
+node_modules/
+# configs
+.env
+# logs
+logs/
+# build
+dist/
+# databases
+*.db
+# audio files
+audio/
