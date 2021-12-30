@@ -45,20 +45,64 @@ class _AlarmListState extends State<AlarmList> {
                       return Padding(
                           padding: const EdgeInsets.symmetric(
                               vertical: 5, horizontal: 10),
-                          child: SizedBox(
-                              height: 250,
-                              child: AlarmCard(
-                                  name: e.name,
-                                  hour: e.hour,
-                                  minute: e.minute,
-                                  nextInvocation: e.nextInvocation,
-                                  isActive: e.isActive,
-                                  isSnoozeEnabled: e.isSnoozeEnabled,
-                                  snoozeLength: e.snoozeLength,
-                                  maxTotalSnoozeLength: e.maxTotalSnoozeLength,
-                                  soundName: e.soundName,
-                                  isGuardEnabled: e.isGuardEnabled,
-                                  notes: e.notes)));
+                          child: Dismissible(
+                              key: ObjectKey(e),
+                              direction: DismissDirection.endToStart,
+                              background: Container(
+                                  alignment: Alignment.centerLeft,
+                                  padding: EdgeInsets.only(right: 20),
+                                  color: Colors.red,
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: const [
+                                      Icon(Icons.delete, color: Colors.white),
+                                      Text("Usuń",
+                                          style: TextStyle(color: Colors.white))
+                                    ],
+                                  )),
+                              confirmDismiss:
+                                  (DismissDirection direction) async {
+                                return await showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return AlertDialog(
+                                      title: const Text("Usuń alarm"),
+                                      content: Text(
+                                          'Czy na pewno chcesz usunąć ${e.name != null ? "${e.name}" : "ten alarm"}?'),
+                                      actions: <Widget>[
+                                        TextButton(
+                                          onPressed: () =>
+                                              Navigator.of(context).pop(false),
+                                          child: const Text("Anuluj"),
+                                        ),
+                                        TextButton(
+                                            onPressed: () =>
+                                                Navigator.of(context).pop(true),
+                                            child: const Text("Usuń")),
+                                      ],
+                                    );
+                                  },
+                                );
+                              },
+                              onDismissed: (DismissDirection direction) {
+                                //DEV TODO: Delete the alarm
+                                print("TODO: Delete the alarm");
+                              },
+                              child: SizedBox(
+                                  height: 250,
+                                  child: AlarmCard(
+                                      name: e.name,
+                                      hour: e.hour,
+                                      minute: e.minute,
+                                      nextInvocation: e.nextInvocation,
+                                      isActive: e.isActive,
+                                      isSnoozeEnabled: e.isSnoozeEnabled,
+                                      snoozeLength: e.snoozeLength,
+                                      maxTotalSnoozeLength:
+                                          e.maxTotalSnoozeLength,
+                                      soundName: e.soundName,
+                                      isGuardEnabled: e.isGuardEnabled,
+                                      notes: e.notes))));
                     })
                 : const Center(
                     child: Text("Brak alarmów!",
