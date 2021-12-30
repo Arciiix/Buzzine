@@ -1,5 +1,6 @@
 import 'package:buzzine/components/alarm_card.dart';
 import 'package:buzzine/globalData.dart';
+import 'package:buzzine/screens/alarm_form.dart';
 import 'package:buzzine/screens/loading.dart';
 import 'package:buzzine/types/Alarm.dart';
 import 'package:flutter/material.dart';
@@ -16,6 +17,22 @@ class AlarmList extends StatefulWidget {
 class _AlarmListState extends State<AlarmList> {
   late List<Alarm> alarms;
 
+  void addAlarm() async {
+    Alarm? alarm = await Navigator.of(context).push(MaterialPageRoute(
+      builder: (context) => AlarmForm(),
+    ));
+
+    //TODO: Add the alarm
+  }
+
+  void editAlarm(Alarm selectedAlarm) async {
+    Alarm? alarm = await Navigator.of(context).push(MaterialPageRoute(
+      builder: (context) => AlarmForm(baseAlarm: selectedAlarm),
+    ));
+
+    //TODO: Edit alarm
+  }
+
   @override
   void initState() {
     super.initState();
@@ -27,8 +44,8 @@ class _AlarmListState extends State<AlarmList> {
     return Scaffold(
         appBar: AppBar(title: const Text("Alarmy")),
         floatingActionButton: FloatingActionButton(
-          onPressed: () => print("TODO: Add new alarm"),
-          child: Icon(Icons.add),
+          onPressed: addAlarm,
+          child: const Icon(Icons.add),
         ),
         body: RefreshIndicator(
             onRefresh: () async {
@@ -88,21 +105,24 @@ class _AlarmListState extends State<AlarmList> {
                                 //DEV TODO: Delete the alarm
                                 print("TODO: Delete the alarm");
                               },
-                              child: SizedBox(
-                                  height: 250,
-                                  child: AlarmCard(
-                                      name: e.name,
-                                      hour: e.hour,
-                                      minute: e.minute,
-                                      nextInvocation: e.nextInvocation,
-                                      isActive: e.isActive,
-                                      isSnoozeEnabled: e.isSnoozeEnabled,
-                                      snoozeLength: e.snoozeLength,
-                                      maxTotalSnoozeLength:
-                                          e.maxTotalSnoozeLength,
-                                      soundName: e.soundName,
-                                      isGuardEnabled: e.isGuardEnabled,
-                                      notes: e.notes))));
+                              child: InkWell(
+                                  onTap: () => editAlarm(e),
+                                  child: SizedBox(
+                                      height: 250,
+                                      child: AlarmCard(
+                                          id: e.id ??
+                                              "", //TODO: Make it in a better way
+                                          name: e.name,
+                                          hour: e.hour,
+                                          minute: e.minute,
+                                          nextInvocation: e.nextInvocation,
+                                          isActive: e.isActive,
+                                          isSnoozeEnabled: e.isSnoozeEnabled,
+                                          maxTotalSnoozeLength:
+                                              e.maxTotalSnoozeLength,
+                                          sound: e.sound,
+                                          isGuardEnabled: e.isGuardEnabled,
+                                          notes: e.notes)))));
                     })
                 : const Center(
                     child: Text("Brak alarmów!",

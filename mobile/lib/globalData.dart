@@ -1,4 +1,5 @@
 import 'package:buzzine/types/Alarm.dart';
+import 'package:buzzine/types/Audio.dart';
 
 class GlobalData {
   static late List<Alarm> alarms;
@@ -17,19 +18,20 @@ class GlobalData {
 
     alarms = [
       Alarm(
+        id: 'alarm1',
         hour: 20,
         minute: 00,
         isActive: true,
         isGuardEnabled: true,
         isSnoozeEnabled: true,
-        snoozeLength: 5,
         maxTotalSnoozeLength: 15,
-        soundName: "testowy.mp3",
+        sound: Audio(filename: "testoweAudio", friendlyName: "testowy.mp3"),
         name: "testowyAlarm",
         notes: "To jest testowy alarm",
         nextInvocation: DateTime(2021, 12, 30, 20, 00),
       ),
       Alarm(
+        id: 'alarm2',
         hour: 21,
         minute: 10,
         isActive: false,
@@ -39,12 +41,14 @@ class GlobalData {
         notes: "To jest testowy alarm numer 2",
       ),
       Alarm(
+        id: 'alarm3',
         hour: 11,
         minute: 12,
         isGuardEnabled: false,
         isActive: false,
       ),
       Alarm(
+        id: 'alarm4',
         hour: 12,
         minute: 10,
         isGuardEnabled: true,
@@ -54,19 +58,20 @@ class GlobalData {
 
     upcomingAlarms = [
       Alarm(
+        id: 'alarm1',
         hour: 20,
         minute: 00,
         isActive: true,
         isGuardEnabled: true,
         isSnoozeEnabled: true,
-        snoozeLength: 5,
         maxTotalSnoozeLength: 15,
-        soundName: "testowy.mp3",
+        sound: Audio(filename: "testoweAudio", friendlyName: "testowy.mp3"),
         name: "testowyAlarm",
         notes: "To jest testowy alarm",
         nextInvocation: DateTime(2021, 12, 30, 20, 00),
       ),
       Alarm(
+        id: 'alarm2',
         hour: 21,
         minute: 10,
         isActive: false,
@@ -76,12 +81,14 @@ class GlobalData {
         notes: "To jest testowy alarm numer 2",
       ),
       Alarm(
+        id: 'alarm3',
         hour: 11,
         minute: 12,
         isGuardEnabled: false,
         isActive: false,
       ),
       Alarm(
+        id: 'alarm4',
         hour: 12,
         minute: 10,
         isGuardEnabled: true,

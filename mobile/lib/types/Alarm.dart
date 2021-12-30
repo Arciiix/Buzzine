@@ -1,4 +1,7 @@
+import 'package:buzzine/types/Audio.dart';
+
 class Alarm {
+  final String? id;
   final String? name;
   final int hour;
   final int minute;
@@ -6,25 +9,24 @@ class Alarm {
   final bool isActive;
 
   final bool? isSnoozeEnabled;
-  final int? snoozeLength;
   final int? maxTotalSnoozeLength;
 
-  final String? soundName;
+  final Audio? sound;
 
   final bool isGuardEnabled;
 
   final String? notes;
 
   Alarm(
-      {this.name,
+      {this.id,
+      this.name,
       required this.hour,
       required this.minute,
       this.nextInvocation,
       required this.isActive,
       this.isSnoozeEnabled,
-      this.snoozeLength,
       this.maxTotalSnoozeLength,
-      this.soundName,
+      this.sound,
       required this.isGuardEnabled,
       this.notes});
 }

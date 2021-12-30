@@ -1,7 +1,9 @@
+import 'package:buzzine/types/Audio.dart';
 import 'package:buzzine/utils/formatting.dart';
 import 'package:flutter/material.dart';
 
 class AlarmCard extends StatefulWidget {
+  final String id;
   final String? name;
   final int hour;
   final int minute;
@@ -9,10 +11,9 @@ class AlarmCard extends StatefulWidget {
   final bool isActive;
 
   final bool? isSnoozeEnabled;
-  final int? snoozeLength;
   final int? maxTotalSnoozeLength;
 
-  final String? soundName;
+  final Audio? sound;
 
   final bool isGuardEnabled;
 
@@ -20,15 +21,15 @@ class AlarmCard extends StatefulWidget {
 
   const AlarmCard(
       {Key? key,
+      required this.id,
       this.name,
       required this.hour,
       required this.minute,
       required this.isActive,
       this.nextInvocation,
       this.isSnoozeEnabled,
-      this.snoozeLength,
       this.maxTotalSnoozeLength,
-      this.soundName,
+      this.sound,
       required this.isGuardEnabled,
       this.notes})
       : super(key: key);
@@ -108,7 +109,7 @@ class _AlarmCardState extends State<AlarmCard> {
                 Padding(
                     padding: const EdgeInsets.all(5),
                     child: Text(widget.isSnoozeEnabled == true
-                        ? "${widget.snoozeLength} | ${widget.maxTotalSnoozeLength}"
+                        ? "Max. ${widget.maxTotalSnoozeLength} min"
                         : "Wyłączona"))
               ],
             ),
@@ -119,7 +120,7 @@ class _AlarmCardState extends State<AlarmCard> {
                     child: Padding(
                         padding: const EdgeInsets.all(5),
                         child: Text(
-                          widget.soundName ?? "Domyślna",
+                          widget.sound?.friendlyName ?? "Domyślna",
                           overflow: TextOverflow.ellipsis,
                         )))
               ],
