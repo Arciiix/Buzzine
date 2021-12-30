@@ -1,4 +1,5 @@
 import 'package:buzzine/types/Audio.dart';
+import 'package:buzzine/types/Repeat.dart';
 
 class Alarm {
   final String? id;
@@ -17,6 +18,9 @@ class Alarm {
 
   final String? notes;
 
+  final bool? isRepeating;
+  final Repeat? repeat;
+
   Alarm(
       {this.id,
       this.name,
@@ -28,5 +32,7 @@ class Alarm {
       this.maxTotalSnoozeLength,
       this.sound,
       required this.isGuardEnabled,
-      this.notes});
+      this.notes,
+      this.isRepeating,
+      this.repeat});
 }

@@ -1,6 +1,8 @@
+import 'package:buzzine/components/multiple_select.dart';
 import 'package:buzzine/screens/audio_manager.dart';
 import 'package:buzzine/types/Alarm.dart';
 import 'package:buzzine/types/Audio.dart';
+import 'package:buzzine/types/Repeat.dart';
 import 'package:buzzine/utils/formatting.dart';
 import "package:flutter/material.dart";
 
@@ -30,6 +32,9 @@ class _AlarmFormState extends State<AlarmForm> {
   bool _isGuardEnabled = true;
 
   TextEditingController _notesController = TextEditingController();
+
+  bool _isRepeating = false;
+  Repeat _repeat = Repeat();
 
   void getTime() async {
     final TimeOfDay? timePickerResponse = await showTimePicker(
@@ -61,6 +66,8 @@ class _AlarmFormState extends State<AlarmForm> {
         sound: _sound,
         isGuardEnabled: _isGuardEnabled,
         notes: _notesController.text,
+        isRepeating: _isRepeating,
+        repeat: _repeat,
         isActive: widget.baseAlarm?.isActive ?? true);
 
     Navigator.of(context).pop(returnedAlarm);
@@ -111,6 +118,8 @@ class _AlarmFormState extends State<AlarmForm> {
       _sound = widget.baseAlarm?.sound;
       _isGuardEnabled = widget.baseAlarm!.isGuardEnabled;
       _notesController.text = widget.baseAlarm?.notes ?? "";
+      _isRepeating = widget.baseAlarm?.isRepeating ?? false;
+      _repeat = widget.baseAlarm?.repeat ?? Repeat();
     }
     calculateRemainingTime();
   }
@@ -257,6 +266,140 @@ class _AlarmFormState extends State<AlarmForm> {
                                 onPressed: chooseAudio,
                               )
                             ])),
+                    Column(
+                      children: [
+                        InkWell(
+                            onTap: () => setState(() {
+                                  _isRepeating = !_isRepeating;
+                                }),
+                            child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  const Text("Powtarzaj"),
+                                  Switch(
+                                    value: _isRepeating,
+                                    onChanged: (bool value) {
+                                      setState(() {
+                                        _isRepeating = value;
+                                      });
+                                    },
+                                  )
+                                ])),
+                        ...(_isRepeating
+                            ? [
+                                InkWell(
+                                    onTap: () async {
+                                      List<String>? selectedDaysOfTheWeek =
+                                          await showMultipleSelect(
+                                              context,
+                                              daysOfWeek,
+                                              "Wybierz dni tygodnia",
+                                              (_repeat.daysOfWeek ?? [])
+                                                  .map((e) => daysOfWeek[e])
+                                                  .toList());
+                                      if (selectedDaysOfTheWeek != null) {
+                                        //Convert the text days names to an array of int (indexes)
+                                        List<int> selectedDaysOfTheWeekIndexes =
+                                            selectedDaysOfTheWeek
+                                                .map((e) =>
+                                                    daysOfWeek.indexOf(e))
+                                                .toList();
+
+                                        setState(() {
+                                          _repeat.daysOfWeek =
+                                              selectedDaysOfTheWeekIndexes;
+                                        });
+                                      }
+                                    },
+                                    child: Padding(
+                                        padding: const EdgeInsets.all(8),
+                                        child: Row(
+                                          children: [
+                                            const Text("Dni tygodnia: "),
+                                            Text(_repeat.daysOfWeek?.length == 7
+                                                ? "wszystkie"
+                                                : (_repeat.daysOfWeek ?? [])
+                                                    .map((e) => daysOfWeek[e]
+                                                        .substring(0, 3))
+                                                    .toList()
+                                                    .join(', '))
+                                          ],
+                                        ))),
+                                InkWell(
+                                    onTap: () async {
+                                      List<String>? selectedDays =
+                                          await showMultipleSelect(
+                                              context,
+                                              List.generate(31, (i) => i + 1)
+                                                  .map(
+                                                      (elem) => elem.toString())
+                                                  .toList(),
+                                              "Wybierz dni miesiąca",
+                                              (_repeat.days ?? [])
+                                                  .map((e) => e.toString())
+                                                  .toList());
+                                      if (selectedDays != null) {
+                                        setState(() {
+                                          _repeat.days = selectedDays
+                                              .map((e) => int.parse(e))
+                                              .toList();
+                                        });
+                                      }
+                                    },
+                                    child: Padding(
+                                        padding: const EdgeInsets.all(8),
+                                        child: Row(
+                                          children: [
+                                            const Text("Dni miesiąca: "),
+                                            Text(_repeat.days?.length == 31
+                                                ? "wszystkie"
+                                                : (_repeat.days ?? [])
+                                                    .toList()
+                                                    .join(', '))
+                                          ],
+                                        ))),
+                                InkWell(
+                                    onTap: () async {
+                                      List<String>? selectedMonths =
+                                          await showMultipleSelect(
+                                              context,
+                                              months,
+                                              "Wybierz miesiące",
+                                              (_repeat.months ?? [])
+                                                  .map((e) => months[e])
+                                                  .toList());
+                                      if (selectedMonths != null) {
+                                        //Convert the text month names to an array of int (indexes)
+                                        List<int> selectedMonthsIndexes =
+                                            selectedMonths
+                                                .map((e) => months.indexOf(e))
+                                                .toList();
+
+                                        setState(() {
+                                          _repeat.months =
+                                              selectedMonthsIndexes;
+                                        });
+                                      }
+                                    },
+                                    child: Padding(
+                                        padding: const EdgeInsets.all(8),
+                                        child: Row(
+                                          children: [
+                                            const Text("Miesiące: "),
+                                            Text(_repeat.months?.length == 12
+                                                ? "wszystkie"
+                                                : (_repeat.months ?? [])
+                                                    .map((e) => months[e]
+                                                        .substring(0, 3))
+                                                    .toList()
+                                                    .join(', '))
+                                          ],
+                                        ))),
+                              ]
+                            : [])
+                      ],
+                    ),
                     TextFormField(
                       controller: _notesController,
                       maxLines: 2,
