@@ -3,6 +3,8 @@ class Repeat {
   List<int>? daysOfWeek;
   List<int>? days;
   List<int>? months;
+
+  Repeat({this.daysOfWeek, this.days, this.months});
 }
 
 const List<String> daysOfWeek = [
