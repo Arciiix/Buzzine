@@ -50,7 +50,7 @@ class _AlarmCardState extends State<AlarmCard> {
     if (widget.nextInvocation != null) {
       Duration difference = widget.nextInvocation!.difference(DateTime.now());
       remainingTime =
-          "${addZero(difference.inHours)}:${addZero(difference.inMinutes.remainder(60))}";
+          "${difference.inDays > 0 ? addZero(difference.inDays) + ":" : ""}${addZero(difference.inHours)}:${addZero(difference.inMinutes.remainder(60))}";
     } else {
       remainingTime = '-';
     }

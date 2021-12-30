@@ -2,6 +2,7 @@ import 'package:buzzine/components/alarm_card.dart';
 import 'package:buzzine/components/carousel.dart';
 import 'package:buzzine/globalData.dart';
 import 'package:buzzine/screens/alarm_list.dart';
+import 'package:buzzine/screens/audio_manager.dart';
 import 'package:buzzine/screens/loading.dart';
 import 'package:buzzine/types/Alarm.dart';
 import 'package:flutter/material.dart';
@@ -24,6 +25,11 @@ class _HomePageState extends State<HomePage> {
               selectedAlarm:
                   alarmIndex != null ? upcomingAlarms[alarmIndex] : null)),
     );
+  }
+
+  void navigateToAudioManager() {
+    Navigator.of(context).push(MaterialPageRoute(
+        builder: (context) => const AudioManager(selectAudio: false)));
   }
 
   @override
@@ -100,7 +106,36 @@ class _HomePageState extends State<HomePage> {
                                       sound: e.sound,
                                       isGuardEnabled: e.isGuardEnabled,
                                       notes: e.notes);
-                                }).toList())
+                                }).toList()),
+                            const Padding(
+                                padding: EdgeInsets.all(5),
+                                child: Text("🎵 Audio",
+                                    style: TextStyle(
+                                        fontSize: 24, color: Colors.white))),
+                            InkWell(
+                                onTap: navigateToAudioManager,
+                                child: Container(
+                                    width:
+                                        MediaQuery.of(context).size.width * 0.9,
+                                    height: 120,
+                                    padding: const EdgeInsets.all(10),
+                                    margin: const EdgeInsets.all(5),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(5),
+                                    ),
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                            GlobalData.audios.length.toString(),
+                                            style:
+                                                const TextStyle(fontSize: 52)),
+                                        const Text("Ilość audio",
+                                            style: TextStyle(fontSize: 24))
+                                      ],
+                                    )))
                           ],
                         ),
                       )))));

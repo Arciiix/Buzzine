@@ -1,3 +1,4 @@
+import 'package:buzzine/screens/audio_manager.dart';
 import 'package:buzzine/types/Alarm.dart';
 import 'package:buzzine/types/Audio.dart';
 import 'package:buzzine/utils/formatting.dart';
@@ -70,9 +71,9 @@ class _AlarmFormState extends State<AlarmForm> {
     DateTime nextInvocation =
         DateTime(now.year, now.month, now.day, _hour, _minute);
 
-    if (now.compareTo(nextInvocation) <= 0) {
+    if (now.isAfter(nextInvocation)) {
       //If alarm time is before now, add a whole day (so it'll be tomorrow)
-      nextInvocation.add(const Duration(days: 1));
+      nextInvocation = nextInvocation.add(const Duration(days: 1));
     }
 
     Duration difference = nextInvocation.difference(DateTime.now());
@@ -84,8 +85,17 @@ class _AlarmFormState extends State<AlarmForm> {
   }
 
   void chooseAudio() async {
-    //DEV
-    print("TODO: Choose audio");
+    Audio? selectedAudio = await Navigator.of(context).push(MaterialPageRoute(
+      builder: (context) => const AudioManager(
+        selectAudio: true,
+      ),
+    ));
+
+    if (selectedAudio != null) {
+      setState(() {
+        _sound = selectedAudio;
+      });
+    }
   }
 
   @override
