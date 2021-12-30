@@ -65,11 +65,23 @@ class _HomePageState extends State<HomePage> {
                                 child: Text("Buzzine",
                                     style: TextStyle(
                                         fontSize: 48, color: Colors.white))),
-                            const Padding(
+                            Padding(
                                 padding: EdgeInsets.all(5),
-                                child: Text("⏰ Nadchodzące alarmy",
-                                    style: TextStyle(
-                                        fontSize: 24, color: Colors.white))),
+                                child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      const Text("⏰ Nadchodzące alarmy",
+                                          style: TextStyle(
+                                              fontSize: 24,
+                                              color: Colors.white)),
+                                      IconButton(
+                                        icon: const Icon(Icons.refresh,
+                                            color: Colors.white),
+                                        onPressed: () => print(
+                                            "TODO: Refresh the upcoming alarms"),
+                                      )
+                                    ])),
                             Carousel(
                                 height: 250,
                                 onSelect: handleAlarmSelect,
