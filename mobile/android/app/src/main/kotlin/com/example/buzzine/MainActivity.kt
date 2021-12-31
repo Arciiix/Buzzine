@@ -1,4 +1,4 @@
-package com.example.buzzine
+package com.arciiix.buzzine
 
 import io.flutter.embedding.android.FlutterActivity
 
