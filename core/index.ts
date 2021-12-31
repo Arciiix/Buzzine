@@ -262,6 +262,14 @@ io.on("connection", (socket: Socket) => {
       logger.warn("Missing callback on GET request - GET_UPCOMING_ALARMS");
     }
   });
+
+  socket.on("CMD/GET_ALL_ALARMS", async (cb) => {
+    if (cb) {
+      cb(Buzzine.alarms.map((e) => e.toObject()));
+    } else {
+      logger.warn("Missing callback on GET request - GET_ALL_ALARMS");
+    }
+  });
 });
 class Buzzine {
   static alarms: Alarm[] = [];

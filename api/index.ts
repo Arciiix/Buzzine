@@ -253,9 +253,11 @@ api.put("/updateAlarm", async (req, res) => {
 });
 
 api.get("/getUpcomingAlarms", (req, res) => {
+  logger.http(`GET /getUpcomingAlarms`);
+
   socket.emit("CMD/GET_UPCOMING_ALARMS", (response) => {
     if (response.error) {
-      res.status(400).send(response);
+      res.status(500).send(response);
       logger.warn(
         `Response error when getting upcoming alarms: ${JSON.stringify(
           response
@@ -267,6 +269,24 @@ api.get("/getUpcomingAlarms", (req, res) => {
         `Got upcoming alarms successfully. Response: ${JSON.stringify(
           response
         )}`
+      );
+    }
+  });
+});
+
+api.get("/getAllAlarms", (req, res) => {
+  logger.http(`GET /getAllAlarms`);
+
+  socket.emit("CMD/GET_ALL_ALARMS", (response) => {
+    if (response.error) {
+      res.status(500).send(response);
+      logger.warn(
+        `Response error when getting all alarms: ${JSON.stringify(response)}`
+      );
+    } else {
+      res.status(200).send({ error: false, response });
+      logger.info(
+        `Got all alarms successfully. Response: ${JSON.stringify(response)}`
       );
     }
   });
