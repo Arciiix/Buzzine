@@ -11,6 +11,7 @@ class GetDatabaseData {
         hour: alarm?.hour,
         minute: alarm?.minute,
         deleteAfterRinging: alarm?.deleteAfterRinging,
+        isGuardEnabled: alarm?.isGuardEnabled,
         name: alarm?.name,
         notes: alarm?.notes,
         repeat: alarm?.repeat,

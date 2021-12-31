@@ -14,6 +14,11 @@ const AlarmModel = db.define("Alarm", {
     allowNull: false,
     defaultValue: true,
   },
+  isGuardEnabled: {
+    type: DataTypes.BOOLEAN,
+    allowNull: true,
+    defaultValue: true,
+  },
   name: {
     type: DataTypes.STRING,
     allowNull: true,

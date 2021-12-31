@@ -326,17 +326,30 @@ class _AlarmFormState extends State<AlarmForm> {
                                               context,
                                               daysOfWeek,
                                               "Wybierz dni tygodnia",
-                                              (_repeat.daysOfWeek ?? [])
+                                              (_repeat.daysOfWeek ??
+                                                      [
+                                                        0,
+                                                        ...List.generate(
+                                                            6,
+                                                            (index) =>
+                                                                index + 1)
+                                                      ])
                                                   .map((e) => daysOfWeek[e])
                                                   .toList());
                                       if (selectedDaysOfTheWeek != null) {
                                         //Convert the text days names to an array of int (indexes)
-                                        List<int> selectedDaysOfTheWeekIndexes =
+                                        List<int>?
+                                            selectedDaysOfTheWeekIndexes =
                                             selectedDaysOfTheWeek
                                                 .map((e) =>
                                                     daysOfWeek.indexOf(e))
                                                 .toList();
-
+                                        //If all week days are selected
+                                        if (selectedDaysOfTheWeekIndexes
+                                                .length ==
+                                            7) {
+                                          selectedDaysOfTheWeekIndexes = null;
+                                        }
                                         setState(() {
                                           _repeat.daysOfWeek =
                                               selectedDaysOfTheWeekIndexes;
@@ -348,7 +361,7 @@ class _AlarmFormState extends State<AlarmForm> {
                                         child: Row(
                                           children: [
                                             const Text("Dni tygodnia: "),
-                                            Text(_repeat.daysOfWeek?.length == 7
+                                            Text(_repeat.daysOfWeek == null
                                                 ? "wszystkie"
                                                 : (_repeat.daysOfWeek ?? [])
                                                     .map((e) => daysOfWeek[e]
@@ -367,14 +380,25 @@ class _AlarmFormState extends State<AlarmForm> {
                                                       (elem) => elem.toString())
                                                   .toList(),
                                               "Wybierz dni miesiąca",
-                                              (_repeat.days ?? [])
+                                              (_repeat.days ??
+                                                      List.generate(31,
+                                                          (index) => index + 1))
                                                   .map((e) => e.toString())
                                                   .toList());
+
+                                      //If all days are selected
+                                      if (selectedDays?.length == 31) {
+                                        selectedDays = null;
+                                      }
                                       if (selectedDays != null) {
                                         setState(() {
                                           _repeat.days = selectedDays
-                                              .map((e) => int.parse(e))
+                                              ?.map((e) => int.parse(e))
                                               .toList();
+                                        });
+                                      } else {
+                                        setState(() {
+                                          _repeat.days = null;
                                         });
                                       }
                                     },
@@ -383,7 +407,7 @@ class _AlarmFormState extends State<AlarmForm> {
                                         child: Row(
                                           children: [
                                             const Text("Dni miesiąca: "),
-                                            Text(_repeat.days?.length == 31
+                                            Text(_repeat.days == null
                                                 ? "wszystkie"
                                                 : (_repeat.days ?? [])
                                                     .toList()
@@ -397,16 +421,27 @@ class _AlarmFormState extends State<AlarmForm> {
                                               context,
                                               months,
                                               "Wybierz miesiące",
-                                              (_repeat.months ?? [])
+                                              (_repeat.months ??
+                                                      [
+                                                        0,
+                                                        ...List.generate(
+                                                            11,
+                                                            (index) =>
+                                                                index + 1)
+                                                      ])
                                                   .map((e) => months[e])
                                                   .toList());
                                       if (selectedMonths != null) {
                                         //Convert the text month names to an array of int (indexes)
-                                        List<int> selectedMonthsIndexes =
+                                        List<int>? selectedMonthsIndexes =
                                             selectedMonths
                                                 .map((e) => months.indexOf(e))
                                                 .toList();
-
+                                        //If all months are selected
+                                        if (selectedMonthsIndexes.length ==
+                                            12) {
+                                          selectedMonthsIndexes = null;
+                                        }
                                         setState(() {
                                           _repeat.months =
                                               selectedMonthsIndexes;
@@ -418,7 +453,7 @@ class _AlarmFormState extends State<AlarmForm> {
                                         child: Row(
                                           children: [
                                             const Text("Miesiące: "),
-                                            Text(_repeat.months?.length == 12
+                                            Text(_repeat.months == null
                                                 ? "wszystkie"
                                                 : (_repeat.months ?? [])
                                                     .map((e) => months[e]

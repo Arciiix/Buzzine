@@ -22,6 +22,7 @@ class Alarm {
   hour: number;
   minute: number;
   deleteAfterRinging: boolean;
+  isGuardEnabled: boolean;
   name?: string;
   notes?: string;
   repeat?: RecurrenceObject;
@@ -43,6 +44,7 @@ class Alarm {
     isActive,
     maxTotalSnoozeDuration,
     deleteAfterRinging = false,
+    isGuardEnabled = false,
     name,
     notes,
     repeat,
@@ -53,6 +55,7 @@ class Alarm {
     isActive: boolean;
     maxTotalSnoozeDuration?: number;
     deleteAfterRinging?: boolean;
+    isGuardEnabled?: boolean;
     name?: string;
     notes?: string;
     repeat?: RecurrenceObject;
@@ -64,6 +67,7 @@ class Alarm {
       this.notes = notes;
     }
     this.deleteAfterRinging = deleteAfterRinging;
+    this.isGuardEnabled = isGuardEnabled;
     this.id = id;
     this.hour = hour;
     this.minute = minute;
@@ -98,6 +102,7 @@ class Alarm {
       hour: this.hour,
       minute: this.minute,
       deleteAfterRinging: this.deleteAfterRinging,
+      isGuardEnabled: this.isGuardEnabled,
       name: this.name,
       notes: this.notes,
       repeat: this.repeat,
@@ -397,6 +402,7 @@ interface IAlarm {
   hour: number;
   minute: number;
   deleteAfterRinging: boolean;
+  isGuardEnabled: boolean;
   name?: string;
   notes?: string;
   repeat?: RecurrenceObject;

@@ -3,10 +3,12 @@ import { io } from "socket.io-client";
 import dotenv from "dotenv";
 import logger from "./utils/logger";
 import bodyParser from "body-parser";
+import axios from "axios";
 
 //Load environment variables from file
 dotenv.config();
 const PORT = process.env.PORT || 1111;
+const AUDIO_URL = process.env.AUDIO_URL || "http://localhost:7777"; //DEV TODO: Change it
 
 const app = express();
 app.use(bodyParser.json());
@@ -277,19 +279,77 @@ api.get("/getUpcomingAlarms", (req, res) => {
 api.get("/getAllAlarms", (req, res) => {
   logger.http(`GET /getAllAlarms`);
 
-  socket.emit("CMD/GET_ALL_ALARMS", (response) => {
+  socket.emit("CMD/GET_ALL_ALARMS", async (response) => {
     if (response.error) {
       res.status(500).send(response);
       logger.warn(
         `Response error when getting all alarms: ${JSON.stringify(response)}`
       );
     } else {
+      //Fetch the assigned audio to each alarm
+      //Set the default one by default
+      response = response.map((elem) => {
+        return {
+          ...elem,
+          ...{
+            sound: {
+              filename: "default.mp3",
+              friendlyName: "Domyślna",
+            },
+          },
+        };
+      });
+
+      //Fetch the alarms audios
+      try {
+        let audiosReq = await axios.get(`${AUDIO_URL}/v1/getAlarmSoundList`);
+        if (audiosReq.data.error) {
+          throw new Error(JSON.stringify(audiosReq.data));
+        } else {
+          let audiosRes = audiosReq.data.data;
+          audiosRes.forEach((element) => {
+            //Match the audios with the alarms
+            let alarmIndex = response.findIndex(
+              (e) => e.id === element.alarmId
+            );
+            if (alarmIndex > -1) {
+              response[alarmIndex].sound = {
+                filename: element.filename,
+                friendlyName:
+                  element?.AudioNameMapping?.friendlyName ?? element.filename,
+              };
+            }
+          });
+        }
+      } catch (err) {
+        logger.warn(
+          `Error while getting alarms audio, when getting all alarms: ${err.toString()}`
+        );
+      }
+
       res.status(200).send({ error: false, response });
       logger.info(
         `Got all alarms successfully. Response: ${JSON.stringify(response)}`
       );
     }
   });
+});
+
+api.get("/getSoundList", async (req, res) => {
+  logger.http("GET /getSoundList");
+
+  //It's just the same request sent to the audio microservice
+  try {
+    let audiosReq = await axios.get(`${AUDIO_URL}/v1/getSoundList`);
+    if (audiosReq.status != 200) {
+      logger.warn(
+        `Error while getting audios: ${JSON.stringify(audiosReq.data)}`
+      );
+    }
+    res.status(audiosReq.status).send(audiosReq.data);
+  } catch (err) {
+    logger.warn(`Error while getting audios: ${err.toString()}`);
+  }
 });
 
 const socket = io(process.env.CORE_URL || "http://localhost:5555"); //DEV - to be changed with Docker
