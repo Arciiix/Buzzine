@@ -4,6 +4,7 @@ import 'package:buzzine/globalData.dart';
 import 'package:buzzine/screens/alarm_list.dart';
 import 'package:buzzine/screens/audio_manager.dart';
 import 'package:buzzine/screens/loading.dart';
+import 'package:buzzine/screens/settings.dart';
 import 'package:buzzine/types/Alarm.dart';
 import 'package:flutter/material.dart';
 
@@ -30,6 +31,11 @@ class _HomePageState extends State<HomePage> {
   void navigateToAudioManager() {
     Navigator.of(context).push(MaterialPageRoute(
         builder: (context) => const AudioManager(selectAudio: false)));
+  }
+
+  void navigateToSettings() {
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (context) => const Settings()));
   }
 
   @override
@@ -135,7 +141,27 @@ class _HomePageState extends State<HomePage> {
                                         const Text("Ilość audio",
                                             style: TextStyle(fontSize: 24))
                                       ],
-                                    )))
+                                    ))),
+                            const Padding(
+                                padding: EdgeInsets.all(5),
+                                child: Text("⚙️ Ustawienia",
+                                    style: TextStyle(
+                                        fontSize: 24, color: Colors.white))),
+                            InkWell(
+                                onTap: navigateToSettings,
+                                child: Container(
+                                    width:
+                                        MediaQuery.of(context).size.width * 0.9,
+                                    height: 50,
+                                    padding: const EdgeInsets.all(10),
+                                    margin: const EdgeInsets.all(5),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(5),
+                                    ),
+                                    child: const Center(
+                                        child: Text("Zmień ustawienia",
+                                            style: TextStyle(fontSize: 24)))))
                           ],
                         ),
                       )))));

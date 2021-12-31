@@ -5,6 +5,7 @@ import 'package:buzzine/types/Audio.dart';
 import 'package:buzzine/types/Repeat.dart';
 import 'package:buzzine/utils/formatting.dart';
 import "package:flutter/material.dart";
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AlarmForm extends StatefulWidget {
   final Alarm? baseAlarm;
@@ -35,6 +36,9 @@ class _AlarmFormState extends State<AlarmForm> {
 
   bool _isRepeating = false;
   Repeat _repeat = Repeat();
+
+  int _minTotalSnoozeLengthValue = 5;
+  int _maxTotalSnoozeLengthValue = 60;
 
   void getTime() async {
     final TimeOfDay? timePickerResponse = await showTimePicker(
@@ -109,6 +113,28 @@ class _AlarmFormState extends State<AlarmForm> {
     }
   }
 
+  void fetchMinAndMaxTotalSnoozeLengthValue() async {
+    SharedPreferences _prefs = await SharedPreferences.getInstance();
+    int minTotalSnoozeLengthValue =
+        _prefs.getInt("MIN_TOTAL_SNOOZE_TIME_VALUE") ?? 5;
+    int maxTotalSnoozeLengthValue =
+        _prefs.getInt("MAX_TOTAL_SNOOZE_TIME_VALUE") ?? 60;
+
+    //If the min (or max) value of snooze is higher (lower) than the currently set one, change it to the current value - avoid getting an val < min (val > max) error
+    setState(() {
+      _minTotalSnoozeLengthValue =
+          ((_maxTotalSnoozeLength ?? minTotalSnoozeLengthValue) <
+                  minTotalSnoozeLengthValue
+              ? _maxTotalSnoozeLength
+              : minTotalSnoozeLengthValue)!;
+      _maxTotalSnoozeLengthValue =
+          ((_maxTotalSnoozeLength ?? maxTotalSnoozeLengthValue) >
+                  maxTotalSnoozeLengthValue
+              ? _maxTotalSnoozeLength
+              : maxTotalSnoozeLengthValue)!;
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -126,6 +152,7 @@ class _AlarmFormState extends State<AlarmForm> {
       _repeat = widget.baseAlarm?.repeat ?? Repeat();
     }
     calculateRemainingTime();
+    fetchMinAndMaxTotalSnoozeLengthValue();
   }
 
   @override
@@ -235,8 +262,8 @@ class _AlarmFormState extends State<AlarmForm> {
                                     "Maksymalny łączny czas drzemek",
                                   )),
                               Slider(
-                                min: 5,
-                                max: 30,
+                                min: _minTotalSnoozeLengthValue.toDouble(),
+                                max: _maxTotalSnoozeLengthValue.toDouble(),
                                 onChanged: (double value) {
                                   setState(() {
                                     _maxTotalSnoozeLength = value.toInt();
