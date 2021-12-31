@@ -20,7 +20,7 @@ Everything is under development, the app will evolve slowly, step by step. Even 
 
 | Name                      | Default value | Description                                                                                                                      | Unit    |
 | ------------------------- | ------------- | -------------------------------------------------------------------------------------------------------------------------------- | ------- |
-| PORT                      | 5555          | A port the core will run on                                                                                                      |         |
+| PORT                      | 3333          | A port the core will run on                                                                                                      |         |
 | MUTE_AFTER                | 15            | The alarm will mute itself after that time if no user action is performed                                                        | minutes |
 | RESEND_INTERVAL           | 10            | The core will resend the socket ALARM_RINGING event every specified seconds                                                      | seconds |
 | DEFAULT_SNOOZE_LENGTH     | 300           | Default snooze length if nothing is provided as `Alarm.snoozeAlarm()` method param                                               | seconds |
@@ -31,7 +31,7 @@ Everything is under development, the app will evolve slowly, step by step. Even 
 | Name      | Default value                                     | Description                   | Unit |
 | --------- | ------------------------------------------------- | ----------------------------- | ---- |
 | PORT      | 1111                                              | A port the API will run on    |      |
-| CORE_URL  | http://localhost:5555 (to be changed with Docker) | Used for socket.io connection |      |
+| CORE_URL  | http://localhost:3333 (to be changed with Docker) | Used for socket.io connection |      |
 | AUDIO_URL | http://localhost:7777 (to be changed with Docker) | Used for communication        |      |
 
 #### Audio
@@ -39,4 +39,4 @@ Everything is under development, the app will evolve slowly, step by step. Even 
 | Name     | Default value                                     | Description                   | Unit |
 | -------- | ------------------------------------------------- | ----------------------------- | ---- |
 | PORT     | 7777                                              | A port the API will run on    |      |
-| CORE_URL | http://localhost:5555 (to be changed with Docker) | Used for socket.io connection |      |
+| CORE_URL | http://localhost:3333 (to be changed with Docker) | Used for socket.io connection |      |

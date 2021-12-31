@@ -352,7 +352,7 @@ api.get("/getSoundList", async (req, res) => {
   }
 });
 
-const socket = io(process.env.CORE_URL || "http://localhost:5555"); //DEV - to be changed with Docker
+const socket = io(process.env.CORE_URL || "http://localhost:3333"); //DEV - to be changed with Docker
 
 socket.on("connect", () => {
   logger.info(

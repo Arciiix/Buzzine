@@ -1,8 +1,11 @@
+import 'package:buzzine/screens/error.dart';
 import 'package:buzzine/screens/home_page.dart';
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 
 void main() {
+  ErrorWidget.builder =
+      (FlutterErrorDetails details) => ErrorScreen(details: details);
   runApp(const MyApp());
 }
 

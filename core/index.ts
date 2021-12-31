@@ -14,7 +14,7 @@ import AlarmModel from "./models/Alarm.model";
 
 //Load environment variables from file
 dotenv.config();
-const PORT = process.env.PORT || 5555;
+const PORT = process.env.PORT || 3333;
 
 const app = express();
 const server = app.listen(PORT, () => {
@@ -25,6 +25,10 @@ const io = new SocketServer(server, {
   cors: {
     origin: "localhost",
   },
+});
+
+app.get("/", (req, res) => {
+  res.send({ error: false });
 });
 
 io.on("connection", (socket: Socket) => {

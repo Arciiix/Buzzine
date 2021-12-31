@@ -17,7 +17,7 @@ import { downloadFromYouTube } from "./utils/YouTubeDownloader";
 //Load environment variables from file
 dotenv.config();
 
-const io = socketioClient(process.env.CORE_URL || "http://localhost:5555"); //DEV TODO: Change the default CORE_URL
+const io = socketioClient(process.env.CORE_URL || "http://localhost:3333"); //DEV TODO: Change the default CORE_URL
 const app = express();
 const PORT = process.env.PORT || 7777;
 

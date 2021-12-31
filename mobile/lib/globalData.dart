@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:buzzine/types/Repeat.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart' as http;
 
 import 'package:buzzine/types/Alarm.dart';
@@ -24,10 +25,7 @@ class GlobalData {
 
     SharedPreferences _prefs = await SharedPreferences.getInstance();
     serverIP = _prefs.getString("API_SERVER_IP") ??
-        "http://192.168.0.107:5555"; //DEV TODO: Change the default API server IP
-
-    //TODO: Fetch the data from the API
-    await Future.delayed(Duration(seconds: 1));
+        "http://192.168.0.107:3333"; //DEV TODO: Change the default API server IP
 
     await getAlarms();
     await getUpcomingAlarms();
