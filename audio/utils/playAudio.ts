@@ -2,6 +2,8 @@ import childProcess from "child_process";
 import AlarmsAudioModel from "../models/AlarmsAudio";
 import AudioNameMappingModel from "../models/AudioNameMapping";
 import logger from "./logger";
+import fs from "fs";
+import path from "path";
 
 class PlayAudio {
   filename: string;
@@ -105,6 +107,10 @@ async function deleteSound(
   }
 
   await soundObj.destroy();
+
+  //Delete the actual file
+  fs.unlinkSync(path.join(__dirname, "..", "audio", filename));
+
   logger.info(`Successfully deleted sound ${filename}`);
 
   return { error: false };
