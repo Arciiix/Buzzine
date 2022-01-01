@@ -201,7 +201,7 @@ io.on("connection", (socket: Socket) => {
       logger.warn("Trying to delete an alarm with a wrong id!");
       return;
     }
-    alarm.deleteSelf();
+    await alarm.deleteSelf();
 
     logger.info(`Successfully deleted alarm ${payload.id}`);
     if (cb) {

@@ -4,7 +4,7 @@ import {
   RecurrenceSegment,
   scheduleJob,
 } from "node-schedule";
-import { io } from "./index";
+import { Buzzine, io } from "./index";
 import { formatDate, formatTime } from "./utils/format";
 import logger from "./utils/logger";
 import dotenv from "dotenv";
@@ -12,6 +12,7 @@ import Snooze from "./snooze";
 import AlarmModel from "./models/Alarm.model";
 import { saveUpcomingAlarms } from "./utils/alarmProtection";
 import shortUUID from "short-uuid";
+import UpcomingAlarmModel from "./models/UpcomingAlarm.model";
 
 //Load environment variables from file
 dotenv.config();
@@ -231,7 +232,7 @@ class Alarm {
     this.mute();
 
     if (this.deleteAfterRinging) {
-      await this.dbObject.destroy();
+      await this.deleteSelf();
       logger.info(`Deleted alarm ${this.id}`);
     }
     saveUpcomingAlarms();
@@ -389,7 +390,12 @@ class Alarm {
     this.snoozes.forEach((e) => {
       e.cancelJob();
     });
+    //Delete all the upcoming alarms due to relations (which wouldn't allow to delete the alarm itself)
+    Buzzine.alarms = Buzzine.alarms.filter((e) => e !== this);
+    await UpcomingAlarmModel.destroy({ where: {} });
     await this.dbObject.destroy();
+    await saveUpcomingAlarms();
+
     logger.info(`Deleted alarm ${this.id}`);
   }
 

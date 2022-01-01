@@ -3,6 +3,7 @@ import 'package:buzzine/globalData.dart';
 import 'package:buzzine/screens/alarm_form.dart';
 import 'package:buzzine/screens/loading.dart';
 import 'package:buzzine/types/Alarm.dart';
+import 'package:buzzine/utils/show_snackbar.dart';
 import 'package:flutter/material.dart';
 
 class AlarmList extends StatefulWidget {
@@ -24,11 +25,20 @@ class _AlarmListState extends State<AlarmList> {
 
     if (alarm != null) {
       await GlobalData.addAlarm(alarm.toMap(), selectedAlarm != null);
-      await GlobalData.getAlarms();
+      await GlobalData.getData();
       setState(() {
         alarms = GlobalData.alarms;
       });
     }
+  }
+
+  void deleteAlarm(Alarm alarmToDelete) async {
+    await GlobalData.deleteAlarm(alarmToDelete.id ?? "");
+    showSnackbar(context, "Usunięto alarm!");
+    await GlobalData.getData();
+    setState(() {
+      alarms = GlobalData.alarms;
+    });
   }
 
   @override
@@ -100,8 +110,7 @@ class _AlarmListState extends State<AlarmList> {
                                 );
                               },
                               onDismissed: (DismissDirection direction) {
-                                //DEV TODO: Delete the alarm
-                                print("TODO: Delete the alarm");
+                                deleteAlarm(e);
                               },
                               child: InkWell(
                                   onTap: () => addAlarm(e),

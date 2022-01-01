@@ -141,4 +141,16 @@ class GlobalData {
           "Błąd podczas tworzenia alarmu. Status code: ${response.statusCode}, response: ${response.body}");
     }
   }
+
+  static Future<void> deleteAlarm(String alarmId) async {
+    var response = await http.delete(Uri.parse("$serverIP/v1/deleteAlarm"),
+        body: json.encode({'id': alarmId}),
+        headers: {"Content-Type": "application/json"});
+    var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
+
+    if (response.statusCode != 200 || decodedResponse['error'] == true) {
+      throw APIException(
+          "Błąd podczas usuwania alarmu. Status code: ${response.statusCode}, response: ${response.body}");
+    }
+  }
 }
