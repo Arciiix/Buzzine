@@ -21,9 +21,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         scaffoldBackgroundColor: const Color(0xFF00283F),
       ),
-      home: ErrorScreen(
-        details: FlutterErrorDetails(exception: "test"),
-      ),
+      home: HomePage(),
     );
   }
 }
