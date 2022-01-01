@@ -150,7 +150,19 @@ class GlobalData {
 
     if (response.statusCode != 200 || decodedResponse['error'] == true) {
       throw APIException(
-          "Błąd podczas usuwania alarmu. Status code: ${response.statusCode}, response: ${response.body}");
+          "Błąd podczas usuwania alarmu $alarmId. Status code: ${response.statusCode}, response: ${response.body}");
+    }
+  }
+
+  static Future<void> deleteAudio(String filenameToDelete) async {
+    var response = await http.delete(Uri.parse("$serverIP/v1/deleteSound"),
+        body: json.encode({'filename': filenameToDelete}),
+        headers: {"Content-Type": "application/json"});
+    var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
+
+    if (response.statusCode != 200 || decodedResponse['error'] == true) {
+      throw APIException(
+          "Błąd podczas usuwania audio $filenameToDelete. Status code: ${response.statusCode}, response: ${response.body}");
     }
   }
 }

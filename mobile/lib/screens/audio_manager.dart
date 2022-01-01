@@ -24,9 +24,12 @@ class _AudioManagerState extends State<AudioManager> {
     print("TODO: Add audio");
   }
 
-  void deleteAudio() {
-    //TODO: Delete audio
-    print("TODO: Delete audio");
+  void deleteAudio(Audio e) async {
+    await GlobalData.deleteAudio(e.filename);
+    await GlobalData.getAudios();
+    setState(() {
+      audios = GlobalData.audios;
+    });
   }
 
   void selectAudio(Audio e) {
@@ -119,7 +122,7 @@ class _AudioManagerState extends State<AudioManager> {
                             );
                           },
                           onDismissed: (DismissDirection direction) {
-                            deleteAudio();
+                            deleteAudio(e);
                           },
                           child: ListTile(
                             title: Text(e.friendlyName ?? e.filename),

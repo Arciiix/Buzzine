@@ -392,6 +392,40 @@ api.get("/getSoundList", async (req, res) => {
   }
 });
 
+api.delete("/deleteSound", async (req, res) => {
+  logger.http(`DELETE /deleteSound with data ${JSON.stringify(req.body)}`);
+
+  if (!req.body.filename) {
+    res.send({ error: true, errorCode: "MISSING_FILENAME" });
+    return;
+  }
+
+  //It's just the same request sent to the audio microservice
+  try {
+    let deleteReq = await axios.delete(`${AUDIO_URL}/v1/deleteSound`, {
+      data: {
+        filename: req.body.filename,
+      },
+    });
+    if (deleteReq.status != 200) {
+      logger.warn(
+        `Error while deleting audio ${req.body.filename}: ${JSON.stringify(
+          deleteReq.data
+        )}`
+      );
+    }
+    res.status(deleteReq.status).send(deleteReq.data);
+    logger.info(
+      `Delete request is complete with response ${deleteReq.data} and status ${deleteReq.status}`
+    );
+  } catch (err) {
+    logger.warn(
+      `Error while deleting audio ${req.body.filename}: ${err.toString()}`
+    );
+    res.status(500).send({ error: true });
+  }
+});
+
 const socket = io(process.env.CORE_URL || "http://localhost:3333"); //DEV - to be changed with Docker
 
 socket.on("connect", () => {
