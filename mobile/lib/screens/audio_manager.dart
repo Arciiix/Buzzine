@@ -62,6 +62,7 @@ class _AudioManagerState extends State<AudioManager> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(title: const Text("Audio")),
+        backgroundColor: Colors.white,
         floatingActionButton: FloatingActionButton(
           onPressed: addAudio,
           child: const Icon(Icons.add),
@@ -75,83 +76,63 @@ class _AudioManagerState extends State<AudioManager> {
             },
             child: audios.isNotEmpty
                 ? ListView.builder(
+                    padding: const EdgeInsets.only(bottom: 56),
                     itemCount: audios.length,
                     itemBuilder: (BuildContext context, int index) {
                       Audio e = audios[index];
-                      return Padding(
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 5, horizontal: 10),
-                          child: Dismissible(
-                              key: ObjectKey(e),
-                              direction: DismissDirection.endToStart,
-                              background: Container(
-                                  alignment: Alignment.centerLeft,
-                                  padding: EdgeInsets.only(right: 20),
-                                  color: Colors.red,
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    children: const [
-                                      Icon(Icons.delete, color: Colors.white),
-                                      Text("Usuń",
-                                          style: TextStyle(color: Colors.white))
-                                    ],
-                                  )),
-                              confirmDismiss:
-                                  (DismissDirection direction) async {
-                                return await showDialog(
-                                  context: context,
-                                  builder: (BuildContext context) {
-                                    return AlertDialog(
-                                      title: const Text("Usuń audio"),
-                                      content: Text(
-                                          'Czy na pewno chcesz usunąć "${e.friendlyName ?? e.filename}"?'),
-                                      actions: <Widget>[
-                                        TextButton(
-                                          onPressed: () =>
-                                              Navigator.of(context).pop(false),
-                                          child: const Text("Anuluj"),
-                                        ),
-                                        TextButton(
-                                            onPressed: () =>
-                                                Navigator.of(context).pop(true),
-                                            child: const Text("Usuń")),
-                                      ],
-                                    );
-                                  },
+                      return Dismissible(
+                          key: ObjectKey(e),
+                          direction: DismissDirection.endToStart,
+                          background: Container(
+                              alignment: Alignment.centerLeft,
+                              padding: const EdgeInsets.only(right: 20),
+                              color: Colors.red,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: const [
+                                  Icon(Icons.delete, color: Colors.white),
+                                  Text("Usuń",
+                                      style: TextStyle(color: Colors.white))
+                                ],
+                              )),
+                          confirmDismiss: (DismissDirection direction) async {
+                            return await showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return AlertDialog(
+                                  title: const Text("Usuń audio"),
+                                  content: Text(
+                                      'Czy na pewno chcesz usunąć "${e.friendlyName ?? e.filename}"?'),
+                                  actions: <Widget>[
+                                    TextButton(
+                                      onPressed: () =>
+                                          Navigator.of(context).pop(false),
+                                      child: const Text("Anuluj"),
+                                    ),
+                                    TextButton(
+                                        onPressed: () =>
+                                            Navigator.of(context).pop(true),
+                                        child: const Text("Usuń")),
+                                  ],
                                 );
                               },
-                              onDismissed: (DismissDirection direction) {
-                                deleteAudio();
-                              },
-                              child: InkWell(
-                                  onTap: () => selectAudio(e),
-                                  child: Container(
-                                      width: MediaQuery.of(context).size.width *
-                                          0.9,
-                                      padding: const EdgeInsets.all(10),
-                                      margin: const EdgeInsets.all(5),
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius: BorderRadius.circular(5),
-                                      ),
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Text(e.friendlyName ?? e.filename,
-                                              style: const TextStyle(
-                                                  fontSize: 24)),
-                                          IconButton(
-                                              icon: Icon(
-                                                  _isPreviewPlaying &&
-                                                          _previewFilename ==
-                                                              e.filename
-                                                      ? Icons.pause
-                                                      : Icons.play_arrow,
-                                                  size: 32),
-                                              onPressed: () => playPreview(e)),
-                                        ],
-                                      )))));
+                            );
+                          },
+                          onDismissed: (DismissDirection direction) {
+                            deleteAudio();
+                          },
+                          child: ListTile(
+                            title: Text(e.friendlyName ?? e.filename),
+                            subtitle: Text(e.filename),
+                            trailing: IconButton(
+                                icon: Icon(
+                                    _isPreviewPlaying &&
+                                            _previewFilename == e.filename
+                                        ? Icons.pause
+                                        : Icons.play_arrow,
+                                    size: 32),
+                                onPressed: () => playPreview(e)),
+                          ));
                     })
                 : const Center(
                     child: Text("Brak audio!",
