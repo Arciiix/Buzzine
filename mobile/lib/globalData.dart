@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:buzzine/types/API_exception.dart';
 import 'package:buzzine/types/Repeat.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart' as http;
@@ -39,8 +40,8 @@ class GlobalData {
     var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
 
     if (response.statusCode != 200 || decodedResponse['error'] == true) {
-      //DEV
-      //TODO: Throw an error
+      throw APIException(
+          "Błąd podczas pobierania alarmów. Status code: ${response.statusCode}, response: ${response.body}");
     } else {
       List alarmsResponse = decodedResponse['response'];
       GlobalData.alarms = alarmsResponse
@@ -73,14 +74,12 @@ class GlobalData {
   }
 
   static Future<List<Alarm>> getUpcomingAlarms() async {
-    //TODO: Fetch it from the API
-
     var response = await http.get(Uri.parse("$serverIP/v1/getUpcomingAlarms"));
     var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
 
     if (response.statusCode != 200 || decodedResponse['error'] == true) {
-      //DEV
-      //TODO: Throw an error
+      throw APIException(
+          "Błąd podczas pobierania nadchodzących alarmów. Status code: ${response.statusCode}, response: ${response.body}");
     } else {
       List alarmsResponse = decodedResponse['response'];
 
@@ -98,8 +97,8 @@ class GlobalData {
     var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
 
     if (response.statusCode != 200 || decodedResponse['error'] == true) {
-      //DEV
-      //TODO: Throw an error
+      throw APIException(
+          "Błąd podczas pobierania audio. Status code: ${response.statusCode}, response: ${response.body}");
     } else {
       List audiosResponse = decodedResponse['data'];
       GlobalData.audios = audiosResponse

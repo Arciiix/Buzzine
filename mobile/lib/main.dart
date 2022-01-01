@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   ErrorWidget.builder =
       (FlutterErrorDetails details) => ErrorScreen(details: details);
   runApp(const MyApp());
@@ -20,7 +21,9 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         scaffoldBackgroundColor: const Color(0xFF00283F),
       ),
-      home: HomePage(),
+      home: ErrorScreen(
+        details: FlutterErrorDetails(exception: "test"),
+      ),
     );
   }
 }
