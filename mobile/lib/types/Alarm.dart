@@ -35,4 +35,22 @@ class Alarm {
       this.notes,
       this.isRepeating,
       this.repeat});
+
+  Map toMap() {
+    return {
+      'id': id,
+      'name': name,
+      'hour': hour,
+      'minute': minute,
+      'nextInvocation': nextInvocation,
+      'isActive': isActive,
+      'isSnoozeEnabledd': isSnoozeEnabled,
+      'maxTotalSnoozeLength': maxTotalSnoozeLength,
+      'sound': sound?.toMap(),
+      'isGuardEnabled': isGuardEnabled,
+      'notes': notes,
+      'isRepeating': isRepeating,
+      'repeat': (isRepeating ?? false) ? repeat?.toMap() : null,
+    };
+  }
 }

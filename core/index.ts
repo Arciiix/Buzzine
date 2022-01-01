@@ -56,6 +56,8 @@ io.on("connection", (socket: Socket) => {
     try {
       let newAlarm: any = await AlarmModel.create({
         isActive: payload.isActive,
+        isGuardEnabled: payload?.isGuardEnabled,
+        isSnoozeEnabled: payload?.isSnoozeEnabled,
         name: payload?.name,
         notes: payload?.notes,
         hour: payload.hour,

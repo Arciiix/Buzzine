@@ -1,3 +1,4 @@
+import 'package:buzzine/globalData.dart';
 import 'package:buzzine/types/Audio.dart';
 import 'package:buzzine/utils/formatting.dart';
 import 'package:flutter/material.dart';
@@ -57,10 +58,7 @@ class _AlarmCardState extends State<AlarmCard> {
   }
 
   void setIsActive(bool status) async {
-    //DEV
-    //TODO: Change the alarm status
-
-    //If the change was successful, update the state
+    await GlobalData.changeAlarmStatus(widget.id, status);
     setState(() {
       isActive = status;
     });

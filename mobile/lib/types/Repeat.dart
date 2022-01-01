@@ -5,6 +5,15 @@ class Repeat {
   List<int>? months;
 
   Repeat({this.daysOfWeek, this.days, this.months});
+
+  Map toMap() {
+    return {
+      'daysOfWeek': daysOfWeek,
+      'days': days,
+      'months': months,
+      'tz': "Europe/Warsaw"
+    };
+  }
 }
 
 const List<String> daysOfWeek = [

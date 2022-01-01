@@ -3,4 +3,11 @@ class Audio {
   final String? friendlyName;
 
   Audio({required this.filename, this.friendlyName});
+
+  Map toMap() {
+    return {
+      'filename': filename,
+      'friendlyName': friendlyName,
+    };
+  }
 }

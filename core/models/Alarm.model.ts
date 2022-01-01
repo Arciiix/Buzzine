@@ -19,6 +19,11 @@ const AlarmModel = db.define("Alarm", {
     allowNull: true,
     defaultValue: true,
   },
+  isSnoozeEnabled: {
+    type: DataTypes.BOOLEAN,
+    allowNull: true,
+    defaultValue: true,
+  },
   name: {
     type: DataTypes.STRING,
     allowNull: true,

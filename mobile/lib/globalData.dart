@@ -62,11 +62,12 @@ class GlobalData {
               isRepeating: e['repeat'] != null,
               repeat: e['repeat'] != null
                   ? Repeat(
-                      daysOfWeek: e['repeat']['daysOfWeek'],
-                      days: e['repeat']['date'],
-                      months: e['repeat']['month'])
+                      daysOfWeek: e['repeat']['dayOfWeek']?.cast<int>(),
+                      days: e['repeat']['date']?.cast<int>(),
+                      months: e['repeat']['month']?.cast<int>(),
+                    )
                   : null,
-              nextInvocation: e['nextInvocation']))
+              nextInvocation: DateTime.tryParse(e['nextInvocationDate'] ?? "")))
           .toList();
     }
 
@@ -111,5 +112,32 @@ class GlobalData {
         .insert(0, Audio(filename: "default.mp3", friendlyName: "Domyślna"));
 
     return GlobalData.audios;
+  }
+
+  static Future<void> changeAlarmStatus(String id, bool status) async {
+    Map requestData = {'id': id, 'status': status};
+
+    var response = await http.put(Uri.parse("$serverIP/v1/toogleAlarm"),
+        body: json.encode(requestData),
+        headers: {"Content-Type": "application/json"});
+    var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
+
+    if (response.statusCode != 200 || decodedResponse['error'] == true) {
+      throw APIException(
+          "Błąd podczas włączania/wyłączania alarmu. Status code: ${response.statusCode}, response: ${response.body}");
+    }
+  }
+
+  static Future<void> addAlarm(Map alarmRequestBody, bool isEditing) async {
+    var response = await http.post(
+        Uri.parse("$serverIP/v1/${isEditing ? "updateAlarm" : "addAlarm"}"),
+        body: json.encode(alarmRequestBody),
+        headers: {"Content-Type": "application/json"});
+    var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
+
+    if (response.statusCode != 201 || decodedResponse['error'] == true) {
+      throw APIException(
+          "Błąd podczas tworzenia alarmu. Status code: ${response.statusCode}, response: ${response.body}");
+    }
   }
 }

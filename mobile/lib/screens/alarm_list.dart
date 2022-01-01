@@ -22,7 +22,13 @@ class _AlarmListState extends State<AlarmList> {
       builder: (context) => AlarmForm(),
     ));
 
-    //TODO: Add the alarm
+    if (alarm != null) {
+      await GlobalData.addAlarm(alarm.toMap(), false);
+      await GlobalData.getAlarms();
+      setState(() {
+        alarms = GlobalData.alarms;
+      });
+    }
   }
 
   void editAlarm(Alarm selectedAlarm) async {
@@ -30,7 +36,13 @@ class _AlarmListState extends State<AlarmList> {
       builder: (context) => AlarmForm(baseAlarm: selectedAlarm),
     ));
 
-    //TODO: Edit alarm
+    if (alarm != null) {
+      await GlobalData.addAlarm(alarm.toMap(), false);
+      await GlobalData.getAlarms();
+      setState(() {
+        alarms = GlobalData.alarms;
+      });
+    }
   }
 
   @override

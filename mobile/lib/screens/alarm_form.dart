@@ -74,10 +74,6 @@ class _AlarmFormState extends State<AlarmForm> {
         repeat: _repeat,
         isActive: widget.baseAlarm?.isActive ?? true);
 
-    if (_isRepeating) {
-      //TODO: Validate if user has provided values for the whole Repeat class
-    }
-
     Navigator.of(context).pop(returnedAlarm);
   }
 

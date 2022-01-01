@@ -23,6 +23,7 @@ class Alarm {
   minute: number;
   deleteAfterRinging: boolean;
   isGuardEnabled: boolean;
+  isSnoozeEnabled: boolean;
   name?: string;
   notes?: string;
   repeat?: RecurrenceObject;
@@ -45,6 +46,7 @@ class Alarm {
     maxTotalSnoozeDuration,
     deleteAfterRinging = false,
     isGuardEnabled = false,
+    isSnoozeEnabled = true,
     name,
     notes,
     repeat,
@@ -56,6 +58,7 @@ class Alarm {
     maxTotalSnoozeDuration?: number;
     deleteAfterRinging?: boolean;
     isGuardEnabled?: boolean;
+    isSnoozeEnabled?: boolean;
     name?: string;
     notes?: string;
     repeat?: RecurrenceObject;
@@ -68,6 +71,7 @@ class Alarm {
     }
     this.deleteAfterRinging = deleteAfterRinging;
     this.isGuardEnabled = isGuardEnabled;
+    this.isSnoozeEnabled = isSnoozeEnabled;
     this.id = id;
     this.hour = hour;
     this.minute = minute;
@@ -103,6 +107,8 @@ class Alarm {
       minute: this.minute,
       deleteAfterRinging: this.deleteAfterRinging,
       isGuardEnabled: this.isGuardEnabled,
+      isSnoozeEnabled: this.isSnoozeEnabled,
+      nextInvocationDate: this.getNextInvocation(),
       name: this.name,
       notes: this.notes,
       repeat: this.repeat,
@@ -213,6 +219,7 @@ class Alarm {
     this.snoozes.forEach((e) => {
       e.cancelJob();
     });
+    this.snoozes = [];
 
     io.emit("ALARM_OFF", this.toObject());
     logger.info(
@@ -267,6 +274,12 @@ class Alarm {
     if (!this.ringingStats) {
       logger.warn(
         `Tried to snooze alarm with id ${this.id} which isn't ringing!`
+      );
+      return false;
+    }
+    if (!this.isSnoozeEnabled) {
+      logger.warn(
+        `Tried to snooze an alarm ${this.id} which has snooze disabled`
       );
       return false;
     }
@@ -403,6 +416,8 @@ interface IAlarm {
   minute: number;
   deleteAfterRinging: boolean;
   isGuardEnabled: boolean;
+  isSnoozeEnabled: boolean;
+  nextInvocationDate?: Date;
   name?: string;
   notes?: string;
   repeat?: RecurrenceObject;
