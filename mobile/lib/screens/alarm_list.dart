@@ -17,27 +17,13 @@ class AlarmList extends StatefulWidget {
 class _AlarmListState extends State<AlarmList> {
   late List<Alarm> alarms;
 
-  void addAlarm() async {
-    Alarm? alarm = await Navigator.of(context).push(MaterialPageRoute(
-      builder: (context) => AlarmForm(),
-    ));
-
-    if (alarm != null) {
-      await GlobalData.addAlarm(alarm.toMap(), false);
-      await GlobalData.getAlarms();
-      setState(() {
-        alarms = GlobalData.alarms;
-      });
-    }
-  }
-
-  void editAlarm(Alarm selectedAlarm) async {
+  void addAlarm(Alarm? selectedAlarm) async {
     Alarm? alarm = await Navigator.of(context).push(MaterialPageRoute(
       builder: (context) => AlarmForm(baseAlarm: selectedAlarm),
     ));
 
     if (alarm != null) {
-      await GlobalData.addAlarm(alarm.toMap(), false);
+      await GlobalData.addAlarm(alarm.toMap(), selectedAlarm != null);
       await GlobalData.getAlarms();
       setState(() {
         alarms = GlobalData.alarms;
@@ -56,7 +42,7 @@ class _AlarmListState extends State<AlarmList> {
     return Scaffold(
         appBar: AppBar(title: const Text("Alarmy")),
         floatingActionButton: FloatingActionButton(
-          onPressed: addAlarm,
+          onPressed: () => addAlarm(null),
           child: const Icon(Icons.add),
         ),
         body: RefreshIndicator(
@@ -118,7 +104,7 @@ class _AlarmListState extends State<AlarmList> {
                                 print("TODO: Delete the alarm");
                               },
                               child: InkWell(
-                                  onTap: () => editAlarm(e),
+                                  onTap: () => addAlarm(e),
                                   child: SizedBox(
                                       height: 250,
                                       child: AlarmCard(

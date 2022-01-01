@@ -62,6 +62,7 @@ class _AlarmFormState extends State<AlarmForm> {
 
   void handleSave() {
     Alarm returnedAlarm = Alarm(
+        id: widget.baseAlarm?.id,
         name: _nameController.text,
         hour: _hour,
         minute: _minute,

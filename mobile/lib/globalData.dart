@@ -135,7 +135,8 @@ class GlobalData {
         headers: {"Content-Type": "application/json"});
     var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
 
-    if (response.statusCode != 201 || decodedResponse['error'] == true) {
+    if ((response.statusCode != 201 && response.statusCode != 200) ||
+        decodedResponse['error'] == true) {
       throw APIException(
           "Błąd podczas tworzenia alarmu. Status code: ${response.statusCode}, response: ${response.body}");
     }

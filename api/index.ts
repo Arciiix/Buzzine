@@ -213,8 +213,8 @@ api.delete("/deleteAlarm", (req, res) => {
   });
 });
 
-api.put("/updateAlarm", async (req, res) => {
-  logger.http(`PUT /updateAlarm with data: ${JSON.stringify(req.body)}`);
+api.post("/updateAlarm", async (req, res) => {
+  logger.http(`POST /updateAlarm with data: ${JSON.stringify(req.body)}`);
 
   if (!req.body)
     return res.status(400).send({ error: true, errorCode: "EMPTY_PAYLOAD" });
