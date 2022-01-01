@@ -36,13 +36,33 @@ api.post("/addAlarm", async (req, res) => {
     return res.status(400).send({ error: true, errorCode: "WRONG_TIME" });
   }
 
-  socket.emit("CMD/CREATE_ALARM", req.body, (response) => {
+  socket.emit("CMD/CREATE_ALARM", req.body, async (response) => {
     if (response.error) {
       res.status(400).send(response);
       logger.warn(
         `Response error when creating the alarm: ${JSON.stringify(response)}`
       );
     } else {
+      if (
+        req.body?.sound?.filename &&
+        req.body.sound.filename !== "default.mp3"
+      ) {
+        try {
+          //Associate the alarm with given sound
+          await axios.put(`${AUDIO_URL}/v1/changeAlarmSound`, {
+            alarmId: response?.id,
+            audioFilename: req.body.sound.filename,
+          });
+        } catch (err) {
+          res.status(500).send({ error: true, errorCode: "AUDIO_API_ERROR" });
+          logger.warn(
+            `Error when trying to associate an audio with an alarm. ${err.toString()}; response: ${JSON.stringify(
+              err?.response?.data ?? ""
+            )}`
+          );
+          return;
+        }
+      }
       res.status(201).send({ error: false, response });
       logger.info(
         `Created alarm successfully. Response: ${JSON.stringify(response)}`
@@ -237,7 +257,7 @@ api.post("/updateAlarm", async (req, res) => {
     return res.send(400).send({ error: true, errorCode: "MISSING_ISACTIVE" });
   }
 
-  socket.emit("CMD/UPDATE_ALARM", req.body, (response) => {
+  socket.emit("CMD/UPDATE_ALARM", req.body, async (response) => {
     if (response.error) {
       res.status(400).send(response);
       logger.warn(
@@ -246,6 +266,26 @@ api.post("/updateAlarm", async (req, res) => {
         )}`
       );
     } else {
+      if (
+        req.body?.sound?.filename &&
+        req.body.sound.filename !== "default.mp3"
+      ) {
+        try {
+          //Associate the alarm with given sound
+          await axios.put(`${AUDIO_URL}/v1/changeAlarmSound`, {
+            alarmId: response?.id,
+            audioFilename: req.body.sound.filename,
+          });
+        } catch (err) {
+          res.status(500).send({ error: true, errorCode: "AUDIO_API_ERROR" });
+          logger.warn(
+            `Error when trying to associate an audio with an alarm. ${err.toString()}; response: ${JSON.stringify(
+              err?.response?.data ?? ""
+            )}`
+          );
+          return;
+        }
+      }
       res.status(200).send({ error: false, response });
       logger.info(
         `Updated alarm successfully. Response: ${JSON.stringify(response)}`
