@@ -4,6 +4,7 @@ import 'package:buzzine/globalData.dart';
 import 'package:buzzine/screens/alarm_list.dart';
 import 'package:buzzine/screens/audio_manager.dart';
 import 'package:buzzine/screens/loading.dart';
+import 'package:buzzine/screens/ringing_alarm.dart';
 import 'package:buzzine/screens/scan_qr_code.dart';
 import 'package:buzzine/screens/settings.dart';
 import 'package:buzzine/types/Alarm.dart';
@@ -21,7 +22,8 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   bool _isLoaded = false;
-  late List<Alarm> upcomingAlarms;
+  List<Alarm> upcomingAlarms = [];
+  List<Alarm> ringingAlarms = [];
   late String qrCodeHash;
 
   void handleAlarmSelect(int? alarmIndex) {
@@ -41,6 +43,15 @@ class _HomePageState extends State<HomePage> {
   void navigateToSettings() {
     Navigator.of(context)
         .push(MaterialPageRoute(builder: (context) => const Settings()));
+  }
+
+  void navigateToRingingAlarm() async {
+    await Navigator.of(context)
+        .push(MaterialPageRoute(builder: (context) => const RingingAlarm()));
+    await GlobalData.getRingingAlarms();
+    setState(() {
+      ringingAlarms = GlobalData.ringingAlarms;
+    });
   }
 
   void printQRCode() async {
@@ -101,6 +112,7 @@ class _HomePageState extends State<HomePage> {
             _isLoaded = true;
             upcomingAlarms = GlobalData.upcomingAlarms;
             qrCodeHash = GlobalData.qrCodeHash;
+            ringingAlarms = GlobalData.ringingAlarms;
           })
         });
   }
@@ -119,6 +131,8 @@ class _HomePageState extends State<HomePage> {
                         await GlobalData.getData();
                         setState(() {
                           upcomingAlarms = GlobalData.upcomingAlarms;
+                          qrCodeHash = GlobalData.qrCodeHash;
+                          ringingAlarms = GlobalData.ringingAlarms;
                         });
                       },
                       child: SingleChildScrollView(
@@ -132,6 +146,45 @@ class _HomePageState extends State<HomePage> {
                                 child: Text("Buzzine",
                                     style: TextStyle(
                                         fontSize: 48, color: Colors.white))),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: ringingAlarms.isNotEmpty
+                                  ? [
+                                      const Padding(
+                                        padding: EdgeInsets.all(5),
+                                        child: Text("🚨 Aktywne alarmy",
+                                            style: TextStyle(
+                                                fontSize: 24,
+                                                color: Colors.white)),
+                                      ),
+                                      Carousel(
+                                          height: 320,
+                                          onSelect: (_) =>
+                                              navigateToRingingAlarm(),
+                                          children: ringingAlarms.map((e) {
+                                            return AlarmCard(
+                                                id: e.id!,
+                                                name: e.name,
+                                                hour: e.hour,
+                                                minute: e.minute,
+                                                nextInvocation:
+                                                    e.nextInvocation,
+                                                isActive: e.isActive,
+                                                isSnoozeEnabled:
+                                                    e.isSnoozeEnabled,
+                                                maxTotalSnoozeLength:
+                                                    e.maxTotalSnoozeLength,
+                                                sound: e.sound,
+                                                isGuardEnabled:
+                                                    e.isGuardEnabled,
+                                                notes: e.notes,
+                                                isRepeating: e.isRepeating,
+                                                repeat: e.repeat,
+                                                hideSwitch: true);
+                                          }).toList()),
+                                    ]
+                                  : [],
+                            ),
                             const Padding(
                               padding: EdgeInsets.all(5),
                               child: Text("⏰ Nadchodzące alarmy",

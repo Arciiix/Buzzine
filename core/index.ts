@@ -285,6 +285,14 @@ io.on("connection", (socket: Socket) => {
       logger.warn("Missing callback on GET request - GET_RINGING_ALARMS");
     }
   });
+  socket.on("CMD/CANCEL_ALL_ALARMS", async (cb) => {
+    for await (const element of Buzzine.currentlyRingingAlarms) {
+      await element.turnOff();
+    }
+    if (cb) {
+      cb({ error: false });
+    }
+  });
 });
 class Buzzine {
   static alarms: Alarm[] = [];

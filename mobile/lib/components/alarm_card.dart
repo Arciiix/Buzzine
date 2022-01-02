@@ -24,6 +24,8 @@ class AlarmCard extends StatefulWidget {
   final bool? isRepeating;
   final Repeat? repeat;
 
+  final bool? hideSwitch;
+
   const AlarmCard(
       {Key? key,
       required this.id,
@@ -38,7 +40,8 @@ class AlarmCard extends StatefulWidget {
       required this.isGuardEnabled,
       this.notes,
       this.isRepeating,
-      this.repeat})
+      this.repeat,
+      this.hideSwitch})
       : super(key: key);
 
   @override
@@ -98,7 +101,8 @@ class _AlarmCardState extends State<AlarmCard> {
                       style: const TextStyle(fontSize: 50)),
                 ],
               ),
-              Switch(onChanged: setIsActive, value: isActive),
+              if (widget.hideSwitch != true)
+                Switch(onChanged: setIsActive, value: isActive),
             ]),
             Row(
               children: [

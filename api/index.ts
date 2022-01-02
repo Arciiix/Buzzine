@@ -461,6 +461,28 @@ api.get("/getRingingAlarms", (req, res) => {
   });
 });
 
+api.put("/cancelAllAlarms", async (req, res) => {
+  logger.http(`PUT /cancelAllAlarms`);
+
+  socket.emit("CMD/CANCEL_ALL_ALARMS", (response) => {
+    if (response.error) {
+      res.status(500).send(response);
+      logger.warn(
+        `Response error when turning (cancelling) all alarms off: ${JSON.stringify(
+          response
+        )}`
+      );
+    } else {
+      res.status(200).send(response);
+      logger.info(
+        `Turned (cancelled) all alarms off successfully. Response: ${JSON.stringify(
+          response
+        )}`
+      );
+    }
+  });
+});
+
 api.get("/getSoundList", async (req, res) => {
   logger.http("GET /getSoundList");
 

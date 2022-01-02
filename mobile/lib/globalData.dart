@@ -10,9 +10,10 @@ import 'package:buzzine/types/Audio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class GlobalData {
-  static late List<Alarm> alarms;
-  static late List<Alarm> upcomingAlarms;
-  static late List<Audio> audios;
+  static List<Alarm> alarms = [];
+  static List<Alarm> upcomingAlarms = [];
+  static List<Alarm> ringingAlarms = [];
+  static List<Audio> audios = [];
   static late String qrCodeHash;
   static bool isLoading = true;
 
@@ -31,6 +32,7 @@ class GlobalData {
 
     await getAlarms();
     await getUpcomingAlarms();
+    await getRingingAlarms();
     await getAudios();
     await getQrCodeHash();
 
@@ -90,9 +92,30 @@ class GlobalData {
         return GlobalData.alarms
             .firstWhere((element) => element.id == e['alarmId']);
       }).toList();
+
+      GlobalData.upcomingAlarms
+          .sort((a, b) => a.nextInvocation!.compareTo(b.nextInvocation!));
     }
 
     return GlobalData.upcomingAlarms;
+  }
+
+  static Future<List<Alarm>> getRingingAlarms() async {
+    var response = await http.get(Uri.parse("$serverIP/v1/getRingingAlarms"));
+    var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
+
+    if (response.statusCode != 200 || decodedResponse['error'] == true) {
+      throw APIException(
+          "Błąd podczas pobierania aktywnych alarmów. Status code: ${response.statusCode}, response: ${response.body}");
+    } else {
+      List alarmsResponse = decodedResponse['response'];
+
+      GlobalData.ringingAlarms = alarmsResponse.map((e) {
+        return GlobalData.alarms.firstWhere((element) => element.id == e['id']);
+      }).toList();
+    }
+
+    return GlobalData.ringingAlarms;
   }
 
   static Future<List<Audio>> getAudios() async {
@@ -194,5 +217,17 @@ class GlobalData {
     }
     GlobalData.qrCodeHash = decodedResponse['generatedHash'];
     return GlobalData.qrCodeHash;
+  }
+
+  static Future<void> cancelAllAlarms() async {
+    var response = await http.put(Uri.parse("$serverIP/v1/cancelAllAlarms"));
+    var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
+
+    if (response.statusCode != 200 || decodedResponse['error'] == true) {
+      throw APIException(
+          "Błąd podczas wyłączania wszystkich alarmów. Status code: ${response.statusCode}, response: ${response.body}");
+    }
+    GlobalData.ringingAlarms = [];
+    return;
   }
 }

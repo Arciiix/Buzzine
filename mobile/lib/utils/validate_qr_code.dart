@@ -6,6 +6,10 @@ bool validateQRCodeFormat(String data) {
 
 bool validateQRCode(String data, String correctHash) {
   if (!validateQRCodeFormat(data)) return false;
-  String hash = data.substring(8, 16);
+  String hash = extractHashFromQRData(data);
   return hash == correctHash;
+}
+
+String extractHashFromQRData(String data) {
+  return data.substring(8, 16);
 }
