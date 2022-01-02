@@ -280,15 +280,15 @@ class _AlarmFormState extends State<AlarmForm> {
                         child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Row(
+                              Flexible(
+                                  child: Row(
                                 children: [
                                   const Icon(Icons.music_note),
-                                  Padding(
-                                      padding: EdgeInsets.all(5),
+                                  Expanded(
                                       child: Text(
                                           _sound?.friendlyName ?? "Domyślna"))
                                 ],
-                              ),
+                              )),
                               IconButton(
                                 icon: const Icon(Icons.edit),
                                 onPressed: chooseAudio,
@@ -358,13 +358,16 @@ class _AlarmFormState extends State<AlarmForm> {
                                         child: Row(
                                           children: [
                                             const Text("Dni tygodnia: "),
-                                            Text(_repeat.daysOfWeek == null
-                                                ? "wszystkie"
-                                                : (_repeat.daysOfWeek ?? [])
-                                                    .map((e) => daysOfWeek[e]
-                                                        .substring(0, 3))
-                                                    .toList()
-                                                    .join(', '))
+                                            Flexible(
+                                              child: Text(_repeat.daysOfWeek ==
+                                                      null
+                                                  ? "wszystkie"
+                                                  : (_repeat.daysOfWeek ?? [])
+                                                      .map((e) => daysOfWeek[e]
+                                                          .substring(0, 3))
+                                                      .toList()
+                                                      .join(', ')),
+                                            )
                                           ],
                                         ))),
                                 InkWell(
@@ -404,11 +407,13 @@ class _AlarmFormState extends State<AlarmForm> {
                                         child: Row(
                                           children: [
                                             const Text("Dni miesiąca: "),
-                                            Text(_repeat.days == null
-                                                ? "wszystkie"
-                                                : (_repeat.days ?? [])
-                                                    .toList()
-                                                    .join(', '))
+                                            Flexible(
+                                              child: Text(_repeat.days == null
+                                                  ? "wszystkie"
+                                                  : (_repeat.days ?? [])
+                                                      .toList()
+                                                      .join(', ')),
+                                            )
                                           ],
                                         ))),
                                 InkWell(
@@ -450,13 +455,15 @@ class _AlarmFormState extends State<AlarmForm> {
                                         child: Row(
                                           children: [
                                             const Text("Miesiące: "),
-                                            Text(_repeat.months == null
-                                                ? "wszystkie"
-                                                : (_repeat.months ?? [])
-                                                    .map((e) => months[e]
-                                                        .substring(0, 3))
-                                                    .toList()
-                                                    .join(', '))
+                                            Flexible(
+                                              child: Text(_repeat.months == null
+                                                  ? "wszystkie"
+                                                  : (_repeat.months ?? [])
+                                                      .map((e) => months[e]
+                                                          .substring(0, 3))
+                                                      .toList()
+                                                      .join(', ')),
+                                            )
                                           ],
                                         ))),
                               ]
