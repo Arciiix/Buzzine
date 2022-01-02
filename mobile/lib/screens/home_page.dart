@@ -4,8 +4,10 @@ import 'package:buzzine/globalData.dart';
 import 'package:buzzine/screens/alarm_list.dart';
 import 'package:buzzine/screens/audio_manager.dart';
 import 'package:buzzine/screens/loading.dart';
+import 'package:buzzine/screens/scan_qr_code.dart';
 import 'package:buzzine/screens/settings.dart';
 import 'package:buzzine/types/Alarm.dart';
+import 'package:buzzine/utils/validate_qr_code.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -53,6 +55,41 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       qrCodeHash = GlobalData.qrCodeHash;
     });
+  }
+
+  void testQRCode() async {
+    String? result = await Navigator.of(context).push(MaterialPageRoute(
+        builder: (context) => ScanQRCode(targetHash: qrCodeHash)));
+
+    if (result != null) {
+      if (validateQRCode(result, qrCodeHash)) {
+        showDialog(
+            context: context,
+            builder: (_) => AlertDialog(
+                  title: const Text("Prawidłowy kod QR"),
+                  content: const Text(
+                      "Ten kod QR jest prawidłowym kodem Buzzine. Możesz go używać do wyłączania alarmu."),
+                  actions: [
+                    TextButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: const Text("OK"))
+                  ],
+                ));
+      } else {
+        showDialog(
+            context: context,
+            builder: (_) => AlertDialog(
+                  title: const Text("Błędy kod QR"),
+                  content: const Text(
+                      "Ten kod QR nie jest prawidłowym kodem Buzzine. Może to być np. stary, nieaktualny już kod."),
+                  actions: [
+                    TextButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: const Text("OK"))
+                  ],
+                ));
+      }
+    }
   }
 
   @override
@@ -187,6 +224,14 @@ class _HomePageState extends State<HomePage> {
                                               children: const [
                                                 Icon(Icons.print),
                                                 Text("Wydrukuj")
+                                              ],
+                                            )),
+                                        TextButton(
+                                            onPressed: testQRCode,
+                                            child: Row(
+                                              children: const [
+                                                Icon(Icons.quiz),
+                                                Text("Przetestuj")
                                               ],
                                             )),
                                       ],
