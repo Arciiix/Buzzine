@@ -278,9 +278,17 @@ io.on("connection", (socket: Socket) => {
       logger.warn("Missing callback on GET request - GET_ALL_ALARMS");
     }
   });
+  socket.on("CMD/GET_RINGING_ALARMS", async (cb) => {
+    if (cb) {
+      cb(Buzzine.currentlyRingingAlarms.map((e) => e.toObject()));
+    } else {
+      logger.warn("Missing callback on GET request - GET_RINGING_ALARMS");
+    }
+  });
 });
 class Buzzine {
   static alarms: Alarm[] = [];
+  static currentlyRingingAlarms: Alarm[] = [];
 }
 
 async function init() {

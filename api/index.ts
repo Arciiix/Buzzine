@@ -400,6 +400,67 @@ api.get("/getAllAlarms", (req, res) => {
   });
 });
 
+api.get("/getRingingAlarms", (req, res) => {
+  logger.http(`GET /getRingingAlarms`);
+
+  socket.emit("CMD/GET_RINGING_ALARMS", async (response) => {
+    if (response.error) {
+      res.status(500).send(response);
+      logger.warn(
+        `Response error when getting currently ringing alarms: ${JSON.stringify(
+          response
+        )}`
+      );
+    } else {
+      //Fetch the assigned audio to each alarm
+      //Set the default one by default
+      response = response.map((elem) => {
+        return {
+          ...elem,
+          ...{
+            sound: {
+              filename: "default.mp3",
+              friendlyName: "Domyślna",
+            },
+          },
+        };
+      });
+
+      //Fetch the alarms audios
+      try {
+        let audiosReq = await axios.get(`${AUDIO_URL}/v1/getAlarmSoundList`);
+        if (audiosReq.data.error) {
+          throw new Error(JSON.stringify(audiosReq.data));
+        } else {
+          let audiosRes = audiosReq.data.data;
+          audiosRes.forEach((element) => {
+            //Match the audios with the alarms
+            let alarmIndex = response.findIndex(
+              (e) => e.id === element.alarmId
+            );
+            if (alarmIndex > -1) {
+              response[alarmIndex].sound = {
+                filename: element.filename,
+                friendlyName:
+                  element?.AudioNameMapping?.friendlyName ?? element.filename,
+              };
+            }
+          });
+        }
+      } catch (err) {
+        logger.warn(
+          `Error while getting alarms audio, when getting ringing alarms: ${err.toString()}`
+        );
+      }
+
+      res.status(200).send({ error: false, response });
+      logger.info(
+        `Got ringing alarms successfully. Response: ${JSON.stringify(response)}`
+      );
+    }
+  });
+});
+
 api.get("/getSoundList", async (req, res) => {
   logger.http("GET /getSoundList");
 

@@ -194,6 +194,9 @@ class Alarm {
       clearInterval(this.ringingStats?.eventResendingInterval);
       clearTimeout(this.ringingStats?.alarmSilentTimeout);
     }
+    Buzzine.currentlyRingingAlarms = Buzzine.currentlyRingingAlarms.filter(
+      (e) => e.id !== this.id
+    );
     io.emit("ALARM_MUTE", this.toObject());
   }
   //turnOff - used when alarm rings, not the list
@@ -253,6 +256,11 @@ class Alarm {
     this.ringingStats = null;
     this.cancelJob();
     this.isActive = false;
+
+    this.snoozes.forEach((e) => {
+      e.cancelJob();
+    });
+    this.snoozes = [];
 
     if (!this.dbObject) await this.getDBObject();
     this.dbObject.isActive = false;
@@ -378,6 +386,7 @@ class Alarm {
       }, (parseInt(process.env.MUTE_AFTER) || 15) * 1000 * 60),
     };
 
+    Buzzine.currentlyRingingAlarms.push(this);
     io.emit("ALARM_RINGING", { ...this.toObject(), ...{ timeElapsed: 0 } });
     logger.info(`Alarm "${this.id}" is ringing!`);
   }
@@ -395,6 +404,10 @@ class Alarm {
     await UpcomingAlarmModel.destroy({ where: {} });
     await this.dbObject.destroy();
     await saveUpcomingAlarms();
+
+    Buzzine.currentlyRingingAlarms = Buzzine.currentlyRingingAlarms.filter(
+      (e) => e.id !== this.id
+    );
 
     logger.info(`Deleted alarm ${this.id}`);
   }
