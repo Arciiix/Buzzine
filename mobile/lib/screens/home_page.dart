@@ -139,22 +139,25 @@ class _HomePageState extends State<HomePage> {
                                       fontSize: 24, color: Colors.white)),
                             ),
                             Carousel(
-                                height: 250,
+                                height: 320,
                                 onSelect: handleAlarmSelect,
                                 children: upcomingAlarms.map((e) {
                                   return AlarmCard(
-                                      id: e.id!, //TODO: Make it in a better way
-                                      name: e.name,
-                                      hour: e.hour,
-                                      minute: e.minute,
-                                      nextInvocation: e.nextInvocation,
-                                      isActive: e.isActive,
-                                      isSnoozeEnabled: e.isSnoozeEnabled,
-                                      maxTotalSnoozeLength:
-                                          e.maxTotalSnoozeLength,
-                                      sound: e.sound,
-                                      isGuardEnabled: e.isGuardEnabled,
-                                      notes: e.notes);
+                                    id: e.id!,
+                                    name: e.name,
+                                    hour: e.hour,
+                                    minute: e.minute,
+                                    nextInvocation: e.nextInvocation,
+                                    isActive: e.isActive,
+                                    isSnoozeEnabled: e.isSnoozeEnabled,
+                                    maxTotalSnoozeLength:
+                                        e.maxTotalSnoozeLength,
+                                    sound: e.sound,
+                                    isGuardEnabled: e.isGuardEnabled,
+                                    notes: e.notes,
+                                    isRepeating: e.isRepeating,
+                                    repeat: e.repeat,
+                                  );
                                 }).toList()),
                             const Padding(
                                 padding: EdgeInsets.all(5),

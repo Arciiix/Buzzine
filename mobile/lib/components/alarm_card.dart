@@ -1,5 +1,6 @@
 import 'package:buzzine/globalData.dart';
 import 'package:buzzine/types/Audio.dart';
+import 'package:buzzine/types/Repeat.dart';
 import 'package:buzzine/utils/formatting.dart';
 import 'package:flutter/material.dart';
 
@@ -20,6 +21,9 @@ class AlarmCard extends StatefulWidget {
 
   final String? notes;
 
+  final bool? isRepeating;
+  final Repeat? repeat;
+
   const AlarmCard(
       {Key? key,
       required this.id,
@@ -32,7 +36,9 @@ class AlarmCard extends StatefulWidget {
       this.maxTotalSnoozeLength,
       this.sound,
       required this.isGuardEnabled,
-      this.notes})
+      this.notes,
+      this.isRepeating,
+      this.repeat})
       : super(key: key);
 
   @override
@@ -75,6 +81,7 @@ class _AlarmCardState extends State<AlarmCard> {
           borderRadius: BorderRadius.circular(5),
         ),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Flexible(
@@ -130,6 +137,61 @@ class _AlarmCardState extends State<AlarmCard> {
                   child: Text(
                       "Ochrona ${widget.isGuardEnabled ? "włączona" : "wyłączona"}"))
             ]),
+            Column(
+                children: widget.isRepeating == true
+                    ? [
+                        Row(children: const [
+                          Icon(Icons.repeat),
+                          Text("Powtarzanie")
+                        ]),
+                        Row(children: [
+                          const Text("Dni tygodnia: "),
+                          Flexible(
+                              child: Text(
+                            widget.repeat!.daysOfWeek == null
+                                ? "wszystkie"
+                                : (widget.repeat!.daysOfWeek ?? [])
+                                    .map((e) => daysOfWeek[e].substring(0, 3))
+                                    .toList()
+                                    .join(', '),
+                            overflow: TextOverflow.ellipsis,
+                          ))
+                        ]),
+                        Row(children: [
+                          const Text("Dni miesiąca: "),
+                          Flexible(
+                            child: Text(
+                              widget.repeat!.days == null
+                                  ? "wszystkie"
+                                  : (widget.repeat!.days ?? [])
+                                      .toList()
+                                      .join(', '),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          )
+                        ]),
+                        Row(children: [
+                          const Text("Miesiące: "),
+                          Flexible(
+                            child: Text(
+                              widget.repeat!.months == null
+                                  ? "wszystkie"
+                                  : (widget.repeat!.months ?? [])
+                                      .map((e) => months[e].substring(0, 3))
+                                      .toList()
+                                      .join(', '),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          )
+                        ]),
+                        const SizedBox(height: 10)
+                      ]
+                    : [
+                        Row(children: const [
+                          Icon(Icons.repeat_one),
+                          Text("Jednorazowy")
+                        ]),
+                      ]),
             Row(
               children: [
                 const Icon(Icons.subject),

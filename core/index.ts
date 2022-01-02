@@ -225,6 +225,8 @@ io.on("connection", (socket: Socket) => {
       let alarm: any = await AlarmModel.findOne({ where: { id: payload.id } });
       await alarm.set({
         isActive: payload.isActive,
+        isGuardEnabled: payload?.isGuardEnabled,
+        isSnoozeEnabled: payload?.isSnoozeEnabled,
         name: payload?.name,
         notes: payload?.notes,
         hour: payload.hour,

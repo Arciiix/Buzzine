@@ -8,9 +8,9 @@ class Repeat {
 
   Map toMap() {
     return {
-      'daysOfWeek': daysOfWeek,
-      'days': days,
-      'months': months,
+      'dayOfWeek': daysOfWeek,
+      'date': days,
+      'month': months,
       'tz': "Europe/Warsaw"
     };
   }

@@ -44,7 +44,7 @@ class Alarm {
       'minute': minute,
       'nextInvocation': nextInvocation,
       'isActive': isActive,
-      'isSnoozeEnabledd': isSnoozeEnabled,
+      'isSnoozeEnabled': isSnoozeEnabled,
       'maxTotalSnoozeLength': maxTotalSnoozeLength,
       'sound': sound?.toMap(),
       'isGuardEnabled': isGuardEnabled,

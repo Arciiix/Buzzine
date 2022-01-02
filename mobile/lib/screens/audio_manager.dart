@@ -125,6 +125,9 @@ class _AudioManagerState extends State<AudioManager> {
                             deleteAudio(e);
                           },
                           child: ListTile(
+                            onTap: widget.selectAudio
+                                ? () => Navigator.of(context).pop(e)
+                                : null,
                             title: Text(e.friendlyName ?? e.filename),
                             subtitle: Text(e.filename),
                             trailing: IconButton(

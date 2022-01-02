@@ -115,21 +115,23 @@ class _AlarmListState extends State<AlarmList> {
                               child: InkWell(
                                   onTap: () => addAlarm(e),
                                   child: SizedBox(
-                                      height: 250,
+                                      height: 320,
                                       child: AlarmCard(
-                                          id: e.id ??
-                                              "", //TODO: Make it in a better way
-                                          name: e.name,
-                                          hour: e.hour,
-                                          minute: e.minute,
-                                          nextInvocation: e.nextInvocation,
-                                          isActive: e.isActive,
-                                          isSnoozeEnabled: e.isSnoozeEnabled,
-                                          maxTotalSnoozeLength:
-                                              e.maxTotalSnoozeLength,
-                                          sound: e.sound,
-                                          isGuardEnabled: e.isGuardEnabled,
-                                          notes: e.notes)))));
+                                        id: e.id!,
+                                        name: e.name,
+                                        hour: e.hour,
+                                        minute: e.minute,
+                                        nextInvocation: e.nextInvocation,
+                                        isActive: e.isActive,
+                                        isSnoozeEnabled: e.isSnoozeEnabled,
+                                        maxTotalSnoozeLength:
+                                            e.maxTotalSnoozeLength,
+                                        sound: e.sound,
+                                        isGuardEnabled: e.isGuardEnabled,
+                                        notes: e.notes,
+                                        isRepeating: e.isRepeating,
+                                        repeat: e.repeat,
+                                      )))));
                     })
                 : const Center(
                     child: Text("Brak alarmów!",
