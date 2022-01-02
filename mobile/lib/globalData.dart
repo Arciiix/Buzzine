@@ -13,6 +13,7 @@ class GlobalData {
   static late List<Alarm> alarms;
   static late List<Alarm> upcomingAlarms;
   static late List<Audio> audios;
+  static late String qrCodeHash;
   static bool isLoading = true;
 
   static late String serverIP;
@@ -31,6 +32,7 @@ class GlobalData {
     await getAlarms();
     await getUpcomingAlarms();
     await getAudios();
+    await getQrCodeHash();
 
     isLoading = false;
   }
@@ -114,6 +116,21 @@ class GlobalData {
     return GlobalData.audios;
   }
 
+  static Future<String> getQrCodeHash() async {
+    var response =
+        await http.get(Uri.parse("$serverIP/v1/guard/getCurrentQRCodeHash"));
+    var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
+
+    if (response.statusCode != 200 || decodedResponse['error'] == true) {
+      throw APIException(
+          "Błąd podczas pobierania aktualnego hashu kodu QR. Status code: ${response.statusCode}, response: ${response.body}");
+    } else {
+      GlobalData.qrCodeHash = decodedResponse['currentHash'];
+    }
+
+    return GlobalData.qrCodeHash;
+  }
+
   static Future<void> changeAlarmStatus(String id, bool status) async {
     Map requestData = {'id': id, 'status': status};
 
@@ -164,5 +181,18 @@ class GlobalData {
       throw APIException(
           "Błąd podczas usuwania audio $filenameToDelete. Status code: ${response.statusCode}, response: ${response.body}");
     }
+  }
+
+  static Future<String> generateQRCode() async {
+    var response =
+        await http.post(Uri.parse("$serverIP/v1/guard/generateQRCode"));
+    var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
+
+    if (response.statusCode != 200 || decodedResponse['error'] == true) {
+      throw APIException(
+          "Błąd podczas generowania kodu QR. Status code: ${response.statusCode}, response: ${response.body}");
+    }
+    GlobalData.qrCodeHash = decodedResponse['generatedHash'];
+    return GlobalData.qrCodeHash;
   }
 }

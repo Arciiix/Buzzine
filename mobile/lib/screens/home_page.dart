@@ -7,6 +7,8 @@ import 'package:buzzine/screens/loading.dart';
 import 'package:buzzine/screens/settings.dart';
 import 'package:buzzine/types/Alarm.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -18,6 +20,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   bool _isLoaded = false;
   late List<Alarm> upcomingAlarms;
+  late String qrCodeHash;
 
   void handleAlarmSelect(int? alarmIndex) {
     Navigator.of(context).push(
@@ -38,6 +41,20 @@ class _HomePageState extends State<HomePage> {
         .push(MaterialPageRoute(builder: (context) => const Settings()));
   }
 
+  void printQRCode() async {
+    SharedPreferences _prefs = await SharedPreferences.getInstance();
+    String serverIP = _prefs.getString("API_SERVER_IP") ??
+        "http://192.168.0.107:3333"; //DEV TODO: Change the default API server IP
+    await launch("$serverIP/v1/guard/printQRCode");
+  }
+
+  void generateQRCode() async {
+    await GlobalData.generateQRCode();
+    setState(() {
+      qrCodeHash = GlobalData.qrCodeHash;
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -46,6 +63,7 @@ class _HomePageState extends State<HomePage> {
           setState(() {
             _isLoaded = true;
             upcomingAlarms = GlobalData.upcomingAlarms;
+            qrCodeHash = GlobalData.qrCodeHash;
           })
         });
   }
@@ -77,23 +95,12 @@ class _HomePageState extends State<HomePage> {
                                 child: Text("Buzzine",
                                     style: TextStyle(
                                         fontSize: 48, color: Colors.white))),
-                            Padding(
-                                padding: EdgeInsets.all(5),
-                                child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      const Text("⏰ Nadchodzące alarmy",
-                                          style: TextStyle(
-                                              fontSize: 24,
-                                              color: Colors.white)),
-                                      IconButton(
-                                        icon: const Icon(Icons.refresh,
-                                            color: Colors.white),
-                                        onPressed: () => print(
-                                            "TODO: Refresh the upcoming alarms"),
-                                      )
-                                    ])),
+                            const Padding(
+                              padding: EdgeInsets.all(5),
+                              child: Text("⏰ Nadchodzące alarmy",
+                                  style: TextStyle(
+                                      fontSize: 24, color: Colors.white)),
+                            ),
                             Carousel(
                                 height: 250,
                                 onSelect: handleAlarmSelect,
@@ -143,6 +150,51 @@ class _HomePageState extends State<HomePage> {
                                     ))),
                             const Padding(
                                 padding: EdgeInsets.all(5),
+                                child: Text("🔒 Ochrona",
+                                    style: TextStyle(
+                                        fontSize: 24, color: Colors.white))),
+                            Container(
+                                width: MediaQuery.of(context).size.width * 0.9,
+                                height: 160,
+                                padding: const EdgeInsets.all(10),
+                                margin: const EdgeInsets.all(5),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(5),
+                                ),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(qrCodeHash,
+                                        style: const TextStyle(fontSize: 48)),
+                                    const Text("Hash kodu QR",
+                                        style: TextStyle(fontSize: 24)),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceAround,
+                                      children: [
+                                        TextButton(
+                                            onPressed: generateQRCode,
+                                            child: Row(
+                                              children: const [
+                                                Icon(Icons.refresh),
+                                                Text("Wygeneruj")
+                                              ],
+                                            )),
+                                        TextButton(
+                                            onPressed: printQRCode,
+                                            child: Row(
+                                              children: const [
+                                                Icon(Icons.print),
+                                                Text("Wydrukuj")
+                                              ],
+                                            )),
+                                      ],
+                                    )
+                                  ],
+                                )),
+                            const Padding(
+                                padding: EdgeInsets.all(5),
                                 child: Text("⚙️ Ustawienia",
                                     style: TextStyle(
                                         fontSize: 24, color: Colors.white))),
@@ -160,7 +212,7 @@ class _HomePageState extends State<HomePage> {
                                     ),
                                     child: const Center(
                                         child: Text("Zmień ustawienia",
-                                            style: TextStyle(fontSize: 24)))))
+                                            style: TextStyle(fontSize: 24))))),
                           ],
                         ),
                       )))));
