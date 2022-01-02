@@ -4,6 +4,9 @@ import dotenv from "dotenv";
 import logger from "./utils/logger";
 import bodyParser from "body-parser";
 import axios from "axios";
+import guardRouter, { checkQRCode } from "./guard";
+import { initDatabase } from "./utils/db";
+import cdn from "./utils/cdn";
 
 //Load environment variables from file
 dotenv.config();
@@ -19,6 +22,8 @@ app.get("/", (req, res) => {
 //REST API
 const api = express.Router();
 app.use("/v1", api);
+api.use("/guard", guardRouter);
+app.use("/cdn", cdn);
 
 api.post("/addAlarm", async (req, res) => {
   logger.http(`POST /addAlarm with data: ${JSON.stringify(req.body)}`);
@@ -74,6 +79,26 @@ api.post("/addAlarm", async (req, res) => {
 api.put("/cancelAlarm", async (req, res) => {
   logger.http(`PUT /cancelAlarm with data: ${JSON.stringify(req.body)}`);
 
+  await cancelAlarm(req, res);
+});
+
+api.put("/cancelAlarmSecured", async (req, res, next) => {
+  logger.http("PUT /cancelAlarmSecured");
+
+  if (!req.body.data) {
+    res.status(400).send({ error: true, errorCode: "MISSING_QR_DATA" });
+    return;
+  }
+
+  if (!(await checkQRCode(req.body.data))) {
+    res.status(400).send({ error: true, errorCode: "WRONG_QR_CODE" });
+    return;
+  }
+
+  await cancelAlarm(req, res);
+});
+
+async function cancelAlarm(req, res) {
   if (!req.body)
     return res.status(400).send({ error: true, errorCode: "EMPTY_PAYLOAD" });
 
@@ -97,7 +122,7 @@ api.put("/cancelAlarm", async (req, res) => {
       );
     }
   });
-});
+}
 
 api.put("/toogleAlarm", async (req, res) => {
   logger.http(`PUT /toogleAlarm with data: ${JSON.stringify(req.body)}`);
@@ -440,4 +465,10 @@ socket.on("hello", () => {
 const server = app.listen(PORT, () => {
   logger.info(`API has started on port ${PORT}`);
 });
+
+async function init() {
+  await initDatabase();
+}
+
+init();
 export { io };
