@@ -280,7 +280,7 @@ io.on("connection", (socket: Socket) => {
   });
   socket.on("CMD/GET_RINGING_ALARMS", async (cb) => {
     if (cb) {
-      cb(Buzzine.currentlyRingingAlarms.map((e) => e.toObject()));
+      cb(Buzzine.currentlyRingingAlarms.map((e) => e.toRingingObject()));
     } else {
       logger.warn("Missing callback on GET request - GET_RINGING_ALARMS");
     }

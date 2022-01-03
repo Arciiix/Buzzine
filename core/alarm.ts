@@ -120,6 +120,25 @@ class Alarm {
     };
   }
 
+  toRingingObject(): RingingAlarm {
+    let baseObj: IAlarm = this.toObject();
+    let returnObj: RingingAlarm = baseObj;
+
+    //Add a "maxAlarmDate" property that will calculate the date when the max amount of snoozes will be reached, if they're enabled
+    if (baseObj.isSnoozeEnabled) {
+      returnObj.maxAlarmDate = new Date(
+        (
+          this.snoozes?.[0]?.startDate ??
+          this.ringingStats?.dateStarted ??
+          new Date()
+        ).getTime() +
+          this.maxTotalSnoozeDuration * 1000
+      );
+    }
+
+    return returnObj;
+  }
+
   getNextInvocation(): Date | null {
     if (this.isActive && this.jobObject) {
       let date = this.jobObject.nextInvocation();
@@ -453,6 +472,8 @@ interface IRingingStats {
   eventResendingInterval: ReturnType<typeof setInterval>;
   alarmSilentTimeout: ReturnType<typeof setTimeout>;
 }
+
+type RingingAlarm = IAlarm & { maxAlarmDate?: Date };
 
 export default Alarm;
 export { IAlarm };
