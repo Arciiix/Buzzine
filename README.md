@@ -25,6 +25,7 @@ Everything is under development, the app will evolve slowly, step by step. Even 
 | RESEND_INTERVAL           | 10            | The core will resend the socket ALARM_RINGING event every specified seconds                                                      | seconds |
 | DEFAULT_SNOOZE_LENGTH     | 300           | Default snooze length if nothing is provided as `Alarm.snoozeAlarm()` method param                                               | seconds |
 | MAX_TOTAL_SNOOZE_DURATION | 900           | App won't allow to snooze longer than the provided time - the `Alarm` class param, and if it's null - this environment variable. | seconds |
+| DISABLE_EMERGENCY         | false         | Disable the emergency alerts (not recommended)                                                                                   | boolean |
 
 #### API
 

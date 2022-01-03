@@ -318,7 +318,11 @@ class Buzzine {
 
 async function init() {
   await initDatabase();
-  await checkForAlarmProtection();
+  if (!process.env.DISABLE_EMERGENCY) {
+    await checkForAlarmProtection();
+  } else {
+    logger.warn("Emergency alerts are disabled!");
+  }
   const { alarms } = await GetDatabaseData.getAll();
 
   Buzzine.alarms = alarms.map((e) => {
