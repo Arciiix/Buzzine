@@ -13,7 +13,7 @@ class AlarmCard extends StatefulWidget {
   final bool isActive;
 
   final bool? isSnoozeEnabled;
-  final int? maxTotalSnoozeLength;
+  final int? maxTotalSnoozeDuration;
 
   final Audio? sound;
 
@@ -35,7 +35,7 @@ class AlarmCard extends StatefulWidget {
       required this.isActive,
       this.nextInvocation,
       this.isSnoozeEnabled,
-      this.maxTotalSnoozeLength,
+      this.maxTotalSnoozeDuration,
       this.sound,
       required this.isGuardEnabled,
       this.notes,
@@ -118,7 +118,7 @@ class _AlarmCardState extends State<AlarmCard> {
                 Padding(
                     padding: const EdgeInsets.all(5),
                     child: Text(widget.isSnoozeEnabled == true
-                        ? "Max. ${widget.maxTotalSnoozeLength} min"
+                        ? "Max. ${widget.maxTotalSnoozeDuration} min"
                         : "Wyłączona"))
               ],
             ),

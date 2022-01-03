@@ -10,7 +10,7 @@ class Alarm {
   final bool isActive;
 
   final bool? isSnoozeEnabled;
-  final int? maxTotalSnoozeLength;
+  final int? maxTotalSnoozeDuration;
 
   final Audio? sound;
 
@@ -29,7 +29,7 @@ class Alarm {
       this.nextInvocation,
       required this.isActive,
       this.isSnoozeEnabled,
-      this.maxTotalSnoozeLength,
+      this.maxTotalSnoozeDuration,
       this.sound,
       required this.isGuardEnabled,
       this.notes,
@@ -45,7 +45,7 @@ class Alarm {
       'nextInvocation': nextInvocation,
       'isActive': isActive,
       'isSnoozeEnabled': isSnoozeEnabled,
-      'maxTotalSnoozeLength': maxTotalSnoozeLength,
+      'maxTotalSnoozeDuration': maxTotalSnoozeDuration,
       'sound': sound?.toMap(),
       'isGuardEnabled': isGuardEnabled,
       'notes': notes,

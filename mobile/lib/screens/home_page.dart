@@ -172,8 +172,8 @@ class _HomePageState extends State<HomePage> {
                                                 isActive: e.isActive,
                                                 isSnoozeEnabled:
                                                     e.isSnoozeEnabled,
-                                                maxTotalSnoozeLength:
-                                                    e.maxTotalSnoozeLength,
+                                                maxTotalSnoozeDuration:
+                                                    e.maxTotalSnoozeDuration,
                                                 sound: e.sound,
                                                 isGuardEnabled:
                                                     e.isGuardEnabled,
@@ -203,8 +203,8 @@ class _HomePageState extends State<HomePage> {
                                     nextInvocation: e.nextInvocation,
                                     isActive: e.isActive,
                                     isSnoozeEnabled: e.isSnoozeEnabled,
-                                    maxTotalSnoozeLength:
-                                        e.maxTotalSnoozeLength,
+                                    maxTotalSnoozeDuration:
+                                        e.maxTotalSnoozeDuration,
                                     sound: e.sound,
                                     isGuardEnabled: e.isGuardEnabled,
                                     notes: e.notes,

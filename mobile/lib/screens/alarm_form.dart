@@ -26,7 +26,7 @@ class _AlarmFormState extends State<AlarmForm> {
   String remainingTime = "-";
 
   bool _isSnoozeEnabled = true;
-  int? _maxTotalSnoozeLength = 15;
+  int? _maxTotalSnoozeDuration = 15;
 
   Audio? _sound;
 
@@ -37,8 +37,8 @@ class _AlarmFormState extends State<AlarmForm> {
   bool _isRepeating = false;
   Repeat _repeat = Repeat();
 
-  int _minTotalSnoozeLengthValue = 5;
-  int _maxTotalSnoozeLengthValue = 60;
+  int _minTotalSnoozeDurationValue = 5;
+  int _maxTotalSnoozeDurationValue = 60;
 
   void getTime() async {
     final TimeOfDay? timePickerResponse = await showTimePicker(
@@ -67,7 +67,7 @@ class _AlarmFormState extends State<AlarmForm> {
         hour: _hour,
         minute: _minute,
         isSnoozeEnabled: _isSnoozeEnabled,
-        maxTotalSnoozeLength: _maxTotalSnoozeLength,
+        maxTotalSnoozeDuration: _maxTotalSnoozeDuration,
         sound: _sound,
         isGuardEnabled: _isGuardEnabled,
         notes: _notesController.text,
@@ -110,25 +110,25 @@ class _AlarmFormState extends State<AlarmForm> {
     }
   }
 
-  void fetchMinAndMaxTotalSnoozeLengthValue() async {
+  void fetchMinAndmaxTotalSnoozeDurationValue() async {
     SharedPreferences _prefs = await SharedPreferences.getInstance();
-    int minTotalSnoozeLengthValue =
+    int minTotalSnoozeDurationValue =
         _prefs.getInt("MIN_TOTAL_SNOOZE_TIME_VALUE") ?? 5;
-    int maxTotalSnoozeLengthValue =
+    int maxTotalSnoozeDurationValue =
         _prefs.getInt("MAX_TOTAL_SNOOZE_TIME_VALUE") ?? 60;
 
     //If the min (or max) value of snooze is higher (lower) than the currently set one, change it to the current value - avoid getting an val < min (val > max) error
     setState(() {
-      _minTotalSnoozeLengthValue =
-          ((_maxTotalSnoozeLength ?? minTotalSnoozeLengthValue) <
-                  minTotalSnoozeLengthValue
-              ? _maxTotalSnoozeLength
-              : minTotalSnoozeLengthValue)!;
-      _maxTotalSnoozeLengthValue =
-          ((_maxTotalSnoozeLength ?? maxTotalSnoozeLengthValue) >
-                  maxTotalSnoozeLengthValue
-              ? _maxTotalSnoozeLength
-              : maxTotalSnoozeLengthValue)!;
+      _minTotalSnoozeDurationValue =
+          ((_maxTotalSnoozeDuration ?? minTotalSnoozeDurationValue) <
+                  minTotalSnoozeDurationValue
+              ? _maxTotalSnoozeDuration
+              : minTotalSnoozeDurationValue)!;
+      _maxTotalSnoozeDurationValue =
+          ((_maxTotalSnoozeDuration ?? maxTotalSnoozeDurationValue) >
+                  maxTotalSnoozeDurationValue
+              ? _maxTotalSnoozeDuration
+              : maxTotalSnoozeDurationValue)!;
     });
   }
 
@@ -141,7 +141,7 @@ class _AlarmFormState extends State<AlarmForm> {
       _hour = widget.baseAlarm!.hour;
       _minute = widget.baseAlarm!.minute;
       _isSnoozeEnabled = widget.baseAlarm?.isSnoozeEnabled ?? false;
-      _maxTotalSnoozeLength = widget.baseAlarm?.maxTotalSnoozeLength ?? 15;
+      _maxTotalSnoozeDuration = widget.baseAlarm?.maxTotalSnoozeDuration ?? 15;
       _sound = widget.baseAlarm?.sound;
       _isGuardEnabled = widget.baseAlarm!.isGuardEnabled;
       _notesController.text = widget.baseAlarm?.notes ?? "";
@@ -149,7 +149,7 @@ class _AlarmFormState extends State<AlarmForm> {
       _repeat = widget.baseAlarm?.repeat ?? Repeat();
     }
     calculateRemainingTime();
-    fetchMinAndMaxTotalSnoozeLengthValue();
+    fetchMinAndmaxTotalSnoozeDurationValue();
   }
 
   @override
@@ -259,18 +259,18 @@ class _AlarmFormState extends State<AlarmForm> {
                                     "Maksymalny łączny czas drzemek",
                                   )),
                               Slider(
-                                min: _minTotalSnoozeLengthValue.toDouble(),
-                                max: _maxTotalSnoozeLengthValue.toDouble(),
+                                min: _minTotalSnoozeDurationValue.toDouble(),
+                                max: _maxTotalSnoozeDurationValue.toDouble(),
                                 onChanged: (double value) {
                                   setState(() {
-                                    _maxTotalSnoozeLength = value.toInt();
+                                    _maxTotalSnoozeDuration = value.toInt();
                                   });
                                 },
                                 value:
-                                    _maxTotalSnoozeLength?.toDouble() ?? 15.0,
+                                    _maxTotalSnoozeDuration?.toDouble() ?? 15.0,
                               ),
                               Text(
-                                "$_maxTotalSnoozeLength min",
+                                "$_maxTotalSnoozeDuration min",
                               )
                             ]
                           : [],
