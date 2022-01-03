@@ -461,6 +461,26 @@ api.get("/getRingingAlarms", (req, res) => {
   });
 });
 
+api.get("/getActiveSnoozes", (req, res) => {
+  logger.http(`GET /getActiveSnoozes`);
+
+  socket.emit("CMD/GET_ACTIVE_SNOOZES", async (response) => {
+    if (response.error) {
+      res.status(500).send(response);
+      logger.warn(
+        `Response error when getting active snoozes: ${JSON.stringify(
+          response
+        )}`
+      );
+    } else {
+      res.status(200).send({ error: false, response });
+      logger.info(
+        `Got active snoozes successfully. Response: ${JSON.stringify(response)}`
+      );
+    }
+  });
+});
+
 api.put("/cancelAllAlarms", async (req, res) => {
   logger.http(`PUT /cancelAllAlarms`);
 

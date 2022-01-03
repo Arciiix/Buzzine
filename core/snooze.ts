@@ -59,6 +59,22 @@ class Snooze {
     logger.info(`Snooze ${this.id} is ringing! Calling Alarm...`);
     this.alarmInstance.onSnoozeRinging(this);
   }
+
+  toObject(): ISnooze {
+    return {
+      id: this.id,
+      length: this.length,
+      startDate: this.startDate,
+      invocationDate: this.invocationDate,
+    };
+  }
+}
+
+interface ISnooze {
+  id: string;
+  length: number;
+  startDate: Date;
+  invocationDate: Date;
 }
 
 export default Snooze;

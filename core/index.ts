@@ -285,6 +285,23 @@ io.on("connection", (socket: Socket) => {
       logger.warn("Missing callback on GET request - GET_RINGING_ALARMS");
     }
   });
+  socket.on("CMD/GET_ACTIVE_SNOOZES", async (cb) => {
+    if (cb) {
+      let alarmsWithSnoozes = Buzzine.alarms.filter(
+        (e) => e.snoozes.length > 0
+      );
+      cb(
+        alarmsWithSnoozes.map((elem: Alarm) => {
+          return {
+            snooze: elem.snoozes[elem.snoozes.length - 1].toObject(),
+            alarm: elem.toObject(),
+          };
+        })
+      );
+    } else {
+      logger.warn("Missing callback on GET request - GET_ACTIVE_SNOOZES");
+    }
+  });
   socket.on("CMD/CANCEL_ALL_ALARMS", async (cb) => {
     for await (const element of Buzzine.currentlyRingingAlarms) {
       await element.turnOff();
