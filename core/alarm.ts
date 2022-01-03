@@ -109,6 +109,10 @@ class Alarm {
       deleteAfterRinging: this.deleteAfterRinging,
       isGuardEnabled: this.isGuardEnabled,
       isSnoozeEnabled: this.isSnoozeEnabled,
+      maxTotalSnoozeDuration:
+        this.maxTotalSnoozeDuration ||
+        parseInt(process.env.DEFAULT_SNOOZE_LENGTH) ||
+        300,
       nextInvocationDate: this.getNextInvocation(),
       name: this.name,
       notes: this.notes,
@@ -293,7 +297,7 @@ class Alarm {
       return false;
     }
 
-    //Check if the latest snooze has already been triggered (there cannot be two snoozes at once)
+    //Check if the latest snooze has been triggered already (there cannot be two snoozes at once)
     if (
       this.snoozes.length === 0 ||
       this.snoozes[this.snoozes.length - 1].invocationDate < new Date()
@@ -436,6 +440,7 @@ interface IAlarm {
   deleteAfterRinging: boolean;
   isGuardEnabled: boolean;
   isSnoozeEnabled: boolean;
+  maxTotalSnoozeDuration?: number;
   nextInvocationDate?: Date;
   name?: string;
   notes?: string;

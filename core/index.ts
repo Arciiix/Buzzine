@@ -168,7 +168,7 @@ io.on("connection", (socket: Socket) => {
       return;
     }
 
-    let didSnooze = alarm.snoozeAlarm();
+    let didSnooze = alarm.snoozeAlarm(payload?.snoozeDuration);
 
     logger.info(
       `${didSnooze ? "Snoozed" : "Couldn't snooze"} alarm ${alarm.id}`

@@ -13,6 +13,7 @@ class GetDatabaseData {
         deleteAfterRinging: alarm?.deleteAfterRinging,
         isGuardEnabled: alarm?.isGuardEnabled,
         isSnoozeEnabled: alarm?.isSnoozeEnabled,
+        maxTotalSnoozeDuration: alarm?.maxTotalSnoozeDuration,
         name: alarm?.name,
         notes: alarm?.notes,
         repeat: alarm?.repeat,
