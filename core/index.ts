@@ -306,6 +306,13 @@ io.on("connection", (socket: Socket) => {
     for await (const element of Buzzine.currentlyRingingAlarms) {
       await element.turnOff();
     }
+
+    //Cancel all alarms with snoozes as well
+    let alarmsWithSnooze = Buzzine.alarms.filter((e) => e.snoozes.length !== 0);
+    for await (const elem of alarmsWithSnooze) {
+      await elem.turnOff();
+    }
+
     if (cb) {
       cb({ error: false });
     }
