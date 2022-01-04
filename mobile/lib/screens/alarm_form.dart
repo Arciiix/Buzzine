@@ -67,7 +67,9 @@ class _AlarmFormState extends State<AlarmForm> {
         hour: _hour,
         minute: _minute,
         isSnoozeEnabled: _isSnoozeEnabled,
-        maxTotalSnoozeDuration: _maxTotalSnoozeDuration,
+        maxTotalSnoozeDuration: _maxTotalSnoozeDuration != null
+            ? _maxTotalSnoozeDuration! * 60
+            : null,
         sound: _sound,
         isGuardEnabled: _isGuardEnabled,
         notes: _notesController.text,
@@ -141,7 +143,7 @@ class _AlarmFormState extends State<AlarmForm> {
       _hour = widget.baseAlarm!.hour;
       _minute = widget.baseAlarm!.minute;
       _isSnoozeEnabled = widget.baseAlarm?.isSnoozeEnabled ?? false;
-      _maxTotalSnoozeDuration = widget.baseAlarm?.maxTotalSnoozeDuration ?? 15;
+      _maxTotalSnoozeDuration = widget.baseAlarm?.maxTotalSnoozeDuration ?? 300;
       _sound = widget.baseAlarm?.sound;
       _isGuardEnabled = widget.baseAlarm!.isGuardEnabled;
       _notesController.text = widget.baseAlarm?.notes ?? "";

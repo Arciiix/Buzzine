@@ -118,7 +118,7 @@ class _AlarmCardState extends State<AlarmCard> {
                 Padding(
                     padding: const EdgeInsets.all(5),
                     child: Text(widget.isSnoozeEnabled == true
-                        ? "Max. ${widget.maxTotalSnoozeDuration} min"
+                        ? "Max. ${((widget.maxTotalSnoozeDuration ?? 0) / 60).floor()} min"
                         : "Wyłączona"))
               ],
             ),
