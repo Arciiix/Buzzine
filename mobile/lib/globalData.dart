@@ -55,6 +55,7 @@ class GlobalData {
               isActive: e?['isActive'] ?? false,
               isGuardEnabled: e?['isGuardEnabled'] ?? false,
               isSnoozeEnabled: e?['isSnoozeEnabled'] ?? false,
+              deleteAfterRinging: e?['deleteAfterRinging'] ?? false,
               maxTotalSnoozeDuration: e?['maxTotalSnoozeDuration'],
               sound: Audio(
                   filename: e['sound']['filename'],

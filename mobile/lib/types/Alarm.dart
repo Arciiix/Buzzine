@@ -16,6 +16,8 @@ class Alarm {
 
   final bool isGuardEnabled;
 
+  final bool? deleteAfterRinging;
+
   final String? notes;
 
   final bool? isRepeating;
@@ -32,6 +34,7 @@ class Alarm {
       this.maxTotalSnoozeDuration,
       this.sound,
       required this.isGuardEnabled,
+      this.deleteAfterRinging,
       this.notes,
       this.isRepeating,
       this.repeat});
@@ -48,6 +51,7 @@ class Alarm {
       'maxTotalSnoozeDuration': maxTotalSnoozeDuration,
       'sound': sound?.toMap(),
       'isGuardEnabled': isGuardEnabled,
+      'deleteAfterRinging': deleteAfterRinging,
       'notes': notes,
       'isRepeating': isRepeating,
       'repeat': (isRepeating ?? false) ? repeat?.toMap() : null,

@@ -18,6 +18,7 @@ class AlarmCard extends StatefulWidget {
   final Audio? sound;
 
   final bool isGuardEnabled;
+  final bool? deleteAfterRinging;
 
   final String? notes;
 
@@ -38,6 +39,7 @@ class AlarmCard extends StatefulWidget {
       this.maxTotalSnoozeDuration,
       this.sound,
       required this.isGuardEnabled,
+      this.deleteAfterRinging,
       this.notes,
       this.isRepeating,
       this.repeat,
@@ -191,10 +193,19 @@ class _AlarmCardState extends State<AlarmCard> {
                         const SizedBox(height: 10)
                       ]
                     : [
-                        Row(children: const [
-                          Icon(Icons.repeat_one),
-                          Text("Jednorazowy")
-                        ]),
+                        Row(
+                            children: widget.deleteAfterRinging == true
+                                ? const [
+                                    SizedBox(
+                                        width:
+                                            2.5), //Flutter, for some reason, adds extra blank space on the left side of the icon.
+                                    Icon(Icons.auto_delete),
+                                    Text("Jednorazowy - usuń po zadzwonieniu")
+                                  ]
+                                : const [
+                                    Icon(Icons.repeat_one),
+                                    Text("Jednorazowy")
+                                  ]),
                       ]),
             Row(
               children: [

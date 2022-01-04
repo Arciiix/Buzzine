@@ -124,6 +124,8 @@ class _AlarmListState extends State<AlarmList> {
                                         nextInvocation: e.nextInvocation,
                                         isActive: e.isActive,
                                         isSnoozeEnabled: e.isSnoozeEnabled,
+                                        deleteAfterRinging:
+                                            e.deleteAfterRinging,
                                         maxTotalSnoozeDuration:
                                             e.maxTotalSnoozeDuration,
                                         sound: e.sound,

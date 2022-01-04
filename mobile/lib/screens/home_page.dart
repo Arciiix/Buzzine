@@ -49,9 +49,17 @@ class _HomePageState extends State<HomePage> {
   void navigateToRingingAlarm() async {
     await Navigator.of(context)
         .push(MaterialPageRoute(builder: (context) => const RingingAlarm()));
-    await GlobalData.getRingingAlarms();
+    setState(() {
+      _isLoaded = false;
+    });
+
+    //Refresh everything - for example alarm could've been deleted because of the deleteAfterRinging option
+    await GlobalData.getData();
     setState(() {
       ringingAlarms = GlobalData.ringingAlarms;
+      upcomingAlarms = GlobalData.upcomingAlarms;
+      qrCodeHash = GlobalData.qrCodeHash;
+      _isLoaded = true;
     });
   }
 
@@ -178,6 +186,8 @@ class _HomePageState extends State<HomePage> {
                                                 sound: e.alarm.sound,
                                                 isGuardEnabled:
                                                     e.alarm.isGuardEnabled,
+                                                deleteAfterRinging:
+                                                    e.alarm.deleteAfterRinging,
                                                 notes: e.alarm.notes,
                                                 isRepeating:
                                                     e.alarm.isRepeating,
@@ -209,6 +219,7 @@ class _HomePageState extends State<HomePage> {
                                         e.maxTotalSnoozeDuration,
                                     sound: e.sound,
                                     isGuardEnabled: e.isGuardEnabled,
+                                    deleteAfterRinging: e.deleteAfterRinging,
                                     notes: e.notes,
                                     isRepeating: e.isRepeating,
                                     repeat: e.repeat,
