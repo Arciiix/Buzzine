@@ -2,9 +2,8 @@ import 'dart:convert';
 
 import 'package:buzzine/types/API_exception.dart';
 import 'package:buzzine/types/Repeat.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:buzzine/types/RingingAlarmEntity.dart';
 import 'package:http/http.dart' as http;
-
 import 'package:buzzine/types/Alarm.dart';
 import 'package:buzzine/types/Audio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -12,7 +11,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class GlobalData {
   static List<Alarm> alarms = [];
   static List<Alarm> upcomingAlarms = [];
-  static List<Alarm> ringingAlarms = [];
+  static List<RingingAlarmEntity> ringingAlarms = [];
   static List<Audio> audios = [];
   static late String qrCodeHash;
   static bool isLoading = true;
@@ -100,7 +99,7 @@ class GlobalData {
     return GlobalData.upcomingAlarms;
   }
 
-  static Future<List<Alarm>> getRingingAlarms() async {
+  static Future<List<RingingAlarmEntity>> getRingingAlarms() async {
     var response = await http.get(Uri.parse("$serverIP/v1/getRingingAlarms"));
     var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
 
@@ -109,9 +108,22 @@ class GlobalData {
           "Błąd podczas pobierania aktywnych alarmów. Status code: ${response.statusCode}, response: ${response.body}");
     } else {
       List alarmsResponse = decodedResponse['response'];
-
       GlobalData.ringingAlarms = alarmsResponse.map((e) {
-        return GlobalData.alarms.firstWhere((element) => element.id == e['id']);
+        Alarm? alarmEntity =
+            GlobalData.alarms.firstWhere((element) => element.id == e['id']);
+
+        DateTime? maxDate;
+
+        if (e['maxDate'] != null) {
+          maxDate = DateTime.tryParse(e['maxDate']);
+        }
+        maxDate ??= DateTime.now()
+            .add(Duration(seconds: alarmEntity.maxTotalSnoozeDuration ?? 300));
+
+        RingingAlarmEntity ringingAlarm =
+            RingingAlarmEntity(alarm: alarmEntity, maxDate: maxDate);
+
+        return ringingAlarm;
       }).toList();
     }
 

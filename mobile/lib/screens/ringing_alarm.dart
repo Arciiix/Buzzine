@@ -57,7 +57,8 @@ class _RingingAlarmState extends State<RingingAlarm> {
               //If any ringing alarm is protected, ask for the QR code
 
               List<Alarm>? protectedAlarm = GlobalData.ringingAlarms
-                  .where((element) => element.isGuardEnabled)
+                  .where((element) => element.alarm.isGuardEnabled)
+                  .map((e) => e.alarm)
                   .toList();
               if (protectedAlarm.isNotEmpty) {
                 bool? unlocked =
@@ -122,11 +123,11 @@ class _RingingAlarmState extends State<RingingAlarm> {
                         children: [
                           Text(
                               GlobalData.ringingAlarms.isNotEmpty
-                                  ? addZero(
-                                          GlobalData.ringingAlarms.last.hour) +
+                                  ? addZero(GlobalData
+                                          .ringingAlarms.last.alarm.hour) +
                                       ":" +
-                                      addZero(
-                                          GlobalData.ringingAlarms.last.minute)
+                                      addZero(GlobalData
+                                          .ringingAlarms.last.alarm.minute)
                                   : "${addZero(now.hour)}:${addZero(now.minute)}",
                               style: const TextStyle(
                                   color: Colors.white, fontSize: 72)),

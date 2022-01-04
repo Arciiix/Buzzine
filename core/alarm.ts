@@ -321,6 +321,13 @@ class Alarm {
       this.snoozes.length === 0 ||
       this.snoozes[this.snoozes.length - 1].invocationDate < new Date()
     ) {
+      if (snoozeLengthSeconds > this.maxTotalSnoozeDuration) {
+        logger.info(
+          `Disallowed snooze since the snooze length is grater than the max total snooze duration! Alarm id: ${this.id}`
+        );
+        return false;
+      }
+
       if (
         this.snoozes.length !== 0 &&
         new Date().getTime() -

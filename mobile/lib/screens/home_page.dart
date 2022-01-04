@@ -8,6 +8,7 @@ import 'package:buzzine/screens/ringing_alarm.dart';
 import 'package:buzzine/screens/scan_qr_code.dart';
 import 'package:buzzine/screens/settings.dart';
 import 'package:buzzine/types/Alarm.dart';
+import 'package:buzzine/types/RingingAlarmEntity.dart';
 import 'package:buzzine/utils/validate_qr_code.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -23,7 +24,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   bool _isLoaded = false;
   List<Alarm> upcomingAlarms = [];
-  List<Alarm> ringingAlarms = [];
+  List<RingingAlarmEntity> ringingAlarms = [];
   late String qrCodeHash;
 
   void handleAlarmSelect(int? alarmIndex) {
@@ -163,23 +164,24 @@ class _HomePageState extends State<HomePage> {
                                               navigateToRingingAlarm(),
                                           children: ringingAlarms.map((e) {
                                             return AlarmCard(
-                                                id: e.id!,
-                                                name: e.name,
-                                                hour: e.hour,
-                                                minute: e.minute,
+                                                id: e.alarm.id!,
+                                                name: e.alarm.name,
+                                                hour: e.alarm.hour,
+                                                minute: e.alarm.minute,
                                                 nextInvocation:
-                                                    e.nextInvocation,
-                                                isActive: e.isActive,
+                                                    e.alarm.nextInvocation,
+                                                isActive: e.alarm.isActive,
                                                 isSnoozeEnabled:
-                                                    e.isSnoozeEnabled,
-                                                maxTotalSnoozeDuration:
-                                                    e.maxTotalSnoozeDuration,
-                                                sound: e.sound,
+                                                    e.alarm.isSnoozeEnabled,
+                                                maxTotalSnoozeDuration: e.alarm
+                                                    .maxTotalSnoozeDuration,
+                                                sound: e.alarm.sound,
                                                 isGuardEnabled:
-                                                    e.isGuardEnabled,
-                                                notes: e.notes,
-                                                isRepeating: e.isRepeating,
-                                                repeat: e.repeat,
+                                                    e.alarm.isGuardEnabled,
+                                                notes: e.alarm.notes,
+                                                isRepeating:
+                                                    e.alarm.isRepeating,
+                                                repeat: e.alarm.repeat,
                                                 hideSwitch: true);
                                           }).toList()),
                                     ]
