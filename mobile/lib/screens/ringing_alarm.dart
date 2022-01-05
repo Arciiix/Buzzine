@@ -22,6 +22,7 @@ class _RingingAlarmState extends State<RingingAlarm> {
   DateTime now = DateTime.now();
   late DateTime? maxAlarmTime;
   late Duration remainingTime;
+  late Timer _remainingTimeTimer;
 
   @override
   void initState() {
@@ -34,6 +35,15 @@ class _RingingAlarmState extends State<RingingAlarm> {
             300);
     _blinkingTimer = Timer.periodic(const Duration(seconds: 1), (_) {
       setState(() => _isBlinkVisible = !_isBlinkVisible);
+    });
+
+    _remainingTimeTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      setState(() {
+        remainingTime = Duration(seconds: remainingTime.inSeconds - 1);
+      });
+      if (remainingTime.inSeconds <= 0) {
+        _remainingTimeTimer.cancel();
+      }
     });
   }
 
@@ -143,6 +153,32 @@ class _RingingAlarmState extends State<RingingAlarm> {
                         ],
                       ),
                     ),
+                    Padding(
+                        padding: const EdgeInsets.all(10),
+                        child: Column(
+                          children: [
+                            const Text("Zużyty czas drzemek",
+                                style: TextStyle(
+                                    color: Colors.white, fontSize: 18)),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 5),
+                              child: LinearProgressIndicator(
+                                value: 1 -
+                                    (remainingTime.inSeconds /
+                                        (widget.ringingAlarm.alarm
+                                                .maxTotalSnoozeDuration ??
+                                            300)),
+                                minHeight: 20,
+                              ),
+                            ),
+                            Text(
+                                remainingTime.inSeconds > 0
+                                    ? "${addZero(remainingTime.inMinutes.remainder(60))}:${addZero(remainingTime.inSeconds.remainder(60))}"
+                                    : "Brak",
+                                style: const TextStyle(
+                                    color: Colors.white, fontSize: 18))
+                          ],
+                        )),
                     const Text("DEV WARNING: This screen isn't ready yet 👀",
                         style: TextStyle(color: Colors.yellow))
                   ],
@@ -164,6 +200,7 @@ class _RingingAlarmState extends State<RingingAlarm> {
   @override
   void dispose() {
     _blinkingTimer.cancel();
+    _remainingTimeTimer.cancel();
     super.dispose();
   }
 }
