@@ -2,7 +2,6 @@ import 'package:buzzine/globalData.dart';
 import 'package:buzzine/screens/scan_qr_code.dart';
 import 'package:buzzine/utils/validate_qr_code.dart';
 import "package:flutter/material.dart";
-import 'package:flutter/services.dart';
 
 class UnlockAlarm extends StatefulWidget {
   const UnlockAlarm({Key? key}) : super(key: key);

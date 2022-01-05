@@ -17,10 +17,18 @@ class _RingingAlarmState extends State<RingingAlarm> {
   bool _isBlinkVisible = true;
   late Timer _blinkingTimer;
   DateTime now = DateTime.now();
+  late DateTime? maxAlarmTime;
+  late Duration remainingTime;
 
   @override
   void initState() {
     super.initState();
+
+    maxAlarmTime = GlobalData.ringingAlarms.first.maxDate;
+    remainingTime = Duration(
+        seconds: maxAlarmTime?.difference(now).inSeconds ??
+            GlobalData.ringingAlarms.first.alarm.maxTotalSnoozeDuration ??
+            300);
     _blinkingTimer = Timer.periodic(const Duration(seconds: 1), (_) {
       setState(() => _isBlinkVisible = !_isBlinkVisible);
     });

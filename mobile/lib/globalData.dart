@@ -93,8 +93,10 @@ class GlobalData {
             .firstWhere((element) => element.id == e['alarmId']);
       }).toList();
 
-      GlobalData.upcomingAlarms
-          .sort((a, b) => a.nextInvocation!.compareTo(b.nextInvocation!));
+      GlobalData.upcomingAlarms.sort((a, b) =>
+          a.nextInvocation != null && b.nextInvocation != null
+              ? a.nextInvocation!.compareTo(b.nextInvocation!)
+              : (a.hour * 60 + a.minute) - (b.hour * 60 + b.minute));
     }
 
     return GlobalData.upcomingAlarms;
@@ -115,8 +117,8 @@ class GlobalData {
 
         DateTime? maxDate;
 
-        if (e['maxDate'] != null) {
-          maxDate = DateTime.tryParse(e['maxDate']);
+        if (e['maxAlarmDate'] != null) {
+          maxDate = DateTime.tryParse(e['maxAlarmDate']);
         }
         maxDate ??= DateTime.now()
             .add(Duration(seconds: alarmEntity.maxTotalSnoozeDuration ?? 300));
