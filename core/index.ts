@@ -290,11 +290,12 @@ io.on("connection", (socket: Socket) => {
       let alarmsWithSnoozes = Buzzine.alarms.filter(
         (e) => e.snoozes.length > 0
       );
+
       cb(
         alarmsWithSnoozes.map((elem: Alarm) => {
           return {
             snooze: elem.snoozes[elem.snoozes.length - 1].toObject(),
-            alarm: elem.toObject(),
+            alarm: elem.toRingingObject(),
           };
         })
       );

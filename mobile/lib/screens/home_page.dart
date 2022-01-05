@@ -1,5 +1,6 @@
 import 'package:buzzine/components/alarm_card.dart';
 import 'package:buzzine/components/carousel.dart';
+import 'package:buzzine/components/snooze_card.dart';
 import 'package:buzzine/globalData.dart';
 import 'package:buzzine/screens/alarm_list.dart';
 import 'package:buzzine/screens/audio_manager.dart';
@@ -9,6 +10,7 @@ import 'package:buzzine/screens/scan_qr_code.dart';
 import 'package:buzzine/screens/settings.dart';
 import 'package:buzzine/types/Alarm.dart';
 import 'package:buzzine/types/RingingAlarmEntity.dart';
+import 'package:buzzine/types/Snooze.dart';
 import 'package:buzzine/utils/validate_qr_code.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -25,6 +27,7 @@ class _HomePageState extends State<HomePage> {
   bool _isLoaded = false;
   List<Alarm> upcomingAlarms = [];
   List<RingingAlarmEntity> ringingAlarms = [];
+  List<Snooze> activeSnoozes = [];
   late String qrCodeHash;
 
   void handleAlarmSelect(int? alarmIndex) {
@@ -46,9 +49,11 @@ class _HomePageState extends State<HomePage> {
         .push(MaterialPageRoute(builder: (context) => const Settings()));
   }
 
-  void navigateToRingingAlarm() async {
-    await Navigator.of(context)
-        .push(MaterialPageRoute(builder: (context) => const RingingAlarm()));
+  void navigateToRingingAlarm(RingingAlarmEntity ringingAlarm) async {
+    await Navigator.of(context).push(MaterialPageRoute(
+        builder: (context) => RingingAlarm(
+              ringingAlarm: ringingAlarm,
+            )));
     setState(() {
       _isLoaded = false;
     });
@@ -58,6 +63,7 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       ringingAlarms = GlobalData.ringingAlarms;
       upcomingAlarms = GlobalData.upcomingAlarms;
+      activeSnoozes = GlobalData.activeSnoozes;
       qrCodeHash = GlobalData.qrCodeHash;
       _isLoaded = true;
     });
@@ -122,6 +128,7 @@ class _HomePageState extends State<HomePage> {
             upcomingAlarms = GlobalData.upcomingAlarms;
             qrCodeHash = GlobalData.qrCodeHash;
             ringingAlarms = GlobalData.ringingAlarms;
+            activeSnoozes = GlobalData.activeSnoozes;
           })
         });
   }
@@ -142,6 +149,7 @@ class _HomePageState extends State<HomePage> {
                           upcomingAlarms = GlobalData.upcomingAlarms;
                           qrCodeHash = GlobalData.qrCodeHash;
                           ringingAlarms = GlobalData.ringingAlarms;
+                          activeSnoozes = GlobalData.activeSnoozes;
                         });
                       },
                       child: SingleChildScrollView(
@@ -169,7 +177,8 @@ class _HomePageState extends State<HomePage> {
                                       Carousel(
                                           height: 320,
                                           onSelect: (_) =>
-                                              navigateToRingingAlarm(),
+                                              navigateToRingingAlarm(
+                                                  ringingAlarms.first),
                                           children: ringingAlarms.map((e) {
                                             return AlarmCard(
                                                 id: e.alarm.id!,
@@ -193,6 +202,59 @@ class _HomePageState extends State<HomePage> {
                                                     e.alarm.isRepeating,
                                                 repeat: e.alarm.repeat,
                                                 hideSwitch: true);
+                                          }).toList()),
+                                    ]
+                                  : [],
+                            ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: activeSnoozes.isNotEmpty
+                                  ? [
+                                      const Padding(
+                                        padding: EdgeInsets.all(5),
+                                        child: Text("😴 Aktywne drzemki",
+                                            style: TextStyle(
+                                                fontSize: 24,
+                                                color: Colors.white)),
+                                      ),
+                                      Carousel(
+                                          height: 320,
+                                          onSelect: (_) =>
+                                              navigateToRingingAlarm(
+                                                  activeSnoozes.first
+                                                      .ringingAlarmInstance),
+                                          children:
+                                              activeSnoozes.map((Snooze e) {
+                                            return SnoozeCard(
+                                              name: e.ringingAlarmInstance.alarm
+                                                  .name,
+                                              invocationDate: e.invocationDate,
+                                              maxAlarmTime: e
+                                                  .ringingAlarmInstance
+                                                  .maxDate!,
+                                              maxTotalSnoozeDuration: e
+                                                  .ringingAlarmInstance
+                                                  .alarm
+                                                  .maxTotalSnoozeDuration,
+                                              sound: e.ringingAlarmInstance
+                                                  .alarm.sound,
+                                              isGuardEnabled: e
+                                                  .ringingAlarmInstance
+                                                  .alarm
+                                                  .isGuardEnabled,
+                                              deleteAfterRinging: e
+                                                  .ringingAlarmInstance
+                                                  .alarm
+                                                  .deleteAfterRinging,
+                                              notes: e.ringingAlarmInstance
+                                                  .alarm.notes,
+                                              isRepeating: e
+                                                  .ringingAlarmInstance
+                                                  .alarm
+                                                  .isRepeating,
+                                              repeat: e.ringingAlarmInstance
+                                                  .alarm.repeat,
+                                            );
                                           }).toList()),
                                     ]
                                   : [],

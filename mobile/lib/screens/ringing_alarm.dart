@@ -3,11 +3,14 @@ import 'dart:async';
 import 'package:buzzine/globalData.dart';
 import 'package:buzzine/screens/unlock_alarm.dart';
 import 'package:buzzine/types/Alarm.dart';
+import 'package:buzzine/types/RingingAlarmEntity.dart';
 import 'package:buzzine/utils/formatting.dart';
 import 'package:flutter/material.dart';
 
 class RingingAlarm extends StatefulWidget {
-  const RingingAlarm({Key? key}) : super(key: key);
+  final RingingAlarmEntity ringingAlarm;
+
+  const RingingAlarm({Key? key, required this.ringingAlarm}) : super(key: key);
 
   @override
   _RingingAlarmState createState() => _RingingAlarmState();
@@ -24,10 +27,10 @@ class _RingingAlarmState extends State<RingingAlarm> {
   void initState() {
     super.initState();
 
-    maxAlarmTime = GlobalData.ringingAlarms.first.maxDate;
+    maxAlarmTime = widget.ringingAlarm.maxDate;
     remainingTime = Duration(
         seconds: maxAlarmTime?.difference(now).inSeconds ??
-            GlobalData.ringingAlarms.first.alarm.maxTotalSnoozeDuration ??
+            widget.ringingAlarm.alarm.maxTotalSnoozeDuration ??
             300);
     _blinkingTimer = Timer.periodic(const Duration(seconds: 1), (_) {
       setState(() => _isBlinkVisible = !_isBlinkVisible);
@@ -68,7 +71,8 @@ class _RingingAlarmState extends State<RingingAlarm> {
                   .where((element) => element.alarm.isGuardEnabled)
                   .map((e) => e.alarm)
                   .toList();
-              if (protectedAlarm.isNotEmpty) {
+              if (protectedAlarm.isNotEmpty ||
+                  widget.ringingAlarm.alarm.isGuardEnabled) {
                 bool? unlocked =
                     await Navigator.of(context).push(MaterialPageRoute(
                   builder: (context) => const UnlockAlarm(),
@@ -129,14 +133,7 @@ class _RingingAlarmState extends State<RingingAlarm> {
                       duration: const Duration(milliseconds: 100),
                       child: Column(
                         children: [
-                          Text(
-                              GlobalData.ringingAlarms.isNotEmpty
-                                  ? addZero(GlobalData
-                                          .ringingAlarms.last.alarm.hour) +
-                                      ":" +
-                                      addZero(GlobalData
-                                          .ringingAlarms.last.alarm.minute)
-                                  : "${addZero(now.hour)}:${addZero(now.minute)}",
+                          Text("${addZero(now.hour)}:${addZero(now.minute)}",
                               style: const TextStyle(
                                   color: Colors.white, fontSize: 72)),
                           Text(

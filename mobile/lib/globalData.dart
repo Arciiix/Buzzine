@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:buzzine/types/API_exception.dart';
 import 'package:buzzine/types/Repeat.dart';
 import 'package:buzzine/types/RingingAlarmEntity.dart';
+import 'package:buzzine/types/Snooze.dart';
 import 'package:http/http.dart' as http;
 import 'package:buzzine/types/Alarm.dart';
 import 'package:buzzine/types/Audio.dart';
@@ -12,6 +13,7 @@ class GlobalData {
   static List<Alarm> alarms = [];
   static List<Alarm> upcomingAlarms = [];
   static List<RingingAlarmEntity> ringingAlarms = [];
+  static List<Snooze> activeSnoozes = [];
   static List<Audio> audios = [];
   static late String qrCodeHash;
   static bool isLoading = true;
@@ -32,6 +34,7 @@ class GlobalData {
     await getAlarms();
     await getUpcomingAlarms();
     await getRingingAlarms();
+    await getActiveSnoozes();
     await getAudios();
     await getQrCodeHash();
 
@@ -131,6 +134,47 @@ class GlobalData {
     }
 
     return GlobalData.ringingAlarms;
+  }
+
+  static Future<List<Snooze>> getActiveSnoozes() async {
+    var response = await http.get(Uri.parse("$serverIP/v1/getActiveSnoozes"));
+    var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
+
+    if (response.statusCode != 200 || decodedResponse['error'] == true) {
+      throw APIException(
+          "Błąd podczas pobierania aktywnych drzemek. Status code: ${response.statusCode}, response: ${response.body}");
+    } else {
+      List snoozesResponse = decodedResponse['response'];
+      GlobalData.activeSnoozes = snoozesResponse.map((e) {
+        Alarm? alarmEntity = GlobalData.alarms
+            .firstWhere((element) => element.id == e['alarm']['id']);
+
+        DateTime? maxDate;
+
+        if (e['alarm']['maxAlarmDate'] != null) {
+          maxDate = DateTime.tryParse(e['alarm']['maxAlarmDate']);
+        }
+        maxDate ??= DateTime.now()
+            .add(Duration(seconds: alarmEntity.maxTotalSnoozeDuration ?? 300));
+
+        RingingAlarmEntity ringingAlarm =
+            RingingAlarmEntity(alarm: alarmEntity, maxDate: maxDate);
+
+        Snooze snoozeObj = Snooze(
+          id: e['snooze']['id'],
+          startDate:
+              DateTime.tryParse(e['snooze']?['startDate']) ?? DateTime.now(),
+          invocationDate:
+              DateTime.tryParse(e['snooze']?['invocationDate']) ?? maxDate,
+          length: e['snooze']['length'],
+          ringingAlarmInstance: ringingAlarm,
+        );
+
+        return snoozeObj;
+      }).toList();
+    }
+
+    return GlobalData.activeSnoozes;
   }
 
   static Future<List<Audio>> getAudios() async {
