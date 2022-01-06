@@ -70,14 +70,22 @@ io.on("connection", (socket: Socket) => {
         cb(newAlarm);
       }
       logger.info(`Added new alarm ${newAlarm.id}`);
-      const alarms = await GetDatabaseData.getAlarms();
-      Buzzine.alarms.forEach((elem) => {
-        elem.cancelJob();
-      });
-      Buzzine.alarms = alarms.map((e) => {
-        return new Alarm(e);
-      });
-      logger.info(`Refetched alarms from the db`);
+      //I can't just refetch the alarms - e.g. it would cancel all snoozes
+      Buzzine.alarms.push(
+        new Alarm({
+          id: newAlarm?.id,
+          isActive: newAlarm?.isActive,
+          hour: newAlarm?.hour,
+          minute: newAlarm?.minute,
+          deleteAfterRinging: newAlarm?.deleteAfterRinging,
+          isGuardEnabled: newAlarm?.isGuardEnabled,
+          isSnoozeEnabled: newAlarm?.isSnoozeEnabled,
+          maxTotalSnoozeDuration: newAlarm?.maxTotalSnoozeDuration,
+          name: newAlarm?.name,
+          notes: newAlarm?.notes,
+          repeat: newAlarm?.repeat,
+        })
+      );
     } catch (err) {
       logger.warn(
         `Tried to create an alarm with a probably wrong payload! ${JSON.stringify(
@@ -236,19 +244,27 @@ io.on("connection", (socket: Socket) => {
         deleteAfterRinging: payload?.deleteAfterRinging ?? false,
       });
       await alarm.save();
+      //I can't just refetch the alarms - e.g. it would cancel all snoozes
+      let oldAlarmIndex = Buzzine.alarms.findIndex((e) => e.id === payload.id);
+      Buzzine.alarms[oldAlarmIndex].cancelJob();
+      Buzzine.alarms[oldAlarmIndex] = new Alarm({
+        id: payload.id,
+        isActive: alarm?.isActive,
+        hour: alarm?.hour,
+        minute: alarm?.minute,
+        deleteAfterRinging: alarm?.deleteAfterRinging,
+        isGuardEnabled: alarm?.isGuardEnabled,
+        isSnoozeEnabled: alarm?.isSnoozeEnabled,
+        maxTotalSnoozeDuration: alarm?.maxTotalSnoozeDuration,
+        name: alarm?.name,
+        notes: alarm?.notes,
+        repeat: alarm?.repeat,
+      });
 
       if (cb) {
         cb(alarm);
       }
       logger.info(`Updated alarm ${alarm.id}`);
-      logger.info(`Refetched alarms from the db`);
-      const alarms = await GetDatabaseData.getAlarms();
-      Buzzine.alarms.forEach((elem) => {
-        elem.cancelJob();
-      });
-      Buzzine.alarms = alarms.map((e) => {
-        return new Alarm(e);
-      });
     } catch (err) {
       logger.warn(
         `Tried to update an alarm with a probably wrong payload! ${JSON.stringify(
