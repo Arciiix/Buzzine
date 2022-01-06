@@ -1,6 +1,6 @@
 import 'dart:async';
-
 import 'package:buzzine/globalData.dart';
+import 'package:buzzine/screens/snooze_alarm.dart';
 import 'package:buzzine/screens/unlock_alarm.dart';
 import 'package:buzzine/types/Alarm.dart';
 import 'package:buzzine/types/RingingAlarmEntity.dart';
@@ -23,6 +23,89 @@ class _RingingAlarmState extends State<RingingAlarm> {
   late DateTime? maxAlarmTime;
   late Duration remainingTime;
   late Timer _remainingTimeTimer;
+  late bool isSnoozeAvailable;
+
+  Future<bool> onDismiss(DismissDirection direction) async {
+    if (direction == DismissDirection.startToEnd) {
+      //TODO: Check if snooze is enabled, then go to snooze length selection screen
+      if (!(widget.ringingAlarm.alarm.isSnoozeEnabled ?? false)) {
+        return false;
+      }
+      //If no snooze is left
+      if (remainingTime.inSeconds <= 0) {
+        return false;
+      }
+      //If any ringing alarm is protected, ask for the QR code
+      List<Alarm>? protectedAlarm = GlobalData.ringingAlarms
+          .where((element) => element.alarm.isGuardEnabled)
+          .map((e) => e.alarm)
+          .toList();
+      if (protectedAlarm.isNotEmpty ||
+          widget.ringingAlarm.alarm.isGuardEnabled) {
+        bool? unlocked = await Navigator.of(context).push(MaterialPageRoute(
+          builder: (context) => const UnlockAlarm(),
+        ));
+        if (unlocked != true) {
+          return false;
+        }
+      }
+
+      int? snoozeDuration = await Navigator.of(context).push(MaterialPageRoute(
+        builder: (context) => SnoozeAlarm(
+            leftSnooze: remainingTime.inSeconds,
+            alarmInstance: widget.ringingAlarm),
+      ));
+
+      if (snoozeDuration != null && snoozeDuration != 0) {
+        bool didSnooze = await GlobalData.snoozeAlarm(
+            widget.ringingAlarm.alarm.id!, snoozeDuration);
+        if (didSnooze) {
+          Navigator.of(context).pop();
+        }
+      }
+
+      return false;
+    } else {
+      //If any ringing alarm is protected, ask for the QR code
+      List<Alarm>? protectedAlarm = GlobalData.ringingAlarms
+          .where((element) => element.alarm.isGuardEnabled)
+          .map((e) => e.alarm)
+          .toList();
+      if (protectedAlarm.isNotEmpty ||
+          widget.ringingAlarm.alarm.isGuardEnabled) {
+        bool? unlocked = await Navigator.of(context).push(MaterialPageRoute(
+          builder: (context) => const UnlockAlarm(),
+        ));
+        if (unlocked != true) {
+          return false;
+        }
+      }
+
+      bool turnOff = await showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text("Wyłącz alarm"),
+            content: const Text('Wyłączyć alarm?'),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text("Anuluj"),
+              ),
+              TextButton(
+                  onPressed: () => Navigator.of(context).pop(true),
+                  child: const Text("Wyłącz")),
+            ],
+          );
+        },
+      );
+      if (turnOff) {
+        await GlobalData.cancelAllAlarms();
+        Navigator.of(context).pop();
+      }
+      return false;
+    }
+  }
 
   @override
   void initState() {
@@ -33,6 +116,7 @@ class _RingingAlarmState extends State<RingingAlarm> {
         seconds: maxAlarmTime?.difference(now).inSeconds ??
             widget.ringingAlarm.alarm.maxTotalSnoozeDuration ??
             300);
+    isSnoozeAvailable = widget.ringingAlarm.alarm.isSnoozeEnabled ?? false;
     _blinkingTimer = Timer.periodic(const Duration(seconds: 1), (_) {
       setState(() => _isBlinkVisible = !_isBlinkVisible);
     });
@@ -42,7 +126,10 @@ class _RingingAlarmState extends State<RingingAlarm> {
         remainingTime = Duration(seconds: remainingTime.inSeconds - 1);
       });
       if (remainingTime.inSeconds <= 0) {
-        _remainingTimeTimer.cancel();
+        setState(() {
+          isSnoozeAvailable = false;
+          _remainingTimeTimer.cancel();
+        });
       }
     });
   }
@@ -51,58 +138,13 @@ class _RingingAlarmState extends State<RingingAlarm> {
   Widget build(BuildContext context) {
     return Dismissible(
         key: const Key("RINGING_ALARM"),
-        confirmDismiss: (DismissDirection direction) async {
-          if (direction == DismissDirection.startToEnd) {
-            //TODO: Check if snooze is enabled, then go to snooze length selection screen
-            return false;
-          } else {
-            bool turnOff = await showDialog(
-              context: context,
-              builder: (BuildContext context) {
-                return AlertDialog(
-                  title: const Text("Wyłącz alarm"),
-                  content: const Text('Wyłączyć alarm?'),
-                  actions: <Widget>[
-                    TextButton(
-                      onPressed: () => Navigator.of(context).pop(false),
-                      child: const Text("Anuluj"),
-                    ),
-                    TextButton(
-                        onPressed: () => Navigator.of(context).pop(true),
-                        child: const Text("Wyłącz")),
-                  ],
-                );
-              },
-            );
-            if (turnOff) {
-              //If any ringing alarm is protected, ask for the QR code
-
-              List<Alarm>? protectedAlarm = GlobalData.ringingAlarms
-                  .where((element) => element.alarm.isGuardEnabled)
-                  .map((e) => e.alarm)
-                  .toList();
-              if (protectedAlarm.isNotEmpty ||
-                  widget.ringingAlarm.alarm.isGuardEnabled) {
-                bool? unlocked =
-                    await Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => const UnlockAlarm(),
-                ));
-                if (unlocked != true) {
-                  return false;
-                }
-              }
-              await GlobalData.cancelAllAlarms();
-              Navigator.of(context).pop();
-            }
-            return false;
-          }
-        },
+        confirmDismiss: onDismiss,
         background: Scaffold(
             body: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             Container(
-                color: Colors.blue,
+                color: isSnoozeAvailable ? Colors.blue : Colors.grey,
                 height: MediaQuery.of(context).size.height,
                 width: MediaQuery.of(context).size.width * 0.5,
                 child: Row(children: const [
@@ -127,9 +169,9 @@ class _RingingAlarmState extends State<RingingAlarm> {
               SizedBox(
                   height: MediaQuery.of(context).size.height,
                   width: 30,
-                  child: const DecoratedBox(
+                  child: DecoratedBox(
                       decoration: BoxDecoration(
-                          color: Colors.blue,
+                          color: isSnoozeAvailable ? Colors.blue : Colors.grey,
                           borderRadius: BorderRadius.only(
                               topRight: Radius.circular(5),
                               bottomRight: Radius.circular(5))))),
@@ -173,7 +215,7 @@ class _RingingAlarmState extends State<RingingAlarm> {
                             ),
                             Text(
                                 remainingTime.inSeconds > 0
-                                    ? "${addZero(remainingTime.inMinutes.remainder(60))}:${addZero(remainingTime.inSeconds.remainder(60))}"
+                                    ? "${addZero(remainingTime.inMinutes)}:${addZero(remainingTime.inSeconds.remainder(60))}"
                                     : "Brak",
                                 style: const TextStyle(
                                     color: Colors.white, fontSize: 18))

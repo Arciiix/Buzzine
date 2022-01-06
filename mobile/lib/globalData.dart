@@ -289,4 +289,20 @@ class GlobalData {
     GlobalData.ringingAlarms = [];
     return;
   }
+
+  static Future<bool> snoozeAlarm(String alarmId, int snoozeDuration) async {
+    Map requestData = {'id': alarmId, 'snoozeDuration': snoozeDuration};
+
+    var response = await http.put(Uri.parse("$serverIP/v1/snoozeAlarm"),
+        body: json.encode(requestData),
+        headers: {"Content-Type": "application/json"});
+    var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
+
+    if (response.statusCode != 200 || decodedResponse['error'] == true) {
+      throw APIException(
+          "Błąd podczas włączania drzemki. Status code: ${response.statusCode}, response: ${response.body}");
+    }
+
+    return decodedResponse['response']['didSnooze'] ?? false;
+  }
 }

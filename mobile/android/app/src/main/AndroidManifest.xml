@@ -2,7 +2,7 @@
     package="com.arciiix.buzzine">
      <uses-permission android:name="android.permission.INTERNET" />
    <application
-        android:label="buzzine"
+        android:label="Buzzine"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
