@@ -136,7 +136,10 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     if (!_isLoaded) {
-      return const Loading(showText: true);
+      return const Loading(
+        showText: true,
+        isInitLoading: true,
+      );
     } else {
       return Scaffold(
           body: Padding(
