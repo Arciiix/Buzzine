@@ -2,26 +2,26 @@ import 'package:buzzine/types/Audio.dart';
 import 'package:buzzine/types/Repeat.dart';
 
 class Alarm {
-  final String? id;
-  final String? name;
-  final int hour;
-  final int minute;
-  final DateTime? nextInvocation;
-  final bool isActive;
+  String? id;
+  String? name;
+  int hour;
+  int minute;
+  DateTime? nextInvocation;
+  bool isActive;
 
-  final bool? isSnoozeEnabled;
-  final int? maxTotalSnoozeDuration;
+  bool? isSnoozeEnabled;
+  int? maxTotalSnoozeDuration;
 
-  final Audio? sound;
+  Audio? sound;
 
-  final bool isGuardEnabled;
+  bool isGuardEnabled;
 
-  final bool? deleteAfterRinging;
+  bool? deleteAfterRinging;
 
-  final String? notes;
+  String? notes;
 
-  final bool? isRepeating;
-  final Repeat? repeat;
+  bool? isRepeating;
+  Repeat? repeat;
 
   Alarm(
       {this.id,

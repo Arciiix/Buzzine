@@ -78,6 +78,18 @@ class GlobalData {
           .toList();
     }
 
+    //Sort the alarms
+    //By the invocation time
+    GlobalData.alarms
+        .sort((a, b) => a.hour * 60 + a.minute - b.hour * 60 - b.minute);
+    //Active ones first
+    List<Alarm> activeAlarms =
+        GlobalData.alarms.where((elem) => elem.isActive).toList();
+    List<Alarm> inactiveAlarms =
+        GlobalData.alarms.where((elem) => !elem.isActive).toList();
+
+    GlobalData.alarms = [...activeAlarms, ...inactiveAlarms];
+
     return GlobalData.alarms;
   }
 
@@ -92,8 +104,10 @@ class GlobalData {
       List alarmsResponse = decodedResponse['response'];
 
       GlobalData.upcomingAlarms = alarmsResponse.map((e) {
-        return GlobalData.alarms
+        Alarm alarmObj = GlobalData.alarms
             .firstWhere((element) => element.id == e['alarmId']);
+        alarmObj.nextInvocation = DateTime.tryParse(e['invocationDate']);
+        return alarmObj;
       }).toList();
 
       GlobalData.upcomingAlarms.sort((a, b) =>

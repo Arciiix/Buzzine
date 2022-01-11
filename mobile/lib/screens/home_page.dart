@@ -30,6 +30,9 @@ class _HomePageState extends State<HomePage> {
   List<Snooze> activeSnoozes = [];
   late String qrCodeHash;
 
+  GlobalKey<RefreshIndicatorState> _refreshState =
+      GlobalKey<RefreshIndicatorState>();
+
   void handleAlarmSelect(int? alarmIndex) {
     Navigator.of(context).push(
       MaterialPageRoute(
@@ -59,14 +62,7 @@ class _HomePageState extends State<HomePage> {
     });
 
     //Refresh everything - for example alarm could've been deleted because of the deleteAfterRinging option
-    await GlobalData.getData();
-    setState(() {
-      ringingAlarms = GlobalData.ringingAlarms;
-      upcomingAlarms = GlobalData.upcomingAlarms;
-      activeSnoozes = GlobalData.activeSnoozes;
-      qrCodeHash = GlobalData.qrCodeHash;
-      _isLoaded = true;
-    });
+    await refresh();
   }
 
   void printQRCode() async {
@@ -118,6 +114,10 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  Future<void> refresh() async {
+    _refreshState.currentState!.show();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -146,6 +146,7 @@ class _HomePageState extends State<HomePage> {
               padding: const EdgeInsets.all(10),
               child: SafeArea(
                   child: RefreshIndicator(
+                      key: _refreshState,
                       onRefresh: () async {
                         await GlobalData.getData();
                         setState(() {
@@ -273,22 +274,22 @@ class _HomePageState extends State<HomePage> {
                                 onSelect: handleAlarmSelect,
                                 children: upcomingAlarms.map((e) {
                                   return AlarmCard(
-                                    id: e.id!,
-                                    name: e.name,
-                                    hour: e.hour,
-                                    minute: e.minute,
-                                    nextInvocation: e.nextInvocation,
-                                    isActive: e.isActive,
-                                    isSnoozeEnabled: e.isSnoozeEnabled,
-                                    maxTotalSnoozeDuration:
-                                        e.maxTotalSnoozeDuration,
-                                    sound: e.sound,
-                                    isGuardEnabled: e.isGuardEnabled,
-                                    deleteAfterRinging: e.deleteAfterRinging,
-                                    notes: e.notes,
-                                    isRepeating: e.isRepeating,
-                                    repeat: e.repeat,
-                                  );
+                                      id: e.id!,
+                                      name: e.name,
+                                      hour: e.hour,
+                                      minute: e.minute,
+                                      nextInvocation: e.nextInvocation,
+                                      isActive: e.isActive,
+                                      isSnoozeEnabled: e.isSnoozeEnabled,
+                                      maxTotalSnoozeDuration:
+                                          e.maxTotalSnoozeDuration,
+                                      sound: e.sound,
+                                      isGuardEnabled: e.isGuardEnabled,
+                                      deleteAfterRinging: e.deleteAfterRinging,
+                                      notes: e.notes,
+                                      isRepeating: e.isRepeating,
+                                      repeat: e.repeat,
+                                      refresh: refresh);
                                 }).toList()),
                             const Padding(
                                 padding: EdgeInsets.all(5),
