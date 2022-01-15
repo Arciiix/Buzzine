@@ -271,6 +271,7 @@ class _HomePageState extends State<HomePage> {
                                 onSelect: handleAlarmSelect,
                                 children: upcomingAlarms.map((e) {
                                   return AlarmCard(
+                                      key: Key(e.id!),
                                       id: e.id!,
                                       name: e.name,
                                       hour: e.hour,
