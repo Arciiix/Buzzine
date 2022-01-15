@@ -319,4 +319,23 @@ class GlobalData {
 
     return decodedResponse['response']['didSnooze'] ?? false;
   }
+
+  //Returns true if the audio has been muted successfully, and false if user has already muted it
+  static Future<bool> muteAudio(int duration) async {
+    Map requestData = {'duration': duration};
+
+    var response = await http.put(Uri.parse("$serverIP/v1/tempMuteAudio"),
+        body: json.encode(requestData),
+        headers: {"Content-Type": "application/json"});
+    var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
+
+    if (response.statusCode != 200 || decodedResponse['error'] == true) {
+      if (decodedResponse['errorCode'] != 'ALREADY_USED') {
+        throw APIException(
+            "Błąd podczas wyciszania audio. Status code: ${response.statusCode}, response: ${response.body}");
+      }
+      return false;
+    }
+    return true;
+  }
 }

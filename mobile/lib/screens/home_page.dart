@@ -57,9 +57,6 @@ class _HomePageState extends State<HomePage> {
         builder: (context) => RingingAlarm(
               ringingAlarm: ringingAlarm,
             )));
-    setState(() {
-      _isLoaded = false;
-    });
 
     //Refresh everything - for example alarm could've been deleted because of the deleteAfterRinging option
     await refresh();
