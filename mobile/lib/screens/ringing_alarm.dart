@@ -95,7 +95,7 @@ class _RingingAlarmState extends State<RingingAlarm>
         builder: (BuildContext context) {
           return AlertDialog(
             title: const Text("Wyłącz alarm"),
-            content: const Text('Wyłączyć alarm?'),
+            content: const Text('Czy na pewno chcesz wyłączyć alarm?'),
             actions: <Widget>[
               TextButton(
                 onPressed: () => Navigator.of(context).pop(false),
