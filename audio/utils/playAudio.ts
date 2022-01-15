@@ -27,7 +27,7 @@ class PlayAudio {
       `./audio/${this.filename}`,
       "-nodisp",
       "-autoexit",
-      // 'loop 0' doesn't work, it has to be separately
+      // 'loop 0' doesn't work, it has to be separate
       "-loop",
       "0",
     ]);
