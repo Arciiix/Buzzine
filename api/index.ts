@@ -59,11 +59,11 @@ api.post("/addAlarm", async (req, res) => {
             audioFilename: req.body.sound.filename,
           });
         } catch (err) {
-          res.status(500).send({ error: true, errorCode: "AUDIO_API_ERROR" });
-          logger.warn(
-            `Error when trying to associate an audio with an alarm. ${err.toString()}; response: ${JSON.stringify(
+          res.status(err?.response?.status).send(err?.response?.data);
+          logger.error(
+            `Error when trying to associate an audio with an alarm. ${JSON.stringify(
               err?.response?.data ?? ""
-            )}`
+            )} with status ${err?.response?.status}`
           );
           return;
         }
@@ -302,8 +302,8 @@ api.post("/updateAlarm", async (req, res) => {
             audioFilename: req.body.sound.filename,
           });
         } catch (err) {
-          res.status(500).send({ error: true, errorCode: "AUDIO_API_ERROR" });
-          logger.warn(
+          res.status(err?.response?.status).send(err?.response?.data);
+          logger.error(
             `Error when trying to associate an audio with an alarm. ${err.toString()}; response: ${JSON.stringify(
               err?.response?.data ?? ""
             )}`
@@ -368,9 +368,7 @@ api.get("/getAllAlarms", (req, res) => {
       //Fetch the alarms audios
       try {
         let audiosReq = await axios.get(`${AUDIO_URL}/v1/getAlarmSoundList`);
-        if (audiosReq.data.error) {
-          throw new Error(JSON.stringify(audiosReq.data));
-        } else {
+        if (!audiosReq.data.error) {
           let audiosRes = audiosReq.data.data;
           audiosRes.forEach((element) => {
             //Match the audios with the alarms
@@ -387,8 +385,10 @@ api.get("/getAllAlarms", (req, res) => {
           });
         }
       } catch (err) {
-        logger.warn(
-          `Error while getting alarms audio, when getting all alarms: ${err.toString()}`
+        logger.error(
+          `Error while getting alarms audios, when getting all alarms: ${err.toString()} - ${JSON.stringify(
+            err?.response?.data
+          )} with status ${err?.response?.status}`
         );
       }
 
@@ -429,9 +429,7 @@ api.get("/getRingingAlarms", (req, res) => {
       //Fetch the alarms audios
       try {
         let audiosReq = await axios.get(`${AUDIO_URL}/v1/getAlarmSoundList`);
-        if (audiosReq.data.error) {
-          throw new Error(JSON.stringify(audiosReq.data));
-        } else {
+        if (!audiosReq.data.error) {
           let audiosRes = audiosReq.data.data;
           audiosRes.forEach((element) => {
             //Match the audios with the alarms
@@ -448,8 +446,10 @@ api.get("/getRingingAlarms", (req, res) => {
           });
         }
       } catch (err) {
-        logger.warn(
-          `Error while getting alarms audio, when getting ringing alarms: ${err.toString()}`
+        logger.error(
+          `Error while getting alarms audios, when getting ringing alarms: ${JSON.stringify(
+            err?.response?.data
+          )} with status ${err?.response?.status}`
         );
       }
 
@@ -516,7 +516,12 @@ api.get("/getSoundList", async (req, res) => {
     }
     res.status(audiosReq.status).send(audiosReq.data);
   } catch (err) {
-    logger.warn(`Error while getting audios: ${err.toString()}`);
+    logger.error(
+      `Error while getting audios: ${JSON.stringify(
+        err?.response?.data
+      )} with status ${err?.response?.status}`
+    );
+    res.status(err?.response?.status).send(err?.response?.data);
   }
 });
 
@@ -535,22 +540,38 @@ api.delete("/deleteSound", async (req, res) => {
         filename: req.body.filename,
       },
     });
-    if (deleteReq.status != 200) {
-      logger.warn(
-        `Error while deleting audio ${req.body.filename}: ${JSON.stringify(
-          deleteReq.data
-        )}`
-      );
-    }
     res.status(deleteReq.status).send(deleteReq.data);
     logger.info(
       `Delete request is complete with response ${deleteReq.data} and status ${deleteReq.status}`
     );
   } catch (err) {
     logger.warn(
-      `Error while deleting audio ${req.body.filename}: ${err.toString()}`
+      `Error while deleting audio ${req.body.filename}: ${JSON.stringify(
+        err?.response?.data
+      )} with status ${err?.response?.status}`
     );
     res.status(500).send({ error: true });
+  }
+});
+
+api.put("/tempMuteAudio", async (req, res) => {
+  logger.http(`PUT /tempMuteAudio with body ${JSON.stringify(req.body)}`);
+
+  //It's just the same request sent to the audio microservice
+  try {
+    let audioReq = await axios.put(`${AUDIO_URL}/v1/tempMuteAudio`, {
+      duration: req.body?.duration,
+    });
+    res.status(audioReq.status).send(audioReq.data);
+  } catch (err) {
+    logger.warn(
+      `Error while temp-muting the current audio: ${JSON.stringify(
+        err?.response?.data
+      )} with status ${err?.response?.status}`
+    );
+    res
+      .status(err?.response?.status)
+      .send({ ...err?.response?.data, ...{ error: true } });
   }
 });
 

@@ -153,7 +153,7 @@ api.delete("/deleteSound", async (req, res) => {
   logger.http(`DELETE /deleteSound with data ${JSON.stringify(req.body)}`);
 
   if (!req.body.filename) {
-    res.send({ error: true, errorCode: "MISSING_FILENAME" });
+    res.status(400).send({ error: true, errorCode: "MISSING_FILENAME" });
     return;
   }
 
@@ -163,6 +163,38 @@ api.delete("/deleteSound", async (req, res) => {
   } else {
     res.status(500).send(deleteSoundResult);
   }
+});
+
+api.put("/tempMuteAudio", async (req, res) => {
+  logger.http(`PUT /tempMuteAudio with data ${JSON.stringify(req.body)}`);
+
+  if (!req.body.duration) {
+    res.status(400).send({ error: true, errorCode: "MISSING_DURATION" });
+    logger.warn(`Tried to temp-mute audio but duration is missing`);
+    return;
+  }
+  let duration = parseInt(req.body.duration);
+
+  if (isNaN(duration)) {
+    res.status(400).send({ error: true, errorCode: "WRONG_DURATION" });
+    logger.warn(`Tried to temp-mute audio but duration is wrong`);
+    return;
+  }
+  if (!audioInstance) {
+    res.status(400).send({ error: true, errorCode: "NO_AUDIO_IS_PLAYING" });
+    logger.warn(`Tried to temp-mute audio but no audio is playing`);
+    return;
+  }
+
+  let tempMuteResult = audioInstance.tempMute(duration);
+
+  if (tempMuteResult.error) {
+    res.status(400);
+  } else {
+    res.status(200);
+  }
+
+  res.send(tempMuteResult);
 });
 
 async function init() {

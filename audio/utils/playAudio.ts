@@ -9,6 +9,7 @@ class PlayAudio {
   filename: string;
   isPlaying: boolean;
   private process: any;
+  private tempMuteTimeout: ReturnType<typeof setTimeout>;
 
   constructor(filename: string) {
     this.filename = filename;
@@ -16,21 +17,57 @@ class PlayAudio {
       logger.error("Missing filename!");
       //TODO: Send socket.io error event
     } else {
-      this.isPlaying = true;
-      this.process = childProcess.spawn("ffplay", [
-        `./audio/${filename}`,
-        "-nodisp",
-        "-autoexit",
-        // 'loop 0' doesn't work, it has to be separately
-        "-loop",
-        "0",
-      ]);
-
-      logger.info(`Audio ${this.filename} has started playing!`);
+      this.play();
     }
   }
 
+  play() {
+    this.isPlaying = true;
+    this.process = childProcess.spawn("ffplay", [
+      `./audio/${this.filename}`,
+      "-nodisp",
+      "-autoexit",
+      // 'loop 0' doesn't work, it has to be separately
+      "-loop",
+      "0",
+    ]);
+
+    logger.info(`Audio ${this.filename} has started playing!`);
+  }
+
+  tempMute(duration: number): { error: boolean; errorCode?: string } {
+    if (!this.isPlaying) {
+      logger.warn(
+        `Tried to temp-mute audio but audio ${this.filename} is not playing`
+      );
+      return { error: true, errorCode: "AUDIO_IS_NOT_PLAYING" };
+    }
+    if (duration < 5 || duration > 300) {
+      logger.warn(
+        `Tried to temp-mute audio ${this.filename} with out-of-range duration (${duration})`
+      );
+      return { error: true, errorCode: "DURATION_OUT_OF_RANGE_5_TO_300" };
+    }
+    if (this.tempMuteTimeout) {
+      logger.warn(
+        `Tried to mute audio ${this.filename}, but it has already been muted`
+      );
+      return { error: true, errorCode: "ALREADY_USED" };
+    }
+    this.destroy();
+    this.tempMuteTimeout = setTimeout(this.play.bind(this), duration * 1000);
+
+    logger.info(
+      `Temp-muted the current audio ${this.filename} for ${duration} second(s)`
+    );
+
+    return { error: false };
+  }
+
   destroy() {
+    if (this.tempMuteTimeout) {
+      clearTimeout(this.tempMuteTimeout);
+    }
     this.isPlaying = false;
     this.process.kill("SIGKILL");
     logger.info(`Audio ${this.filename} has stopped playing!`);
