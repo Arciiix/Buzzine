@@ -17,6 +17,7 @@ class _ScanQRCodeState extends State<ScanQRCode> {
   Barcode? result;
   QRViewController? controller;
   bool _isDialogShowed = false;
+  bool _isCameraFlashlightEnabled = false;
 
   @override
   void initState() {
@@ -39,12 +40,41 @@ class _ScanQRCodeState extends State<ScanQRCode> {
             ),
           ),
           Expanded(
-            flex: 1,
-            child: Center(
-              child: Text(widget.targetHash,
-                  style: const TextStyle(fontSize: 32, color: Colors.white)),
-            ),
-          )
+              flex: 1,
+              child: Row(children: [
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 50),
+                    child: Text(widget.targetHash,
+                        textAlign: TextAlign.center,
+                        style:
+                            const TextStyle(fontSize: 32, color: Colors.white)),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(right: 10),
+                  child: Material(
+                    color: Colors.transparent,
+                    shape: CircleBorder(),
+                    clipBehavior: Clip.hardEdge,
+                    child: IconButton(
+                      iconSize: 30,
+                      icon: Icon(
+                          _isCameraFlashlightEnabled
+                              ? Icons.flash_on
+                              : Icons.flash_off,
+                          color: Colors.white),
+                      onPressed: () async {
+                        await controller?.toggleFlash();
+                        setState(() {
+                          _isCameraFlashlightEnabled =
+                              !_isCameraFlashlightEnabled;
+                        });
+                      },
+                    ),
+                  ),
+                ),
+              ]))
         ],
       ),
     );
