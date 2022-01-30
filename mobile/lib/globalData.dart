@@ -338,4 +338,27 @@ class GlobalData {
     }
     return true;
   }
+
+  //Cancel the next invocation of a repeating alarm. Returns the next invocation date
+  static Future<DateTime?> cancelNextInvocation(String repeatingAlarmId) async {
+    Map requestData = {'id': repeatingAlarmId};
+
+    var response = await http.put(
+        Uri.parse("$serverIP/v1/cancelNextInvocation"),
+        body: json.encode(requestData),
+        headers: {"Content-Type": "application/json"});
+    var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
+
+    if (response.statusCode != 200 || decodedResponse['error'] == true) {
+      if (decodedResponse['errorCode'] != null) {
+        throw APIException(
+            "Błąd podczas wyłączania następnego wywołania alarmu. Status code: ${response.statusCode}, response: ${response.body}");
+      }
+      return null;
+    }
+
+    await GlobalData.getUpcomingAlarms();
+    return DateTime.tryParse(
+        decodedResponse['response']?['nextInvocationDate']);
+  }
 }

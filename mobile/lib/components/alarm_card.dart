@@ -63,21 +63,76 @@ class _AlarmCardState extends State<AlarmCard> {
 
     isActive = widget.isActive;
     if (widget.nextInvocation != null) {
-      Duration difference = widget.nextInvocation!.difference(DateTime.now());
-      remainingTime =
-          "${difference.inDays > 0 ? addZero(difference.inDays) + ":" : ""}${addZero(difference.inHours.remainder(24))}:${addZero(difference.inMinutes.remainder(60))}";
+      remainingTime = calculateDateTimeDifference(widget.nextInvocation!);
     } else {
       remainingTime = '-';
     }
+  }
+
+  String calculateDateTimeDifference(DateTime nextInvocation) {
+    Duration difference = nextInvocation.difference(DateTime.now());
+    if (difference.inSeconds < 0) {
+      //It means that the alarm has already invoked
+      return "-";
+    }
+    String remainingTime =
+        "${difference.inDays > 0 ? addZero(difference.inDays) + ":" : ""}${addZero(difference.inHours.remainder(24))}:${addZero(difference.inMinutes.remainder(60))}";
+
+    return remainingTime;
   }
 
   void setIsActive(bool status) async {
     await GlobalData.changeAlarmStatus(widget.id, status);
     setState(() {
       isActive = status;
+      if (isActive && widget.nextInvocation != null) {
+        //Calculate the remaining time from the initial value - because the alarm recreates
+        remainingTime = calculateDateTimeDifference(widget.nextInvocation!);
+      } else if (!isActive) {
+        remainingTime = "-";
+      }
     });
     if (widget.refresh != null) {
       widget.refresh!();
+    }
+  }
+
+  void askToCancelNextInvocation() async {
+    DateTime? nextInvocationLocal = widget.nextInvocation?.toLocal();
+    String? nextInvocationString;
+    if (nextInvocationLocal != null) {
+      nextInvocationString =
+          "${addZero(nextInvocationLocal.day)}.${addZero(nextInvocationLocal.month)}.${nextInvocationLocal.year} ${addZero(nextInvocationLocal.hour)}:${addZero(nextInvocationLocal.minute)}";
+    }
+    bool? confirmed = await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Wyłącz następne wywołanie alarmu"),
+          content: Text(
+              'Czy na pewno chcesz wyłączyć następne wywołanie tego alarmu?${nextInvocationString != null ? "\nAlarm zadzwoniłby $nextInvocationString" : ""}'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text("Anuluj"),
+            ),
+            TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: const Text("Wygeneruj")),
+          ],
+        );
+      },
+    );
+
+    //It could be either null, so I check it by ==
+    if (confirmed == true) {
+      DateTime? nextInvocation =
+          await GlobalData.cancelNextInvocation(widget.id);
+      if (nextInvocation != null) {
+        setState(() {
+          remainingTime = calculateDateTimeDifference(nextInvocation);
+        });
+      }
     }
   }
 
@@ -110,7 +165,13 @@ class _AlarmCardState extends State<AlarmCard> {
                 ],
               ),
               if (widget.hideSwitch != true)
-                Switch(onChanged: setIsActive, value: isActive),
+                GestureDetector(
+                    onLongPress: () async {
+                      if (widget.isRepeating == true && widget.isActive) {
+                        askToCancelNextInvocation();
+                      }
+                    },
+                    child: Switch(onChanged: setIsActive, value: isActive)),
             ]),
             Row(
               children: [
