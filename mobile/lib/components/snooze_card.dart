@@ -179,11 +179,11 @@ class _SnoozeCardState extends State<SnoozeCard> {
                                         width:
                                             2.5), //Flutter, for some reason, adds extra blank space on the left side of the icon.
                                     Icon(Icons.auto_delete),
-                                    Text("Jednorazowy - usuń po zadzwonieniu")
+                                    Text("Jednorazowy")
                                   ]
                                 : const [
                                     Icon(Icons.repeat_one),
-                                    Text("Jednorazowy")
+                                    Text("Ręczny")
                                   ]),
                       ]),
             Row(

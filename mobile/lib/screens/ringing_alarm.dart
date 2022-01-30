@@ -125,7 +125,7 @@ class _RingingAlarmState extends State<RingingAlarm>
 
   Future<void> tempMuteAlarm() async {
     if (didMuteAudio) return;
-    bool shouldMuteAudio = await showDialog(
+    bool? shouldMuteAudio = await showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
@@ -144,7 +144,8 @@ class _RingingAlarmState extends State<RingingAlarm>
         );
       },
     );
-    if (shouldMuteAudio) {
+    //It could be null
+    if (shouldMuteAudio == true) {
       bool isAudioMuted = await GlobalData.muteAudio(tempMuteAudioDuration);
       if (!isAudioMuted) {
         showDialog(
@@ -298,29 +299,33 @@ class _RingingAlarmState extends State<RingingAlarm>
                           Padding(
                               padding: const EdgeInsets.all(10),
                               child: Column(
-                                children: [
-                                  const Text("Zużyty czas drzemek",
-                                      style: TextStyle(
-                                          color: Colors.white, fontSize: 18)),
-                                  Padding(
-                                    padding:
-                                        const EdgeInsets.symmetric(vertical: 5),
-                                    child: LinearProgressIndicator(
-                                      value: 1 -
-                                          (remainingTime.inSeconds /
-                                              (widget.ringingAlarm.alarm
-                                                      .maxTotalSnoozeDuration ??
-                                                  300)),
-                                      minHeight: 20,
-                                    ),
-                                  ),
-                                  Text(
-                                      remainingTime.inSeconds > 0
-                                          ? "${addZero(remainingTime.inMinutes)}:${addZero(remainingTime.inSeconds.remainder(60))}"
-                                          : "Brak",
-                                      style: const TextStyle(
-                                          color: Colors.white, fontSize: 18))
-                                ],
+                                children: isSnoozeAvailable
+                                    ? [
+                                        const Text("Zużyty czas drzemek",
+                                            style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 18)),
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              vertical: 5),
+                                          child: LinearProgressIndicator(
+                                            value: 1 -
+                                                (remainingTime.inSeconds /
+                                                    (widget.ringingAlarm.alarm
+                                                            .maxTotalSnoozeDuration ??
+                                                        300)),
+                                            minHeight: 20,
+                                          ),
+                                        ),
+                                        Text(
+                                            remainingTime.inSeconds > 0
+                                                ? "${addZero(remainingTime.inMinutes)}:${addZero(remainingTime.inSeconds.remainder(60))}"
+                                                : "Brak",
+                                            style: const TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 18))
+                                      ]
+                                    : [],
                               )),
                           const Text(
                               "DEV WARNING: This screen isn't ready yet 👀",

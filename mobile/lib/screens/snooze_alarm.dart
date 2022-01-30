@@ -34,8 +34,9 @@ class _SnoozeAlarmState extends State<SnoozeAlarm> {
       Navigator.of(context).pop(0);
     }
 
-    _maxSnoozeDurationValue = widget.leftSnooze.toDouble();
-    _minSnoozeDurationValue = 1;
+    //I subtract 10 seconds from the actual max snooze duration - the request needs some time, there could be an unexpected timeout etc.
+    _maxSnoozeDurationValue = widget.leftSnooze.toDouble() - 10;
+    _minSnoozeDurationValue = 10;
     selectedSnoozeDurationValue = Duration(
         seconds:
             (widget.leftSnooze > 300 ? 300 : widget.leftSnooze.toDouble() / 2)
@@ -49,12 +50,12 @@ class _SnoozeAlarmState extends State<SnoozeAlarm> {
               Duration(seconds: selectedSnoozeDurationValue.inSeconds - 1);
         }
       });
-      //I assume 5 seconds is the minimal duration
-      if (_maxSnoozeDurationValue <= 5) {
+      //I assume 15 seconds is the lowest total remaining time
+      if (_maxSnoozeDurationValue <= 15) {
         setState(() {
           _remainingTimeTimer.cancel();
-          selectedSnoozeDurationValue = Duration.zero;
           _minSnoozeDurationValue = 0;
+          selectedSnoozeDurationValue = Duration.zero;
         });
         Navigator.of(context).pop(0);
       }
