@@ -52,11 +52,11 @@ class _SnoozeCardState extends State<SnoozeCard> {
     remainingTime =
         "${difference.inDays > 0 ? addZero(difference.inDays) + ":" : ""}${addZero(difference.inHours)}:${addZero(difference.inMinutes.remainder(60))}";
 
-    hour = widget.invocationDate.hour;
-    minute = widget.invocationDate.minute;
+    hour = widget.invocationDate.toLocal().hour;
+    minute = widget.invocationDate.toLocal().minute;
 
     remainingSnoozeMinutes =
-        widget.maxAlarmTime.difference(DateTime.now()).inMinutes;
+        widget.maxAlarmTime.difference(widget.invocationDate).inMinutes;
   }
 
   @override
