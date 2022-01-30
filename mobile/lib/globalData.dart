@@ -206,9 +206,6 @@ class GlobalData {
           .toList();
     }
 
-    GlobalData.audios
-        .insert(0, Audio(filename: "default.mp3", friendlyName: "Domyślna"));
-
     return GlobalData.audios;
   }
 
