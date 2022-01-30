@@ -1,8 +1,6 @@
-import 'dart:io';
-
-import 'package:buzzine/utils/show_snackbar.dart';
 import 'package:buzzine/utils/validate_qr_code.dart';
 import "package:flutter/material.dart";
+import 'package:flutter/services.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 
 class ScanQRCode extends StatefulWidget {
@@ -19,6 +17,13 @@ class _ScanQRCodeState extends State<ScanQRCode> {
   Barcode? result;
   QRViewController? controller;
   bool _isDialogShowed = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -74,6 +79,12 @@ class _ScanQRCodeState extends State<ScanQRCode> {
 
   @override
   void dispose() {
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
     controller?.dispose();
     super.dispose();
   }

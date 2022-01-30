@@ -180,23 +180,29 @@ class _HomePageState extends State<HomePage> {
                         physics: const AlwaysScrollableScrollPhysics(),
                         scrollDirection: Axis.vertical,
                         child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            const Padding(
-                                padding: EdgeInsets.all(5),
-                                child: Text("Buzzine",
-                                    style: TextStyle(
-                                        fontSize: 48, color: Colors.white))),
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: const Padding(
+                                  padding: EdgeInsets.all(5),
+                                  child: Text("Buzzine",
+                                      style: TextStyle(
+                                          fontSize: 48, color: Colors.white))),
+                            ),
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: ringingAlarms.isNotEmpty
                                   ? [
-                                      const Padding(
-                                        padding: EdgeInsets.all(5),
-                                        child: Text("🚨 Aktywne alarmy",
-                                            style: TextStyle(
-                                                fontSize: 24,
-                                                color: Colors.white)),
+                                      Align(
+                                        alignment: Alignment.centerLeft,
+                                        child: const Padding(
+                                          padding: EdgeInsets.all(5),
+                                          child: Text("🚨 Aktywne alarmy",
+                                              style: TextStyle(
+                                                  fontSize: 24,
+                                                  color: Colors.white)),
+                                        ),
                                       ),
                                       Carousel(
                                           height: 320,
@@ -234,12 +240,15 @@ class _HomePageState extends State<HomePage> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: activeSnoozes.isNotEmpty
                                   ? [
-                                      const Padding(
-                                        padding: EdgeInsets.all(5),
-                                        child: Text("😴 Aktywne drzemki",
-                                            style: TextStyle(
-                                                fontSize: 24,
-                                                color: Colors.white)),
+                                      Align(
+                                        alignment: Alignment.centerLeft,
+                                        child: const Padding(
+                                          padding: EdgeInsets.all(5),
+                                          child: Text("😴 Aktywne drzemki",
+                                              style: TextStyle(
+                                                  fontSize: 24,
+                                                  color: Colors.white)),
+                                        ),
                                       ),
                                       Carousel(
                                           height: 320,
@@ -283,11 +292,14 @@ class _HomePageState extends State<HomePage> {
                                     ]
                                   : [],
                             ),
-                            const Padding(
-                              padding: EdgeInsets.all(5),
-                              child: Text("⏰ Nadchodzące alarmy",
-                                  style: TextStyle(
-                                      fontSize: 24, color: Colors.white)),
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: const Padding(
+                                padding: EdgeInsets.all(5),
+                                child: Text("⏰ Nadchodzące alarmy",
+                                    style: TextStyle(
+                                        fontSize: 24, color: Colors.white)),
+                              ),
                             ),
                             Carousel(
                                 height: 320,
@@ -312,11 +324,14 @@ class _HomePageState extends State<HomePage> {
                                       repeat: e.repeat,
                                       refresh: refresh);
                                 }).toList()),
-                            const Padding(
-                                padding: EdgeInsets.all(5),
-                                child: Text("🎵 Audio",
-                                    style: TextStyle(
-                                        fontSize: 24, color: Colors.white))),
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: const Padding(
+                                  padding: EdgeInsets.all(5),
+                                  child: Text("🎵 Audio",
+                                      style: TextStyle(
+                                          fontSize: 24, color: Colors.white))),
+                            ),
                             InkWell(
                                 onTap: navigateToAudioManager,
                                 child: Container(
@@ -341,11 +356,14 @@ class _HomePageState extends State<HomePage> {
                                             style: TextStyle(fontSize: 24))
                                       ],
                                     ))),
-                            const Padding(
-                                padding: EdgeInsets.all(5),
-                                child: Text("🔒 Ochrona",
-                                    style: TextStyle(
-                                        fontSize: 24, color: Colors.white))),
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: const Padding(
+                                  padding: EdgeInsets.all(5),
+                                  child: Text("🔒 Ochrona",
+                                      style: TextStyle(
+                                          fontSize: 24, color: Colors.white))),
+                            ),
                             Container(
                                 width: MediaQuery.of(context).size.width * 0.9,
                                 height: 160,
@@ -394,11 +412,14 @@ class _HomePageState extends State<HomePage> {
                                     )
                                   ],
                                 )),
-                            const Padding(
-                                padding: EdgeInsets.all(5),
-                                child: Text("⚙️ Ustawienia",
-                                    style: TextStyle(
-                                        fontSize: 24, color: Colors.white))),
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: const Padding(
+                                  padding: EdgeInsets.all(5),
+                                  child: Text("⚙️ Ustawienia",
+                                      style: TextStyle(
+                                          fontSize: 24, color: Colors.white))),
+                            ),
                             InkWell(
                                 onTap: navigateToSettings,
                                 child: Container(
