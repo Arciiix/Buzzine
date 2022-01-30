@@ -292,38 +292,49 @@ class _HomePageState extends State<HomePage> {
                                     ]
                                   : [],
                             ),
-                            Align(
-                              alignment: Alignment.centerLeft,
-                              child: const Padding(
-                                padding: EdgeInsets.all(5),
-                                child: Text("⏰ Nadchodzące alarmy",
-                                    style: TextStyle(
-                                        fontSize: 24, color: Colors.white)),
-                              ),
+                            Column(
+                              children: ringingAlarms.isEmpty
+                                  ? [
+                                      Align(
+                                        alignment: Alignment.centerLeft,
+                                        child: const Padding(
+                                          padding: EdgeInsets.all(5),
+                                          child: Text("⏰ Nadchodzące alarmy",
+                                              style: TextStyle(
+                                                  fontSize: 24,
+                                                  color: Colors.white)),
+                                        ),
+                                      ),
+                                      Carousel(
+                                          height: 320,
+                                          onSelect: handleAlarmSelect,
+                                          children: upcomingAlarms.map((e) {
+                                            return AlarmCard(
+                                                key: Key(e.id!),
+                                                id: e.id!,
+                                                name: e.name,
+                                                hour: e.hour,
+                                                minute: e.minute,
+                                                nextInvocation:
+                                                    e.nextInvocation,
+                                                isActive: e.isActive,
+                                                isSnoozeEnabled:
+                                                    e.isSnoozeEnabled,
+                                                maxTotalSnoozeDuration:
+                                                    e.maxTotalSnoozeDuration,
+                                                sound: e.sound,
+                                                isGuardEnabled:
+                                                    e.isGuardEnabled,
+                                                deleteAfterRinging:
+                                                    e.deleteAfterRinging,
+                                                notes: e.notes,
+                                                isRepeating: e.isRepeating,
+                                                repeat: e.repeat,
+                                                refresh: refresh);
+                                          }).toList()),
+                                    ]
+                                  : [],
                             ),
-                            Carousel(
-                                height: 320,
-                                onSelect: handleAlarmSelect,
-                                children: upcomingAlarms.map((e) {
-                                  return AlarmCard(
-                                      key: Key(e.id!),
-                                      id: e.id!,
-                                      name: e.name,
-                                      hour: e.hour,
-                                      minute: e.minute,
-                                      nextInvocation: e.nextInvocation,
-                                      isActive: e.isActive,
-                                      isSnoozeEnabled: e.isSnoozeEnabled,
-                                      maxTotalSnoozeDuration:
-                                          e.maxTotalSnoozeDuration,
-                                      sound: e.sound,
-                                      isGuardEnabled: e.isGuardEnabled,
-                                      deleteAfterRinging: e.deleteAfterRinging,
-                                      notes: e.notes,
-                                      isRepeating: e.isRepeating,
-                                      repeat: e.repeat,
-                                      refresh: refresh);
-                                }).toList()),
                             Align(
                               alignment: Alignment.centerLeft,
                               child: const Padding(
