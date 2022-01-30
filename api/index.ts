@@ -575,6 +575,46 @@ api.put("/tempMuteAudio", async (req, res) => {
   }
 });
 
+api.get("/previewAudio", async (req, res) => {
+  logger.http(`GET /previewAudio with body ${JSON.stringify(req.query)}`);
+
+  //It's just the same request sent to the audio microservice
+  try {
+    let audioReq = await axios.get(`${AUDIO_URL}/v1/previewAudio`, {
+      params: req.query,
+    });
+    res.status(audioReq.status).send(audioReq.data);
+  } catch (err) {
+    logger.warn(
+      `Error while trying to preview an audio: ${JSON.stringify(
+        err?.response?.data
+      )} with status ${err?.response?.status}`
+    );
+    res
+      .status(err?.response?.status)
+      .send({ ...err?.response?.data, ...{ error: true } });
+  }
+});
+
+api.put("/stopAudioPreview", async (req, res) => {
+  logger.http(`PUT /stopAudioPreview with body ${JSON.stringify(req.body)}`);
+
+  //It's just the same request sent to the audio microservice
+  try {
+    let audioReq = await axios.put(`${AUDIO_URL}/v1/stopAudioPreview`);
+    res.status(audioReq.status).send(audioReq.data);
+  } catch (err) {
+    logger.warn(
+      `Error while stopping audio preview playback: ${JSON.stringify(
+        err?.response?.data
+      )} with status ${err?.response?.status}`
+    );
+    res
+      .status(err?.response?.status)
+      .send({ ...err?.response?.data, ...{ error: true } });
+  }
+});
+
 const socket = io(process.env.CORE_URL || "http://localhost:3333"); //DEV - to be changed with Docker
 
 socket.on("connect", () => {

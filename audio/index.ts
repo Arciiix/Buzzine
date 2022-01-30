@@ -25,6 +25,8 @@ app.use(bodyParser.json());
 
 let audioInstance: PlaySound;
 let emergencyInstance: PlaySound;
+let audioPreviewInstance: PlaySound;
+let audioPreviewTimeout: ReturnType<typeof setTimeout>;
 
 //Socket events
 
@@ -195,6 +197,79 @@ api.put("/tempMuteAudio", async (req, res) => {
   }
 
   res.send(tempMuteResult);
+});
+
+api.get("/previewAudio", async (req, res) => {
+  logger.http(`GET /previewAudio with data ${JSON.stringify(req.query)}`);
+
+  if (!req.query.filename) {
+    res.status(400).send({ error: true, errorCode: "MISSING_FILENAME" });
+    logger.warn("Tried to preview an audio but didn't specify the filename");
+    return;
+  }
+
+  if (
+    !req.query.duration ||
+    isNaN(parseInt(req.query.duration as string)) ||
+    parseInt(req.query.duration as string) < 1
+  ) {
+    res.status(400).send({ error: true, errorCode: "MISSING_DURATION" });
+    logger.warn(
+      `Tried to preview an audio but didn't specify/specified wrong duration: ${req.query.duration}`
+    );
+    return;
+  }
+
+  let audioInstance = await AudioNameMappingModel.findOne({
+    where: { filename: req.query.filename },
+  });
+
+  if (!audioInstance) {
+    res.status(400).send({ error: true, errorCode: "WRONG_FILENAME" });
+    logger.warn(`Tried to preview an unexisting audio ${req.query.filename}`);
+    return;
+  }
+
+  if (audioPreviewTimeout) {
+    clearTimeout(audioPreviewTimeout);
+    audioPreviewTimeout = null;
+  }
+  if (audioPreviewInstance) {
+    audioPreviewInstance.destroy();
+    audioPreviewInstance = null;
+  }
+
+  audioPreviewInstance = new PlaySound(req.query.filename as string);
+  audioPreviewTimeout = setTimeout(() => {
+    audioPreviewInstance.destroy();
+    audioPreviewInstance = null;
+    logger.info("Stopped the preview audio playback because of timeout");
+  }, parseInt(req.query.duration as string) * 1000);
+
+  logger.info(
+    `Playing a preview of file ${req.query.filename} for duration: ${parseInt(
+      req.query.duration as string
+    )}s`
+  );
+  res.send({ error: false, duration: parseInt(req.query.duration as string) });
+});
+
+api.put("/stopAudioPreview", (req, res) => {
+  logger.http(`PUT /stopAudioPreview with data ${JSON.stringify(req.body)}`);
+
+  if (audioPreviewTimeout) {
+    clearTimeout(audioPreviewTimeout);
+    audioPreviewTimeout = null;
+  }
+
+  if (audioPreviewInstance) {
+    audioPreviewInstance.destroy();
+    audioPreviewInstance = null;
+  }
+
+  logger.info("User has stopped the preview audio playback");
+
+  res.send({ error: false });
 });
 
 async function init() {
