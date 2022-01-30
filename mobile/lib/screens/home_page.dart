@@ -70,10 +70,33 @@ class _HomePageState extends State<HomePage> {
   }
 
   void generateQRCode() async {
-    await GlobalData.generateQRCode();
-    setState(() {
-      qrCodeHash = GlobalData.qrCodeHash;
-    });
+    bool? confirmed = await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Wygeneruj nowy hash"),
+          content: Text(
+              'Czy na pewno chcesz wygenerować nowy hash? Stary stanie się nieważny.'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text("Anuluj"),
+            ),
+            TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: const Text("Wygeneruj")),
+          ],
+        );
+      },
+    );
+
+    //It could be either null, so I check it by ==
+    if (confirmed == true) {
+      await GlobalData.generateQRCode();
+      setState(() {
+        qrCodeHash = GlobalData.qrCodeHash;
+      });
+    }
   }
 
   void testQRCode() async {
