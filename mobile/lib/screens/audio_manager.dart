@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:buzzine/globalData.dart';
 import 'package:buzzine/types/Audio.dart';
 import 'package:flutter/material.dart';
@@ -18,6 +19,7 @@ class _AudioManagerState extends State<AudioManager> {
 
   bool _isPreviewPlaying = false;
   String? _previewFilename;
+  Timer? _audioPlaybackEndTimer;
 
   void addAudio() {
     //TODO: Add audio
@@ -38,19 +40,27 @@ class _AudioManagerState extends State<AudioManager> {
     }
   }
 
-  void playPreview(Audio audio) {
-    //TODO: Play a preview of the audio
+  void playPreview(Audio audio) async {
     if (_previewFilename == audio.filename) {
-      //TODO: Pause the preview
+      await GlobalData.stopAudioPreview();
       setState(() {
         _previewFilename = '';
         _isPreviewPlaying = false;
+        _audioPlaybackEndTimer?.cancel();
       });
     } else {
-      //TODO: Pause the current preview if it's playing and play the new preview
+      await GlobalData.previewAudio(audio.filename);
       setState(() {
         _previewFilename = audio.filename;
         _isPreviewPlaying = true;
+        _audioPlaybackEndTimer?.cancel();
+        _audioPlaybackEndTimer = Timer(
+            Duration(seconds: GlobalData.audioPreviewDurationSeconds), () {
+          setState(() {
+            _previewFilename = '';
+            _isPreviewPlaying = false;
+          });
+        });
       });
     }
   }
@@ -143,5 +153,13 @@ class _AudioManagerState extends State<AudioManager> {
                 : const Center(
                     child: Text("Brak audio!",
                         style: TextStyle(fontSize: 32, color: Colors.white)))));
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+
+    _audioPlaybackEndTimer?.cancel();
+    GlobalData.stopAudioPreview();
   }
 }

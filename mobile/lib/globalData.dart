@@ -19,6 +19,7 @@ class GlobalData {
   static bool isLoading = true;
 
   static late String serverIP;
+  static int audioPreviewDurationSeconds = 30;
 
   GlobalData() {
     getData();
@@ -27,9 +28,7 @@ class GlobalData {
   static Future<void> getData() async {
     isLoading = true;
 
-    SharedPreferences _prefs = await SharedPreferences.getInstance();
-    serverIP = _prefs.getString("API_SERVER_IP") ??
-        "http://192.168.0.107:1111"; //DEV TODO: Change the default API server IP
+    await loadSettings();
 
     await getAlarms();
     await getUpcomingAlarms();
@@ -39,6 +38,14 @@ class GlobalData {
     await getQrCodeHash();
 
     isLoading = false;
+  }
+
+  static Future<void> loadSettings() async {
+    SharedPreferences _prefs = await SharedPreferences.getInstance();
+    serverIP = _prefs.getString("API_SERVER_IP") ??
+        "http://192.168.0.107:1111"; //DEV TODO: Change the default API server IP
+    audioPreviewDurationSeconds =
+        _prefs.getInt("AUDIO_PREVIEW_DURATION_SECONDS") ?? 30;
   }
 
   static Future<List<Alarm>> getAlarms() async {
@@ -357,5 +364,38 @@ class GlobalData {
     await GlobalData.getUpcomingAlarms();
     return DateTime.tryParse(
         decodedResponse['response']?['nextInvocationDate']);
+  }
+
+  static Future<bool> previewAudio(String filename) async {
+    Map<String, String> requestData = {
+      'filename': filename,
+      'duration': audioPreviewDurationSeconds.toString()
+    };
+
+    var response = await http.get(
+      Uri.parse("$serverIP/v1/previewAudio")
+          .replace(queryParameters: requestData),
+    );
+    var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
+
+    if (response.statusCode != 200 || decodedResponse['error'] == true) {
+      if (decodedResponse['errorCode'] != null) {
+        throw APIException(
+            "Błąd podczas podglądu audio $filename. Status code: ${response.statusCode}, response: ${response.body}");
+      }
+      return false;
+    }
+
+    return true;
+  }
+
+  static Future<void> stopAudioPreview() async {
+    var response = await http.put(Uri.parse("$serverIP/v1/stopAudioPreview"));
+    var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
+
+    if (response.statusCode != 200 || decodedResponse['error'] == true) {
+      throw APIException(
+          "Błąd podczas wyłączania podglądu audio. Status code: ${response.statusCode}, response: ${response.body}");
+    }
   }
 }

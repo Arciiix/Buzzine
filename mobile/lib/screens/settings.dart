@@ -1,3 +1,4 @@
+import 'package:buzzine/globalData.dart';
 import "package:flutter/material.dart";
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -22,6 +23,8 @@ class _SettingsState extends State<Settings> {
   TextEditingController _tempMuteAudioDurationController =
       TextEditingController();
   TextEditingController _APIServerIPController = TextEditingController();
+  TextEditingController _audioPreviewDurationSecondsController =
+      TextEditingController();
 
   @override
   void initState() {
@@ -44,6 +47,9 @@ class _SettingsState extends State<Settings> {
           (_prefsInstance.getInt('TEMP_MUTE_AUDIO_DURATION') ?? 30).toString();
       _APIServerIPController.text = _prefsInstance.getString("API_SERVER_IP") ??
           "http://192.168.0.107:1111"; //DEV TODO: Change it
+      _audioPreviewDurationSecondsController.text =
+          (_prefsInstance.getInt('AUDIO_PREVIEW_DURATION_SECONDS') ?? 30)
+              .toString();
     });
   }
 
@@ -56,6 +62,10 @@ class _SettingsState extends State<Settings> {
       _prefsInstance.setInt("TEMP_MUTE_AUDIO_DURATION",
           int.tryParse(_tempMuteAudioDurationController.text) ?? 30);
       _prefsInstance.setString("API_SERVER_IP", _APIServerIPController.text);
+      _prefsInstance.setInt("AUDIO_PREVIEW_DURATION_SECONDS",
+          int.tryParse(_audioPreviewDurationSecondsController.text) ?? 30);
+
+      GlobalData.loadSettings();
       Navigator.of(context).pop();
     }
   }
@@ -133,7 +143,7 @@ class _SettingsState extends State<Settings> {
                                 : "Podaj poprawną liczbę całkowitą",
                             decoration: InputDecoration(
                                 label: const Text(
-                                    "Min. łączny czas drzemek (min)"),
+                                    "Min. łączny czas drzemek (minuty)"),
                                 hintText: "5",
                                 floatingLabelBehavior:
                                     FloatingLabelBehavior.always,
@@ -159,7 +169,7 @@ class _SettingsState extends State<Settings> {
                                 : "Podaj poprawną liczbę całkowitą",
                             decoration: InputDecoration(
                                 label: const Text(
-                                    "Max. łączny czas drzemek (min)"),
+                                    "Max. łączny czas drzemek (minuty)"),
                                 hintText: "60",
                                 floatingLabelBehavior:
                                     FloatingLabelBehavior.always,
@@ -199,6 +209,32 @@ class _SettingsState extends State<Settings> {
                                       _tempMuteAudioDurationController
                                           .text = (_prefsInstance.getInt(
                                                   'TEMP_MUTE_AUDIO_DURATION') ??
+                                              30)
+                                          .toString(),
+                                )),
+                          ),
+                          TextFormField(
+                            controller: _audioPreviewDurationSecondsController,
+                            keyboardType: TextInputType.number,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.allow(
+                                  RegExp(r"[0-9]"))
+                            ],
+                            validator: (val) => int.tryParse(val ?? '') != null
+                                ? null
+                                : "Podaj poprawną liczbę całkowitą",
+                            decoration: InputDecoration(
+                                label: const Text(
+                                    "Długość podglądu audio (sekundy)"),
+                                hintText: "30",
+                                floatingLabelBehavior:
+                                    FloatingLabelBehavior.always,
+                                suffix: IconButton(
+                                  icon: const Icon(Icons.restart_alt),
+                                  onPressed: () =>
+                                      _audioPreviewDurationSecondsController
+                                          .text = (_prefsInstance.getInt(
+                                                  'AUDIO_PREVIEW_DURATION_SECONDS') ??
                                               30)
                                           .toString(),
                                 )),
