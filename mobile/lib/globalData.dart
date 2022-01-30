@@ -29,7 +29,7 @@ class GlobalData {
 
     SharedPreferences _prefs = await SharedPreferences.getInstance();
     serverIP = _prefs.getString("API_SERVER_IP") ??
-        "http://192.168.0.107:3333"; //DEV TODO: Change the default API server IP
+        "http://192.168.0.107:1111"; //DEV TODO: Change the default API server IP
 
     await getAlarms();
     await getUpcomingAlarms();
