@@ -389,7 +389,7 @@ class _HomePageState extends State<HomePage> {
                                   children: [
                                     Text(
                                       qrCodeHash,
-                                      style: const TextStyle(fontSize: 38),
+                                      style: const TextStyle(fontSize: 30),
                                       textAlign: TextAlign.center,
                                     ),
                                     const Text("Hash kodu QR",
