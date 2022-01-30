@@ -47,17 +47,17 @@ guardRouter.get("/printQRCode", (req, res) => {
 
 async function checkQRCode(qrCodeData: string): Promise<boolean> {
   //The format of the QR code is Buzzine/hash where hash is 8 characters length
-  let regExp = /^Buzzine\/[A-Za-z0-9]{8}$/;
+  let regExp = /^Buzzine\/[A-Za-z0-9]{32}$/;
   if (!regExp.test(qrCodeData)) {
     return false;
   }
 
-  let hash = qrCodeData.slice(8, 16);
+  let hash = qrCodeData.slice(8, 40);
   return hash === (await getCurrentQRCodeHash());
 }
 
 async function generateQRCode(): Promise<string> {
-  let generatedHash = crypto.randomBytes(4).toString("hex");
+  let generatedHash = crypto.randomBytes(16).toString("hex");
 
   //Remove the old QR codes
   await QRCodeModel.destroy({ where: {} });

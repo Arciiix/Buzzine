@@ -377,7 +377,7 @@ class _HomePageState extends State<HomePage> {
                             ),
                             Container(
                                 width: MediaQuery.of(context).size.width * 0.9,
-                                height: 160,
+                                height: 200,
                                 padding: const EdgeInsets.all(10),
                                 margin: const EdgeInsets.all(5),
                                 decoration: BoxDecoration(
@@ -387,8 +387,11 @@ class _HomePageState extends State<HomePage> {
                                 child: Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Text(qrCodeHash,
-                                        style: const TextStyle(fontSize: 48)),
+                                    Text(
+                                      qrCodeHash,
+                                      style: const TextStyle(fontSize: 38),
+                                      textAlign: TextAlign.center,
+                                    ),
                                     const Text("Hash kodu QR",
                                         style: TextStyle(fontSize: 24)),
                                     Row(

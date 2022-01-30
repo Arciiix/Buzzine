@@ -48,7 +48,7 @@ class _ScanQRCodeState extends State<ScanQRCode> {
                     child: Text(widget.targetHash,
                         textAlign: TextAlign.center,
                         style:
-                            const TextStyle(fontSize: 32, color: Colors.white)),
+                            const TextStyle(fontSize: 24, color: Colors.white)),
                   ),
                 ),
                 Padding(
