@@ -1,7 +1,9 @@
 import 'package:buzzine/globalData.dart';
+import 'package:buzzine/screens/select_on_map.dart';
 import 'package:buzzine/utils/show_snackbar.dart';
 import "package:flutter/material.dart";
 import 'package:flutter/services.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/services.dart';
 
@@ -17,6 +19,10 @@ class _SettingsState extends State<Settings> {
   late final SharedPreferences _prefsInstance;
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final GlobalKey<FormFieldState> _homeLatitudeKey =
+      GlobalKey<FormFieldState>();
+  final GlobalKey<FormFieldState> _homeLongitudeKey =
+      GlobalKey<FormFieldState>();
 
   TextEditingController _minTotalSnoozeTimeValueController =
       TextEditingController();
@@ -123,6 +129,37 @@ class _SettingsState extends State<Settings> {
       }
     } else {
       showSnackbar(context, "Pusty schowek!");
+    }
+  }
+
+  void chooseHomeOnMap() async {
+    if (!_homeLatitudeKey.currentState!.validate() ||
+        !_homeLongitudeKey.currentState!.validate()) {
+      return;
+    }
+
+    LatLng? previousPosition;
+
+    if (double.tryParse(_homeLatitudeController.text.replaceAll(",", ".")) !=
+            null &&
+        double.tryParse(_homeLongitudeController.text.replaceAll(",", ".")) !=
+            null) {
+      previousPosition = LatLng(
+          double.parse(_homeLatitudeController.text.replaceAll(",", ".")),
+          double.parse(_homeLongitudeController.text.replaceAll(",", ".")));
+    }
+
+    LatLng? selectedPoint = await Navigator.of(context).push(MaterialPageRoute(
+      builder: (context) => SelectOnMap(
+        previousPosition: previousPosition,
+      ),
+    ));
+
+    if (selectedPoint != null) {
+      setState(() {
+        _homeLatitudeController.text = selectedPoint.latitude.toString();
+        _homeLongitudeController.text = selectedPoint.longitude.toString();
+      });
     }
   }
 
@@ -301,6 +338,7 @@ class _SettingsState extends State<Settings> {
                           SizedBox(height: 20),
                           TextFormField(
                             controller: _homeLatitudeController,
+                            key: _homeLatitudeKey,
                             keyboardType: TextInputType.number,
                             inputFormatters: [
                               FilteringTextInputFormatter.allow(
@@ -355,6 +393,7 @@ class _SettingsState extends State<Settings> {
                           ),
                           TextFormField(
                             controller: _homeLongitudeController,
+                            key: _homeLongitudeKey,
                             keyboardType: TextInputType.number,
                             inputFormatters: [
                               FilteringTextInputFormatter.allow(
@@ -408,8 +447,7 @@ class _SettingsState extends State<Settings> {
                                 )),
                           ),
                           ElevatedButton(
-                              onPressed: () => print(
-                                  "TODO: Choose the home location from the map"),
+                              onPressed: chooseHomeOnMap,
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: const [
