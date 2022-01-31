@@ -7,6 +7,7 @@ import axios from "axios";
 import guardRouter, { checkQRCode } from "./guard";
 import { initDatabase } from "./utils/db";
 import cdn from "./utils/cdn";
+import weatherRouter from "./weather";
 
 //Load environment variables from file
 dotenv.config();
@@ -24,6 +25,7 @@ const api = express.Router();
 app.use("/v1", api);
 api.use("/guard", guardRouter);
 app.use("/cdn", cdn);
+api.use("/weather", weatherRouter);
 
 api.post("/addAlarm", async (req, res) => {
   logger.http(`POST /addAlarm with data: ${JSON.stringify(req.body)}`);

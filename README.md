@@ -29,11 +29,12 @@ Everything is under development, the app will evolve slowly, step by step. Even 
 
 #### API
 
-| Name      | Default value                                     | Description                   | Unit |
-| --------- | ------------------------------------------------- | ----------------------------- | ---- |
-| PORT      | 1111                                              | A port the API will run on    |      |
-| CORE_URL  | http://localhost:3333 (to be changed with Docker) | Used for socket.io connection |      |
-| AUDIO_URL | http://localhost:7777 (to be changed with Docker) | Used for communication        |      |
+| Name                     | Default value                                     | Description                                             | Unit |
+| ------------------------ | ------------------------------------------------- | ------------------------------------------------------- | ---- |
+| PORT                     | 1111                                              | A port the API will run on                              |      |
+| CORE_URL                 | http://localhost:3333 (to be changed with Docker) | Used for socket.io connection                           |      |
+| AUDIO_URL                | http://localhost:7777 (to be changed with Docker) | Used for communication                                  |      |
+| OPEN_WEATHER_MAP_API_KEY |                                                   | OpenWeatherMap API key used for the weather information |      |
 
 #### Audio
 
