@@ -53,49 +53,15 @@ weatherRouter.get("/getFullWeather", async (req, res) => {
     return;
   }
 
-  //TODO
-  try {
-    let response = await axios.get(
-      "https://api.openweathermap.org/data/2.5/onecall",
-      {
-        params: {
-          lat: req.query.latitude as string,
-          lon: req.query.longitude as string,
-          exclude: "alerts,minutely,daily",
-          units: "metric",
-          lang: "pl",
-          appId: OPEN_WEATHER_MAP_API_KEY,
-        },
-      }
-    );
-    //TODO
-    let returnObj: IWeatherDataObject = {
-      latitude: response.data.lat,
-      longitude: response.data.lon,
-      timezone: response.data.timezone,
-      current: {
-        ...serializeWeatherObject(response.data.current),
-        ...{
-          sunrise: new Date(response.data.current.sunrise * 1000), //Timestamp returned in the OpenWeatherMap API is given in seconds, convert it to milliseconds and Date object
-          sunset: new Date(response.data.current.sunset * 1000), //Timestamp returned in the OpenWeatherMap API is given in seconds, convert it to milliseconds and Date object
-        },
-      },
-      hourly: response.data.hourly
-        .slice(0, parseInt(req.query.hoursCount as string))
-        .map((e) => serializeWeatherObject(e)),
-    };
-    res.send({ error: false, response: returnObj });
-  } catch (err) {
-    logger.error(
-      `Error while getting weather for latitude ${
-        req.query.latitude as string
-      } and longitude ${
-        req.query.longitude as string
-      }: ${err.toString()} - ${JSON.stringify(
-        err?.response?.data
-      )} with status ${err?.response?.status}`
-    );
+  let weatherData = await getFullWeather(
+    req.query.latitude as string,
+    req.query.longitude as string,
+    parseInt(req.query.hoursCount as string)
+  );
+  if (!weatherData) {
+    res.status(500);
   }
+  res.send(weatherData);
 });
 
 async function checkOpenWeatherMapAPIKey() {
@@ -120,6 +86,55 @@ async function checkOpenWeatherMapAPIKey() {
   }
 
   logger.info("Checked the OpenWeatherMap API key");
+}
+
+async function getFullWeather(
+  latitude: string,
+  longitude: string,
+  hoursCount: number
+): Promise<{
+  error: boolean;
+  errorCode?: any;
+  response?: IWeatherDataObject;
+}> {
+  try {
+    let response = await axios.get(
+      "https://api.openweathermap.org/data/2.5/onecall",
+      {
+        params: {
+          lat: latitude,
+          lon: longitude,
+          exclude: "alerts,minutely,daily",
+          units: "metric",
+          lang: "pl",
+          appId: OPEN_WEATHER_MAP_API_KEY,
+        },
+      }
+    );
+    let returnObj: IWeatherDataObject = {
+      latitude: response.data.lat,
+      longitude: response.data.lon,
+      timezone: response.data.timezone,
+      current: {
+        ...serializeWeatherObject(response.data.current),
+        ...{
+          sunrise: new Date(response.data.current.sunrise * 1000), //Timestamp returned in the OpenWeatherMap API is given in seconds, convert it to milliseconds and Date object
+          sunset: new Date(response.data.current.sunset * 1000), //Timestamp returned in the OpenWeatherMap API is given in seconds, convert it to milliseconds and Date object
+        },
+      },
+      hourly: response.data.hourly
+        .slice(0, hoursCount)
+        .map((e) => serializeWeatherObject(e)),
+    };
+    return { error: false, response: returnObj };
+  } catch (err) {
+    logger.error(
+      `Error while getting weather for latitude ${latitude} and longitude ${longitude}: ${err.toString()} - ${JSON.stringify(
+        err?.response?.data
+      )} with status ${err?.response?.status}`
+    );
+    return { error: true, errorCode: err?.response?.data };
+  }
 }
 
 function serializeWeatherObject(weatherObject: any): IWeather {
