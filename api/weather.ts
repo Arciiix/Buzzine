@@ -107,7 +107,7 @@ async function getFullWeather(
           exclude: "alerts,minutely,daily",
           units: "metric",
           lang: "pl",
-          appId: OPEN_WEATHER_MAP_API_KEY,
+          appid: OPEN_WEATHER_MAP_API_KEY,
         },
       }
     );
