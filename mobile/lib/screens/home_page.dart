@@ -1,6 +1,7 @@
 import 'package:buzzine/components/alarm_card.dart';
 import 'package:buzzine/components/carousel.dart';
 import 'package:buzzine/components/snooze_card.dart';
+import 'package:buzzine/components/weather_widget.dart';
 import 'package:buzzine/globalData.dart';
 import 'package:buzzine/screens/alarm_list.dart';
 import 'package:buzzine/screens/audio_manager.dart';
@@ -29,6 +30,8 @@ class _HomePageState extends State<HomePage> {
   List<RingingAlarmEntity> ringingAlarms = [];
   List<Snooze> activeSnoozes = [];
   late String qrCodeHash;
+
+  bool _showWeatherWidget = false;
 
   GlobalKey<RefreshIndicatorState> _refreshState =
       GlobalKey<RefreshIndicatorState>();
@@ -142,15 +145,22 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
 
-    GlobalData.getData().then((value) => {
+    GlobalData.getData().then((value) {
+      setState(() {
+        _isLoaded = true;
+        upcomingAlarms = GlobalData.upcomingAlarms;
+        qrCodeHash = GlobalData.qrCodeHash;
+        ringingAlarms = GlobalData.ringingAlarms;
+        activeSnoozes = GlobalData.activeSnoozes;
+      });
+      GlobalData.getWeatherData().then((_) {
+        if (GlobalData.weather != null) {
           setState(() {
-            _isLoaded = true;
-            upcomingAlarms = GlobalData.upcomingAlarms;
-            qrCodeHash = GlobalData.qrCodeHash;
-            ringingAlarms = GlobalData.ringingAlarms;
-            activeSnoozes = GlobalData.activeSnoozes;
-          })
-        });
+            _showWeatherWidget = true;
+          });
+        }
+      });
+    });
   }
 
   @override
@@ -175,6 +185,12 @@ class _HomePageState extends State<HomePage> {
                           ringingAlarms = GlobalData.ringingAlarms;
                           activeSnoozes = GlobalData.activeSnoozes;
                         });
+                        await GlobalData.getWeatherData();
+                        if (GlobalData.weather != null) {
+                          setState(() {
+                            _showWeatherWidget = true;
+                          });
+                        }
                       },
                       child: SingleChildScrollView(
                         physics: const AlwaysScrollableScrollPhysics(),
@@ -426,6 +442,26 @@ class _HomePageState extends State<HomePage> {
                                     )
                                   ],
                                 )),
+                            Container(
+                              margin: const EdgeInsets.all(10),
+                              child: Column(
+                                children: _showWeatherWidget
+                                    ? [
+                                        Align(
+                                          alignment: Alignment.centerLeft,
+                                          child: const Padding(
+                                              padding: EdgeInsets.all(5),
+                                              child: Text("⛅ Pogoda",
+                                                  style: TextStyle(
+                                                      fontSize: 24,
+                                                      color: Colors.white))),
+                                        ),
+                                        InkWell(
+                                            onTap: null, child: WeatherWidget())
+                                      ]
+                                    : [],
+                              ),
+                            ),
                             Align(
                               alignment: Alignment.centerLeft,
                               child: const Padding(

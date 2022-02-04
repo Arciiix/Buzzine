@@ -58,7 +58,7 @@ weatherRouter.get("/getFullWeather", async (req, res) => {
     req.query.longitude as string,
     parseInt(req.query.hoursCount as string)
   );
-  if (!weatherData.error) {
+  if (weatherData.error) {
     res.status(500);
   }
 

@@ -4,9 +4,11 @@ import 'package:buzzine/types/API_exception.dart';
 import 'package:buzzine/types/Repeat.dart';
 import 'package:buzzine/types/RingingAlarmEntity.dart';
 import 'package:buzzine/types/Snooze.dart';
+import 'package:buzzine/types/Weather.dart';
 import 'package:http/http.dart' as http;
 import 'package:buzzine/types/Alarm.dart';
 import 'package:buzzine/types/Audio.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class GlobalData {
@@ -17,9 +19,11 @@ class GlobalData {
   static List<Audio> audios = [];
   static late String qrCodeHash;
   static bool isLoading = true;
+  static WeatherData? weather;
 
   static late String serverIP;
   static int audioPreviewDurationSeconds = 30;
+  static LatLng? homeLocation;
 
   GlobalData() {
     getData();
@@ -46,6 +50,13 @@ class GlobalData {
         "http://192.168.0.107:1111"; //DEV TODO: Change the default API server IP
     audioPreviewDurationSeconds =
         _prefs.getInt("AUDIO_PREVIEW_DURATION_SECONDS") ?? 30;
+
+    double? latitude = _prefs.getDouble("HOME_LATITUDE");
+    double? longitude = _prefs.getDouble("HOME_LONGITUDE");
+
+    if (latitude != null && longitude != null) {
+      homeLocation = LatLng(latitude, longitude);
+    }
   }
 
   static Future<List<Alarm>> getAlarms() async {
@@ -397,5 +408,71 @@ class GlobalData {
       throw APIException(
           "Błąd podczas wyłączania podglądu audio. Status code: ${response.statusCode}, response: ${response.body}");
     }
+  }
+
+  static Future<WeatherData?> getWeatherData() async {
+    if (homeLocation == null) {
+      weather = null;
+      return null;
+    }
+
+    Map<String, String> requestData = {
+      'latitude': homeLocation!.latitude.toString(),
+      'longitude': homeLocation!.longitude.toString(),
+      'hoursCount': "10", //TODO: Add hoursCount setting
+      'getCityName': "true"
+    };
+
+    var response = await http.get(
+      Uri.parse("$serverIP/v1/weather/getFullWeather")
+          .replace(queryParameters: requestData),
+    );
+    var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
+
+    if (response.statusCode != 200 || decodedResponse['error'] == true) {
+      throw APIException(
+          "Błąd podczas pobierania pogody. Status code: ${response.statusCode}, response: ${response.body}");
+    } else {
+      var weatherResponse = decodedResponse['response'];
+      var current = weatherResponse['current'];
+      List hourly = weatherResponse['hourly'];
+      WeatherData weatherInstance = WeatherData(
+          current: Weather(
+            timestamp: DateTime.parse(current['timestamp']),
+            temperature: double.parse(current['temperature'].toString()),
+            feelsLike: double.parse(current['feelsLike'].toString()),
+            pressure: double.parse(current['pressure'].toString()),
+            humidity: double.parse(current['humidity'].toString()),
+            windSpeed: double.parse(current['windSpeed'].toString()),
+            clouds: double.parse(current['clouds'].toString()),
+            weatherId: int.parse(current['weatherId'].toString()),
+            weatherTitle: current['weatherTitle'],
+            weatherDescription: current['weatherDescription'],
+            weatherIcon: current['weatherIcon'],
+            weatherIconURL: Uri.parse(current['weatherIconURL']),
+            sunrise: DateTime.parse(current['sunrise']),
+            sunset: DateTime.parse(current['sunset']),
+          ),
+          hourly: hourly
+              .map((e) => Weather(
+                    timestamp: DateTime.parse(e['timestamp']),
+                    temperature: double.parse(e['temperature'].toString()),
+                    feelsLike: double.parse(e['feelsLike'].toString()),
+                    pressure: double.parse(e['pressure'].toString()),
+                    humidity: double.parse(e['humidity'].toString()),
+                    windSpeed: double.parse(e['windSpeed'].toString()),
+                    clouds: double.parse(e['clouds'].toString()),
+                    weatherId: int.parse(e['weatherId'].toString()),
+                    weatherTitle: e['weatherTitle'],
+                    weatherDescription: e['weatherDescription'],
+                    weatherIcon: e['weatherIcon'],
+                    weatherIconURL: Uri.parse(e['weatherIconURL']),
+                  ))
+              .toList());
+
+      GlobalData.weather = weatherInstance;
+    }
+
+    return GlobalData.weather;
   }
 }
