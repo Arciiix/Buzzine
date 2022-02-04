@@ -53,15 +53,53 @@ weatherRouter.get("/getFullWeather", async (req, res) => {
     return;
   }
 
-  let weatherData = await getFullWeather(
+  let weatherData: any = await getFullWeather(
     req.query.latitude as string,
     req.query.longitude as string,
     parseInt(req.query.hoursCount as string)
   );
-  if (!weatherData) {
+  if (!weatherData.error) {
     res.status(500);
   }
+
+  if (req.query.getCityName) {
+    let cityName = await getCityNameByCoordinates(
+      req.query.latitude as string,
+      req.query.longitude as string
+    );
+    if (!cityName.error && cityName?.response?.found) {
+      weatherData.response.cityName = cityName.response.name;
+    }
+  }
   res.send(weatherData);
+});
+
+weatherRouter.get("/getCityNameByCoordinates", async (req, res) => {
+  logger.http(
+    `[WEATHER] GET /getCityNameByCoordinates with data ${JSON.stringify(
+      req.query
+    )}`
+  );
+
+  if (!req.query.latitude || isNaN(parseInt(req.query.latitude as string))) {
+    res.status(400).send({ error: true, errorCode: "MISSING_LATITUDE" });
+    return;
+  }
+  if (!req.query.longitude || isNaN(parseInt(req.query.longitude as string))) {
+    res.status(400).send({ error: true, errorCode: "MISSING_LONGITUDE" });
+    return;
+  }
+
+  let cityNameData = await getCityNameByCoordinates(
+    req.query.latitude as string,
+    req.query.longitude as string
+  );
+  if (cityNameData.error) {
+    res.status(500);
+  } else if (!cityNameData.response.found) {
+    res.status(404);
+  }
+  res.send(cityNameData);
 });
 
 async function checkOpenWeatherMapAPIKey() {
@@ -130,6 +168,48 @@ async function getFullWeather(
   } catch (err) {
     logger.error(
       `Error while getting weather for latitude ${latitude} and longitude ${longitude}: ${err.toString()} - ${JSON.stringify(
+        err?.response?.data
+      )} with status ${err?.response?.status}`
+    );
+    return { error: true, errorCode: err?.response?.data };
+  }
+}
+
+async function getCityNameByCoordinates(
+  latitude: string,
+  longitude: string
+): Promise<{
+  error: boolean;
+  errorCode?: string;
+  response?: { found: boolean; name?: string };
+}> {
+  try {
+    let response = await axios.get(
+      "http://api.openweathermap.org/geo/1.0/reverse",
+      {
+        params: {
+          lat: latitude,
+          lon: longitude,
+          limit: 1,
+          appid: OPEN_WEATHER_MAP_API_KEY,
+        },
+      }
+    );
+
+    if (!response.data?.[0]) {
+      logger.warn(
+        `Didn't find the city name by coordinates latitude ${latitude} and longitude ${longitude}`
+      );
+      return { error: false, response: { found: false } };
+    } else {
+      return {
+        error: false,
+        response: { found: true, name: response.data[0].name },
+      };
+    }
+  } catch (err) {
+    logger.error(
+      `Error while getting city name by coordinates latitude ${latitude} and longitude ${longitude}: ${err.toString()} - ${JSON.stringify(
         err?.response?.data
       )} with status ${err?.response?.status}`
     );
