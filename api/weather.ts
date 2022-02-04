@@ -73,7 +73,13 @@ weatherRouter.get("/getFullWeather", async (req, res) => {
       latitude: response.data.lat,
       longitude: response.data.lon,
       timezone: response.data.timezone,
-      current: serializeWeatherObject(response.data.current),
+      current: {
+        ...serializeWeatherObject(response.data.current),
+        ...{
+          sunrise: new Date(response.data.current.sunrise * 1000), //Timestamp returned in the OpenWeatherMap API is given in seconds, convert it to milliseconds and Date object
+          sunset: new Date(response.data.current.sunset * 1000), //Timestamp returned in the OpenWeatherMap API is given in seconds, convert it to milliseconds and Date object
+        },
+      },
       hourly: response.data.hourly
         .slice(0, parseInt(req.query.hoursCount as string))
         .map((e) => serializeWeatherObject(e)),
@@ -124,10 +130,12 @@ function serializeWeatherObject(weatherObject: any): IWeather {
     pressure: weatherObject.pressure,
     humidity: weatherObject.humidity,
     windSpeed: weatherObject.wind_speed,
+    clouds: weatherObject.clouds,
     weatherId: weatherObject.weather[0].id,
     weatherTitle: weatherObject.weather[0].main,
     weatherDescription: weatherObject.weather[0].description,
-    weatherIcon: `https://openweathermap.org/img/wn/${weatherObject.weather[0].icon}@2x.png`,
+    weatherIcon: weatherObject.weather[0].icon,
+    weatherIconURL: `https://openweathermap.org/img/wn/${weatherObject.weather[0].icon}@2x.png`,
   };
 }
 
@@ -146,10 +154,12 @@ interface IWeather {
   pressure: number;
   humidity: number;
   windSpeed: number;
+  clouds: number;
   weatherId: number;
   weatherTitle: string;
   weatherDescription: string;
   weatherIcon: string;
+  weatherIconURL: string;
 }
 
 checkOpenWeatherMapAPIKey();
