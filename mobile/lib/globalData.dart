@@ -468,7 +468,8 @@ class GlobalData {
                     weatherIcon: e['weatherIcon'],
                     weatherIconURL: Uri.parse(e['weatherIconURL']),
                   ))
-              .toList());
+              .toList(),
+          cityName: weatherResponse?['cityName']);
 
       GlobalData.weather = weatherInstance;
     }

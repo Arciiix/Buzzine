@@ -7,8 +7,8 @@ import 'package:flutter/rendering.dart';
 
 class WeatherWidget extends StatefulWidget {
   final bool? dontGetData;
-  final bool? darkMode;
-  const WeatherWidget({Key? key, this.dontGetData, this.darkMode})
+  final Color? backgroundColor;
+  const WeatherWidget({Key? key, this.dontGetData, this.backgroundColor})
       : super(key: key);
 
   @override
@@ -43,9 +43,7 @@ class _WeatherWidgetState extends State<WeatherWidget> {
         color: Colors.transparent,
         child: Container(
           decoration: BoxDecoration(
-            color: widget.darkMode == true
-                ? Theme.of(context).scaffoldBackgroundColor
-                : Colors.white,
+            color: widget.backgroundColor ?? Colors.white,
             borderRadius: BorderRadius.circular(5),
           ),
           padding: EdgeInsets.all(8),
@@ -63,9 +61,11 @@ class _WeatherWidgetState extends State<WeatherWidget> {
                             bottom: 30), //The icons in the font aren't centered
                         child: Icon(
                           getIconData(GlobalData.weather!.current.weatherIcon),
-                          color: widget.darkMode == true
-                              ? Colors.white
-                              : Colors.black,
+                          color: (widget.backgroundColor ?? Colors.white)
+                                      .computeLuminance() >
+                                  0.5
+                              ? Colors.black
+                              : Colors.white,
                           size: 60,
                         ),
                       )),
@@ -75,16 +75,20 @@ class _WeatherWidgetState extends State<WeatherWidget> {
                       children: [
                         Text("${GlobalData.weather!.current.temperature}°C",
                             style: TextStyle(
-                                color: widget.darkMode == true
-                                    ? Colors.white
-                                    : Colors.black,
+                                color: (widget.backgroundColor ?? Colors.white)
+                                            .computeLuminance() >
+                                        0.5
+                                    ? Colors.black
+                                    : Colors.white,
                                 fontSize: 40)),
                         Text(GlobalData.weather!.current.weatherDescription,
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                                color: widget.darkMode == true
-                                    ? Colors.white
-                                    : Colors.black,
+                                color: (widget.backgroundColor ?? Colors.white)
+                                            .computeLuminance() >
+                                        0.5
+                                    ? Colors.black
+                                    : Colors.white,
                                 fontSize: 25)),
                       ],
                     ),
@@ -96,7 +100,10 @@ class _WeatherWidgetState extends State<WeatherWidget> {
                   child: Row(
                       children: GlobalData.weather!.hourly
                           .map((e) => HourlyWeather(
-                              weather: e, darkMode: widget.darkMode))
+                              weather: e,
+                              darkMode: (widget.backgroundColor ?? Colors.white)
+                                      .computeLuminance() <
+                                  0.5))
                           .toList()))
             ],
           ),
@@ -113,7 +120,11 @@ class _WeatherWidgetState extends State<WeatherWidget> {
             width: MediaQuery.of(context).size.width,
             child: Column(children: [
               CircularProgressIndicator(
-                  color: widget.darkMode == true ? Colors.white : Colors.black),
+                  color: (widget.backgroundColor ?? Colors.white)
+                              .computeLuminance() >
+                          0.5
+                      ? Colors.black
+                      : Colors.white),
               const SizedBox(height: 10),
               const Text("Pobieranie...", style: TextStyle(fontSize: 30)),
             ])),

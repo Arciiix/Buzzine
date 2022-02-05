@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'package:buzzine/components/weather_widget.dart';
 import 'package:buzzine/globalData.dart';
 import 'package:buzzine/screens/snooze_alarm.dart';
 import 'package:buzzine/screens/unlock_alarm.dart';
+import 'package:buzzine/screens/weather_screen.dart';
 import 'package:buzzine/types/Alarm.dart';
 import 'package:buzzine/types/RingingAlarmEntity.dart';
 import 'package:buzzine/utils/formatting.dart';
@@ -167,6 +169,11 @@ class _RingingAlarmState extends State<RingingAlarm>
     }
   }
 
+  void navigateToWeather() {
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (context) => WeatherScreen()));
+  }
+
   @override
   void initState() {
     super.initState();
@@ -327,6 +334,12 @@ class _RingingAlarmState extends State<RingingAlarm>
                                       ]
                                     : [],
                               )),
+                          InkWell(
+                            onTap: navigateToWeather,
+                            child: WeatherWidget(
+                              backgroundColor: Colors.black,
+                            ),
+                          ),
                           const Text(
                               "DEV WARNING: This screen isn't ready yet 👀",
                               style: TextStyle(color: Colors.yellow)),
