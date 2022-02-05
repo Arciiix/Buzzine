@@ -5,7 +5,9 @@ import 'package:flutter/material.dart';
 
 class HourlyWeather extends StatelessWidget {
   final Weather weather;
-  const HourlyWeather({Key? key, required this.weather}) : super(key: key);
+  final bool? darkMode;
+  const HourlyWeather({Key? key, required this.weather, this.darkMode})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -18,14 +20,21 @@ class HourlyWeather extends StatelessWidget {
                 bottom: 15), //The icons in the font aren't centered
             child: Icon(
               getIconData(weather.weatherIcon),
-              color: Colors.black,
+              color: darkMode == true ? Colors.white : Colors.black,
               size: 30,
             ),
           ),
           Text(
               "${addZero(weather.timestamp.toLocal().hour)}:${addZero(weather.timestamp.toLocal().minute)}",
-              style: const TextStyle(fontSize: 20)),
-          Text("${weather.temperature}°C", style: const TextStyle(fontSize: 15))
+              style: TextStyle(
+                fontSize: 20,
+                color: darkMode == true ? Colors.white : Colors.black,
+              )),
+          Text("${weather.temperature}°C",
+              style: TextStyle(
+                fontSize: 15,
+                color: darkMode == true ? Colors.white : Colors.black,
+              ))
         ],
       ),
     );

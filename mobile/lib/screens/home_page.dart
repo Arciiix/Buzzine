@@ -9,6 +9,7 @@ import 'package:buzzine/screens/loading.dart';
 import 'package:buzzine/screens/ringing_alarm.dart';
 import 'package:buzzine/screens/scan_qr_code.dart';
 import 'package:buzzine/screens/settings.dart';
+import 'package:buzzine/screens/weather_screen.dart';
 import 'package:buzzine/types/Alarm.dart';
 import 'package:buzzine/types/RingingAlarmEntity.dart';
 import 'package:buzzine/types/Snooze.dart';
@@ -135,6 +136,11 @@ class _HomePageState extends State<HomePage> {
                 ));
       }
     }
+  }
+
+  void navigateToWeather() {
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (context) => WeatherScreen()));
   }
 
   Future<void> refresh() async {
@@ -457,7 +463,10 @@ class _HomePageState extends State<HomePage> {
                                                       color: Colors.white))),
                                         ),
                                         InkWell(
-                                            onTap: null, child: WeatherWidget())
+                                            onTap: navigateToWeather,
+                                            child: Hero(
+                                                tag: "WEATHER_WIDGET",
+                                                child: WeatherWidget()))
                                       ]
                                     : [],
                               ),

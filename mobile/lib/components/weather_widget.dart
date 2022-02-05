@@ -6,7 +6,10 @@ import "package:flutter/material.dart";
 import 'package:flutter/rendering.dart';
 
 class WeatherWidget extends StatefulWidget {
-  const WeatherWidget({Key? key}) : super(key: key);
+  final bool? dontGetData;
+  final bool? darkMode;
+  const WeatherWidget({Key? key, this.dontGetData, this.darkMode})
+      : super(key: key);
 
   @override
   _WeatherWidgetState createState() => _WeatherWidgetState();
@@ -18,80 +21,103 @@ class _WeatherWidgetState extends State<WeatherWidget> {
   @override
   void initState() {
     super.initState();
-    GlobalData.loadSettings().then((_) {
-      GlobalData.getWeatherData().then((_) {
-        setState(() {
-          isLoaded = true;
+    if (widget.dontGetData != true) {
+      GlobalData.loadSettings().then((_) {
+        GlobalData.getWeatherData().then((_) {
+          setState(() {
+            isLoaded = true;
+          });
         });
       });
-    });
+    } else {
+      setState(() {
+        isLoaded = true;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     if (isLoaded) {
-      return Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(5),
-        ),
-        padding: EdgeInsets.all(8),
-        width: MediaQuery.of(context).size.width,
-        child: Column(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Expanded(
-                    flex: 1,
-                    child: Padding(
-                      padding: const EdgeInsets.only(
-                          bottom: 30), //The icons in the font aren't centered
-                      child: Icon(
-                        getIconData(GlobalData.weather!.current.weatherIcon),
-                        color: Colors.black,
-                        size: 60,
-                      ),
-                    )),
-                Expanded(
-                  flex: 3,
-                  child: Column(
-                    children: [
-                      Text("${GlobalData.weather!.current.temperature}°C",
-                          style: const TextStyle(
-                              color: Colors.black, fontSize: 40)),
-                      Text(GlobalData.weather!.current.weatherDescription,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                              color: Colors.black, fontSize: 25)),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                    children: GlobalData.weather!.hourly
-                        .map((e) => HourlyWeather(weather: e))
-                        .toList()))
-          ],
-        ),
-      );
-    } else {
-      return Container(
+      return Material(
+        color: Colors.transparent,
+        child: Container(
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: widget.darkMode == true
+                ? Theme.of(context).scaffoldBackgroundColor
+                : Colors.white,
             borderRadius: BorderRadius.circular(5),
           ),
           padding: EdgeInsets.all(8),
           width: MediaQuery.of(context).size.width,
-          child: Column(children: const [
-            CircularProgressIndicator(color: Colors.black),
-            SizedBox(height: 10),
-            Text("Pobieranie...", style: TextStyle(fontSize: 30)),
-          ]));
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Expanded(
+                      flex: 1,
+                      child: Padding(
+                        padding: const EdgeInsets.only(
+                            bottom: 30), //The icons in the font aren't centered
+                        child: Icon(
+                          getIconData(GlobalData.weather!.current.weatherIcon),
+                          color: widget.darkMode == true
+                              ? Colors.white
+                              : Colors.black,
+                          size: 60,
+                        ),
+                      )),
+                  Expanded(
+                    flex: 3,
+                    child: Column(
+                      children: [
+                        Text("${GlobalData.weather!.current.temperature}°C",
+                            style: TextStyle(
+                                color: widget.darkMode == true
+                                    ? Colors.white
+                                    : Colors.black,
+                                fontSize: 40)),
+                        Text(GlobalData.weather!.current.weatherDescription,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                                color: widget.darkMode == true
+                                    ? Colors.white
+                                    : Colors.black,
+                                fontSize: 25)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                      children: GlobalData.weather!.hourly
+                          .map((e) => HourlyWeather(
+                              weather: e, darkMode: widget.darkMode))
+                          .toList()))
+            ],
+          ),
+        ),
+      );
+    } else {
+      return Material(
+        child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(5),
+            ),
+            padding: EdgeInsets.all(8),
+            width: MediaQuery.of(context).size.width,
+            child: Column(children: [
+              CircularProgressIndicator(
+                  color: widget.darkMode == true ? Colors.white : Colors.black),
+              const SizedBox(height: 10),
+              const Text("Pobieranie...", style: TextStyle(fontSize: 30)),
+            ])),
+      );
     }
   }
 }

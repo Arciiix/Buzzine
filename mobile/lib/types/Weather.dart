@@ -36,6 +36,7 @@ class Weather {
 class WeatherData {
   final Weather current;
   final List<Weather> hourly;
+  final DateTime updatedAt = DateTime.now();
 
   WeatherData({required this.current, required this.hourly});
 }
