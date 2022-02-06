@@ -206,7 +206,12 @@ class _SettingsState extends State<Settings> {
                   child: Padding(
                       padding: EdgeInsets.all(10),
                       child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          SectionTitle(
+                            "Ogólne",
+                            withoutPadding: true,
+                          ),
                           TextFormField(
                             controller: _APIServerIPController,
                             validator: (val) {
@@ -229,7 +234,7 @@ class _SettingsState extends State<Settings> {
                                           "http://192.168.0.107:1111",
                                 )),
                           ),
-                          SizedBox(height: 20),
+                          SectionTitle("Drzemki"),
                           TextFormField(
                             controller: _minTotalSnoozeTimeValueController,
                             keyboardType: TextInputType.number,
@@ -282,7 +287,7 @@ class _SettingsState extends State<Settings> {
                                           .toString(),
                                 )),
                           ),
-                          SizedBox(height: 20),
+                          SectionTitle("Audio"),
                           TextFormField(
                             controller: _tempMuteAudioDurationController,
                             keyboardType: TextInputType.number,
@@ -340,7 +345,7 @@ class _SettingsState extends State<Settings> {
                                           .toString(),
                                 )),
                           ),
-                          SizedBox(height: 20),
+                          SectionTitle("Pogoda"),
                           TextFormField(
                             controller: _homeLatitudeController,
                             key: _homeLatitudeKey,
@@ -492,5 +497,24 @@ class _SettingsState extends State<Settings> {
                         ],
                       ))),
             )));
+  }
+}
+
+class SectionTitle extends StatelessWidget {
+  final String name;
+  final bool? withoutPadding;
+  const SectionTitle(this.name, {Key? key, this.withoutPadding})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding:
+          withoutPadding == true ? EdgeInsets.all(0) : EdgeInsets.only(top: 20),
+      child: Text(name,
+          style: TextStyle(
+              color: Theme.of(context).primaryColor,
+              fontWeight: FontWeight.bold)),
+    );
   }
 }
