@@ -49,9 +49,10 @@ class _HomePageState extends State<HomePage> {
         builder: (context) => const AudioManager(selectAudio: false)));
   }
 
-  void navigateToSettings() {
-    Navigator.of(context)
+  void navigateToSettings() async {
+    await Navigator.of(context)
         .push(MaterialPageRoute(builder: (context) => const Settings()));
+    await refresh();
   }
 
   void navigateToRingingAlarm(RingingAlarmEntity ringingAlarm) async {
