@@ -32,8 +32,6 @@ class _HomePageState extends State<HomePage> {
   List<Snooze> activeSnoozes = [];
   late String qrCodeHash;
 
-  bool _showWeatherWidget = false;
-
   GlobalKey<RefreshIndicatorState> _refreshState =
       GlobalKey<RefreshIndicatorState>();
 
@@ -161,9 +159,8 @@ class _HomePageState extends State<HomePage> {
       });
       GlobalData.getWeatherData().then((_) {
         if (GlobalData.weather != null) {
-          setState(() {
-            _showWeatherWidget = true;
-          });
+          //Re-render the screen
+          setState(() {});
         }
       });
     });
@@ -191,12 +188,11 @@ class _HomePageState extends State<HomePage> {
                           ringingAlarms = GlobalData.ringingAlarms;
                           activeSnoozes = GlobalData.activeSnoozes;
                         });
+                        //Clear the current cached weather data
+                        GlobalData.weather = null;
                         await GlobalData.getWeatherData();
-                        if (GlobalData.weather != null) {
-                          setState(() {
-                            _showWeatherWidget = true;
-                          });
-                        }
+                        //Re-render the screen
+                        setState(() {});
                       },
                       child: SingleChildScrollView(
                         physics: const AlwaysScrollableScrollPhysics(),
@@ -451,7 +447,7 @@ class _HomePageState extends State<HomePage> {
                             Container(
                               margin: const EdgeInsets.all(10),
                               child: Column(
-                                children: _showWeatherWidget
+                                children: GlobalData.weather != null
                                     ? [
                                         Align(
                                           alignment: Alignment.centerLeft,

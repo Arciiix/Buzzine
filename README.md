@@ -8,11 +8,15 @@
 
 #### Under development
 
-Everything is under development, the app will evolve slowly, step by step. Even the read me file is under construction and will be better :)
+Everything is under development, the app will evolve slowly, step by step. Even the README file is under construction and will be better :)
 
 ## Important things
 
-1. Make a _default.mp3_ file in _audio/audio_ directory - it will be your default alarm tone
+1. Make a _default.mp3_ file in _audio/audio_ directory - it will be your default alarm tone.
+2. Provide the OpenWeatherMap API key as an API microservice environment variable OPEN_WEATHER_MAP_API_KEY (see below).
+3. Remember - if you compile the code using `tsc` command, you will find the output files in the /dist folder of each microservice.
+
+   **Important: copy all the necessary assets into that folder**, e.g., audio/default.mp3 when it comes to the audio service or the database.
 
 ### Environment variables
 

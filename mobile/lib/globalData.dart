@@ -56,6 +56,8 @@ class GlobalData {
 
     if (latitude != null && longitude != null) {
       homeLocation = LatLng(latitude, longitude);
+    } else {
+      homeLocation = null;
     }
   }
 

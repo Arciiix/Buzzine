@@ -16,6 +16,9 @@ const weatherRouter = express.Router();
 //Check the API key
 weatherRouter.use((req, res, next) => {
   if (!isAPIKeyValid) {
+    logger.error(
+      `User tried to make a request but no OpenWeatherMap API key was provided!`
+    );
     res
       .status(502)
       .send({ error: true, errorCode: "WRONG_OPEN_WEATHER_MAP_API_KEY" });

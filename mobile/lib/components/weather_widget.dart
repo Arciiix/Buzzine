@@ -111,6 +111,7 @@ class _WeatherWidgetState extends State<WeatherWidget> {
       );
     } else {
       return Material(
+        color: Colors.transparent,
         child: Container(
             decoration: BoxDecoration(
               color: (widget.backgroundColor ?? Colors.white),
@@ -126,7 +127,14 @@ class _WeatherWidgetState extends State<WeatherWidget> {
                       ? Colors.black
                       : Colors.white),
               const SizedBox(height: 10),
-              const Text("Pobieranie...", style: TextStyle(fontSize: 30)),
+              Text("Pobieranie...",
+                  style: TextStyle(
+                      fontSize: 30,
+                      color: (widget.backgroundColor ?? Colors.white)
+                                  .computeLuminance() >
+                              0.5
+                          ? Colors.black
+                          : Colors.white)),
             ])),
       );
     }
