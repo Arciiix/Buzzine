@@ -24,6 +24,7 @@ class GlobalData {
   static late String serverIP;
   static int audioPreviewDurationSeconds = 30;
   static LatLng? homeLocation;
+  static int weatherHoursCount = 24;
 
   GlobalData() {
     getData();
@@ -53,6 +54,8 @@ class GlobalData {
 
     double? latitude = _prefs.getDouble("HOME_LATITUDE");
     double? longitude = _prefs.getDouble("HOME_LONGITUDE");
+
+    weatherHoursCount = _prefs.getInt("WEATHER_HOURS_COUNT") ?? 24;
 
     if (latitude != null && longitude != null) {
       homeLocation = LatLng(latitude, longitude);
@@ -424,7 +427,7 @@ class GlobalData {
     Map<String, String> requestData = {
       'latitude': homeLocation!.latitude.toString(),
       'longitude': homeLocation!.longitude.toString(),
-      'hoursCount': "10", //TODO: Add hoursCount setting
+      'hoursCount': weatherHoursCount.toString(),
       'getCityName': "true"
     };
 

@@ -35,6 +35,7 @@ class _SettingsState extends State<Settings> {
       TextEditingController();
   TextEditingController _homeLatitudeController = TextEditingController();
   TextEditingController _homeLongitudeController = TextEditingController();
+  TextEditingController _weatherHoursCountController = TextEditingController();
 
   @override
   void initState() {
@@ -64,6 +65,8 @@ class _SettingsState extends State<Settings> {
           (_prefsInstance.getDouble('HOME_LATITUDE') ?? '').toString();
       _homeLongitudeController.text =
           (_prefsInstance.getDouble('HOME_LONGITUDE') ?? '').toString();
+      _weatherHoursCountController.text =
+          (_prefsInstance.getInt('WEATHER_HOURS_COUNT') ?? 24).toString();
     });
   }
 
@@ -78,6 +81,8 @@ class _SettingsState extends State<Settings> {
       _prefsInstance.setString("API_SERVER_IP", _APIServerIPController.text);
       _prefsInstance.setInt("AUDIO_PREVIEW_DURATION_SECONDS",
           int.tryParse(_audioPreviewDurationSecondsController.text) ?? 30);
+      _prefsInstance.setInt("WEATHER_HOURS_COUNT",
+          int.tryParse(_weatherHoursCountController.text) ?? 24);
       if (double.tryParse(_homeLatitudeController.text.replaceAll(",", ".")) !=
               null &&
           double.tryParse(_homeLongitudeController.text.replaceAll(",", ".")) !=
@@ -455,6 +460,35 @@ class _SettingsState extends State<Settings> {
                                   Text('Wybierz z mapy')
                                 ],
                               )),
+                          TextFormField(
+                            controller: _weatherHoursCountController,
+                            keyboardType: TextInputType.number,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.allow(
+                                  RegExp(r"[0-9]"))
+                            ],
+                            validator: (val) {
+                              if (int.tryParse(val ?? '') == null) {
+                                return "Podaj poprawną liczbę całkowitą";
+                              }
+                              return null;
+                            },
+                            decoration: InputDecoration(
+                              label: const Text(
+                                  "Ilość godzin w pogodzie (0 = brak limitu)"),
+                              hintText: "24",
+                              floatingLabelBehavior:
+                                  FloatingLabelBehavior.always,
+                              suffix: IconButton(
+                                icon: const Icon(Icons.restart_alt),
+                                onPressed: () => _weatherHoursCountController
+                                    .text = (_prefsInstance
+                                            .getInt('WEATHER_HOURS_COUNT') ??
+                                        24)
+                                    .toString(),
+                              ),
+                            ),
+                          ),
                         ],
                       ))),
             )));

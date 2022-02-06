@@ -164,7 +164,7 @@ async function getFullWeather(
         },
       },
       hourly: response.data.hourly
-        .slice(0, hoursCount)
+        .slice(0, hoursCount == 0 ? response.data.hourly.length : hoursCount)
         .map((e) => serializeWeatherObject(e)),
     };
     return { error: false, response: returnObj };
