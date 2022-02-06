@@ -1,4 +1,5 @@
 import 'package:buzzine/components/alarm_card.dart';
+import 'package:buzzine/components/audio_widget.dart';
 import 'package:buzzine/components/carousel.dart';
 import 'package:buzzine/components/snooze_card.dart';
 import 'package:buzzine/components/weather_widget.dart';
@@ -368,28 +369,7 @@ class _HomePageState extends State<HomePage> {
                             ),
                             InkWell(
                                 onTap: navigateToAudioManager,
-                                child: Container(
-                                    width:
-                                        MediaQuery.of(context).size.width * 0.9,
-                                    height: 120,
-                                    padding: const EdgeInsets.all(10),
-                                    margin: const EdgeInsets.all(5),
-                                    decoration: BoxDecoration(
-                                      color: Theme.of(context).cardColor,
-                                      borderRadius: BorderRadius.circular(5),
-                                    ),
-                                    child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Text(
-                                            GlobalData.audios.length.toString(),
-                                            style:
-                                                const TextStyle(fontSize: 52)),
-                                        const Text("Ilość audio",
-                                            style: TextStyle(fontSize: 24))
-                                      ],
-                                    ))),
+                                child: AudioWidget()),
                             Align(
                               alignment: Alignment.centerLeft,
                               child: const Padding(
