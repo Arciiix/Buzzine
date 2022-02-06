@@ -29,8 +29,7 @@ class _WeatherScreenState extends State<WeatherScreen> {
               displayColor: Colors.white,
               fontSizeFactor: 1.2)),
       child: Scaffold(
-          appBar:
-              AppBar(title: Text(GlobalData?.weather?.cityName ?? "Pogoda")),
+          appBar: AppBar(title: Text(GlobalData.weather?.cityName ?? "Pogoda")),
           body: Column(
             children: [
               Expanded(

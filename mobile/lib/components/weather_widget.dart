@@ -113,7 +113,7 @@ class _WeatherWidgetState extends State<WeatherWidget> {
       return Material(
         child: Container(
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: (widget.backgroundColor ?? Colors.white),
               borderRadius: BorderRadius.circular(5),
             ),
             padding: EdgeInsets.all(8),

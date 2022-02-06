@@ -336,8 +336,11 @@ class _RingingAlarmState extends State<RingingAlarm>
                               )),
                           InkWell(
                             onTap: navigateToWeather,
-                            child: WeatherWidget(
-                              backgroundColor: Colors.black,
+                            child: Hero(
+                              tag: "WEATHER_WIDGET",
+                              child: WeatherWidget(
+                                backgroundColor: Colors.black,
+                              ),
                             ),
                           ),
                           const Text(

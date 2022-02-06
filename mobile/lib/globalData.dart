@@ -412,8 +412,11 @@ class GlobalData {
 
   static Future<WeatherData?> getWeatherData() async {
     if (homeLocation == null) {
-      weather = null;
-      return null;
+      await loadSettings();
+      if (homeLocation == null) {
+        weather = null;
+        return null;
+      }
     }
 
     Map<String, String> requestData = {
