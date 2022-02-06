@@ -1,12 +1,19 @@
 import { DataTypes } from "sequelize";
+import shortUUID from "short-uuid";
 import db from "../utils/db";
 import AlarmsAudioModel from "./AlarmsAudio";
 
 const AudioNameMappingModel = db.define("AudioNameMapping", {
+  audioId: {
+    allowNull: false,
+    type: DataTypes.STRING,
+    unique: true,
+    primaryKey: true,
+    defaultValue: () => shortUUID.generate(),
+  },
   filename: {
     allowNull: false,
     type: DataTypes.STRING,
-    primaryKey: true,
   },
   friendlyName: {
     allowNull: true,
@@ -18,6 +25,6 @@ const AudioNameMappingModel = db.define("AudioNameMapping", {
   },
 });
 
-AlarmsAudioModel.belongsTo(AudioNameMappingModel, { foreignKey: "filename" });
+AlarmsAudioModel.belongsTo(AudioNameMappingModel, { foreignKey: "audioId" });
 
 export default AudioNameMappingModel;

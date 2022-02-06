@@ -74,31 +74,35 @@ class PlayAudio {
   }
 }
 
-async function getAlarmAudio(alarmId: string) {
-  if (!alarmId) return "default.mp3";
+async function getAlarmAudio(
+  alarmId: string
+): Promise<{ audioFilename: string; audioId: string }> {
+  if (!alarmId) return { audioFilename: "default.mp3", audioId: "default" };
   let audio: any = await AlarmsAudioModel.findOne({
     where: { alarmId: alarmId },
     include: AudioNameMappingModel,
   });
 
-  return audio ? audio.filename : "default.mp3";
+  return audio
+    ? { audioFilename: audio.AudioNameMapping.filename, audioId: audio.audioId }
+    : { audioFilename: "default.mp3", audioId: "default" };
 }
 
-async function changeAlarmSound(alarmId: string, audioFilename?: string) {
-  if (audioFilename) {
+async function changeAlarmSound(alarmId: string, audioId?: string) {
+  if (audioId) {
     //Check if sound exists
     let sound = await AudioNameMappingModel.findOne({
-      where: { filename: audioFilename },
+      where: { audioId: audioId },
     });
     if (!sound) {
       logger.warn(
-        `User tried to change alarm ${alarmId} sound to something that doesn't exist (${audioFilename})`
+        `User tried to change alarm ${alarmId} sound to something that doesn't exist (${audioId})`
       );
       return false;
     }
   } else {
     //If user didn't specify the audioFilename, clear the audio - set the default one
-    audioFilename = "default.mp3";
+    audioId = "default";
   }
 
   //If alarm doesn't exist in the audio database yet, create it
@@ -106,30 +110,28 @@ async function changeAlarmSound(alarmId: string, audioFilename?: string) {
     where: { alarmId: alarmId },
   });
   if (alarm) {
-    alarm.filename = audioFilename;
+    alarm.audioId = audioId;
     await alarm.save();
   } else {
     alarm = await AlarmsAudioModel.create({
       alarmId: alarmId,
-      filename: audioFilename,
+      audioId: audioId,
     });
   }
-  logger.info(
-    `Successfully changed alarm ${alarmId} audio to ${audioFilename}`
-  );
+  logger.info(`Successfully changed alarm ${alarmId} audio to ${audioId}`);
   return alarm;
 }
 
 async function deleteSound(
-  filename: string
+  audioId: string
 ): Promise<{ error: boolean; errorCode?: string }> {
-  if (filename === "default.mp3") {
+  if (audioId === "default") {
     return { error: true, errorCode: "CANNOT_DELETE_DEFAULT_SOUND" };
   }
 
   //Check if sound exists
-  let soundObj = await AudioNameMappingModel.findOne({
-    where: { filename: filename },
+  let soundObj: any = await AudioNameMappingModel.findOne({
+    where: { audioId: audioId },
   });
   if (!soundObj) {
     return { error: true, errorCode: "SOUND_DOES_NOT_EXIST" };
@@ -137,7 +139,7 @@ async function deleteSound(
 
   //Delete all the relations - if alarm has this sound set as its sound
   let alarmsWithTheSound: any = await AlarmsAudioModel.findAll({
-    where: { filename: filename },
+    where: { audioId: audioId },
   });
   for await (const alarm of alarmsWithTheSound) {
     await changeAlarmSound(alarm.alarmId);
@@ -146,9 +148,9 @@ async function deleteSound(
   await soundObj.destroy();
 
   //Delete the actual file
-  fs.unlinkSync(path.join(__dirname, "..", "audio", filename));
+  fs.unlinkSync(path.join(__dirname, "..", "audio", soundObj.filename));
 
-  logger.info(`Successfully deleted sound ${filename}`);
+  logger.info(`Successfully deleted sound ${audioId}`);
 
   return { error: false };
 }

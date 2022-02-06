@@ -50,15 +50,12 @@ api.post("/addAlarm", async (req, res) => {
         `Response error when creating the alarm: ${JSON.stringify(response)}`
       );
     } else {
-      if (
-        req.body?.sound?.filename &&
-        req.body.sound.filename !== "default.mp3"
-      ) {
+      if (req.body?.sound?.audioId && req.body.sound.audioId !== "default") {
         try {
           //Associate the alarm with given sound
           await axios.put(`${AUDIO_URL}/v1/changeAlarmSound`, {
             alarmId: response?.id,
-            audioFilename: req.body.sound.filename,
+            audioId: req.body.sound.audioId,
           });
         } catch (err) {
           res.status(err?.response?.status).send(err?.response?.data);
@@ -293,15 +290,12 @@ api.post("/updateAlarm", async (req, res) => {
         )}`
       );
     } else {
-      if (
-        req.body?.sound?.filename &&
-        req.body.sound.filename !== "default.mp3"
-      ) {
+      if (req.body?.sound?.audioId && req.body.sound.audioId !== "default") {
         try {
           //Associate the alarm with given sound
           await axios.put(`${AUDIO_URL}/v1/changeAlarmSound`, {
             alarmId: response?.id,
-            audioFilename: req.body.sound.filename,
+            audioId: req.body.sound.audioId,
           });
         } catch (err) {
           res.status(err?.response?.status).send(err?.response?.data);
@@ -360,6 +354,7 @@ api.get("/getAllAlarms", (req, res) => {
           ...elem,
           ...{
             sound: {
+              audioId: "default",
               filename: "default.mp3",
               friendlyName: "Domyślna",
             },
@@ -379,6 +374,7 @@ api.get("/getAllAlarms", (req, res) => {
             );
             if (alarmIndex > -1) {
               response[alarmIndex].sound = {
+                audioId: element.audioId,
                 filename: element.filename,
                 friendlyName:
                   element?.AudioNameMapping?.friendlyName ?? element.filename,
@@ -421,6 +417,7 @@ api.get("/getRingingAlarms", (req, res) => {
           ...elem,
           ...{
             sound: {
+              audioId: "default",
               filename: "default.mp3",
               friendlyName: "Domyślna",
             },
@@ -440,6 +437,7 @@ api.get("/getRingingAlarms", (req, res) => {
             );
             if (alarmIndex > -1) {
               response[alarmIndex].sound = {
+                audioId: element.audioId,
                 filename: element.filename,
                 friendlyName:
                   element?.AudioNameMapping?.friendlyName ?? element.filename,
@@ -530,8 +528,8 @@ api.get("/getSoundList", async (req, res) => {
 api.delete("/deleteSound", async (req, res) => {
   logger.http(`DELETE /deleteSound with data ${JSON.stringify(req.body)}`);
 
-  if (!req.body.filename) {
-    res.send({ error: true, errorCode: "MISSING_FILENAME" });
+  if (!req.body.audioId) {
+    res.send({ error: true, errorCode: "MISSING_AUDIO_ID" });
     return;
   }
 
@@ -539,7 +537,7 @@ api.delete("/deleteSound", async (req, res) => {
   try {
     let deleteReq = await axios.delete(`${AUDIO_URL}/v1/deleteSound`, {
       data: {
-        filename: req.body.filename,
+        audioId: req.body.audioId,
       },
     });
     res.status(deleteReq.status).send(deleteReq.data);
@@ -548,7 +546,7 @@ api.delete("/deleteSound", async (req, res) => {
     );
   } catch (err) {
     logger.warn(
-      `Error while deleting audio ${req.body.filename}: ${JSON.stringify(
+      `Error while deleting audio ${req.body.audioId}: ${JSON.stringify(
         err?.response?.data
       )} with status ${err?.response?.status}`
     );

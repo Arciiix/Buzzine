@@ -18,7 +18,7 @@ class _AudioManagerState extends State<AudioManager> {
   late List<Audio> audios;
 
   bool _isPreviewPlaying = false;
-  String? _previewFilename;
+  String? _previewId;
   Timer? _audioPlaybackEndTimer;
 
   void addAudio() {
@@ -27,7 +27,7 @@ class _AudioManagerState extends State<AudioManager> {
   }
 
   void deleteAudio(Audio e) async {
-    await GlobalData.deleteAudio(e.filename);
+    await GlobalData.deleteAudio(e.audioId);
     await GlobalData.getAudios();
     setState(() {
       audios = GlobalData.audios;
@@ -41,23 +41,23 @@ class _AudioManagerState extends State<AudioManager> {
   }
 
   void playPreview(Audio audio) async {
-    if (_previewFilename == audio.filename) {
+    if (_previewId == audio.audioId) {
       await GlobalData.stopAudioPreview();
       setState(() {
-        _previewFilename = '';
+        _previewId = '';
         _isPreviewPlaying = false;
         _audioPlaybackEndTimer?.cancel();
       });
     } else {
-      await GlobalData.previewAudio(audio.filename);
+      await GlobalData.previewAudio(audio.audioId);
       setState(() {
-        _previewFilename = audio.filename;
+        _previewId = audio.audioId;
         _isPreviewPlaying = true;
         _audioPlaybackEndTimer?.cancel();
         _audioPlaybackEndTimer = Timer(
             Duration(seconds: GlobalData.audioPreviewDurationSeconds), () {
           setState(() {
-            _previewFilename = '';
+            _previewId = '';
             _isPreviewPlaying = false;
           });
         });
@@ -134,7 +134,9 @@ class _AudioManagerState extends State<AudioManager> {
                                 );
                               },
                               onDismissed: (DismissDirection direction) {
-                                deleteAudio(e);
+                                if (e.audioId != "default") {
+                                  deleteAudio(e);
+                                }
                               },
                               child: ListTile(
                                 onTap: widget.selectAudio
@@ -145,7 +147,7 @@ class _AudioManagerState extends State<AudioManager> {
                                 trailing: IconButton(
                                     icon: Icon(
                                         _isPreviewPlaying &&
-                                                _previewFilename == e.filename
+                                                _previewId == e.audioId
                                             ? Icons.pause
                                             : Icons.play_arrow,
                                         size: 32),

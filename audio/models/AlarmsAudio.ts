@@ -6,7 +6,7 @@ const AlarmsAudioModel = db.define("AlarmsAudio", {
     allowNull: false,
     type: DataTypes.STRING,
   },
-  filename: {
+  audioId: {
     allowNull: false,
     type: DataTypes.STRING,
   },

@@ -26,6 +26,6 @@
     "sqlite3": "^5.0.2",
     "winston": "^3.3.3",
     "winston-daily-rotate-file": "^4.5.5",
-    "ytdl-core": "^4.9.2"
+    "ytdl-core": "^4.10.1"
   }
 }

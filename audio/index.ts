@@ -42,7 +42,7 @@ io.on("hello", () => {
 
 io.on("ALARM_RINGING", async (data) => {
   if (!audioInstance) {
-    let audioFilename = await getAlarmAudio(data?.id);
+    let { audioFilename } = await getAlarmAudio(data?.id);
     audioInstance = new PlaySound(audioFilename);
   } else {
     logger.info(`Skipping playing audio since the audio is playing already...`);
@@ -93,10 +93,17 @@ api.get("/getSoundList", async (req, res) => {
 api.get("/getAlarmSoundList", async (req, res) => {
   logger.http("GET /getAlarmSoundList");
 
-  let soundList = await AlarmsAudioModel.findAll({
+  let soundList: any[] = await AlarmsAudioModel.findAll({
     include: AudioNameMappingModel,
   });
-  res.send({ error: false, data: soundList });
+  res.send({
+    error: false,
+    data: soundList.map((e: any) => {
+      let newElem = { ...JSON.parse(JSON.stringify(e)) };
+      newElem.filename = e.AudioNameMapping.filename;
+      return newElem;
+    }),
+  });
 });
 
 api.post("/addYouTubeSound", (req, res) => {
@@ -117,14 +124,14 @@ api.put("/changeAlarmSound", async (req, res) => {
     res.send({ error: true, errorCode: "MISSING_ALARMID" });
     return;
   }
-  if (!req.body.audioFilename) {
-    res.send({ error: true, errorCode: "MISSING_AUDIOFILENAME" });
+  if (!req.body.audioId) {
+    res.send({ error: true, errorCode: "MISSING_AUDIOID" });
     return;
   }
 
   let changeSoundResult = await changeAlarmSound(
     req.body.alarmId,
-    req.body.audioFilename
+    req.body.audioId
   );
   if (!changeSoundResult) {
     res.status(400).send({ error: true });
@@ -154,12 +161,12 @@ api.delete("/clearAlarmCustomSound", async (req, res) => {
 api.delete("/deleteSound", async (req, res) => {
   logger.http(`DELETE /deleteSound with data ${JSON.stringify(req.body)}`);
 
-  if (!req.body.filename) {
-    res.status(400).send({ error: true, errorCode: "MISSING_FILENAME" });
+  if (!req.body.audioId) {
+    res.status(400).send({ error: true, errorCode: "MISSING_AUDIO_ID" });
     return;
   }
 
-  let deleteSoundResult = await deleteSound(req.body.filename);
+  let deleteSoundResult = await deleteSound(req.body.audioId);
   if (!deleteSoundResult.error) {
     res.send({ error: false });
   } else {
@@ -202,9 +209,9 @@ api.put("/tempMuteAudio", async (req, res) => {
 api.get("/previewAudio", async (req, res) => {
   logger.http(`GET /previewAudio with data ${JSON.stringify(req.query)}`);
 
-  if (!req.query.filename) {
-    res.status(400).send({ error: true, errorCode: "MISSING_FILENAME" });
-    logger.warn("Tried to preview an audio but didn't specify the filename");
+  if (!req.query.audioId) {
+    res.status(400).send({ error: true, errorCode: "MISSING_AUDIO_ID" });
+    logger.warn("Tried to preview an audio but didn't specify the audio id");
     return;
   }
 
@@ -220,13 +227,13 @@ api.get("/previewAudio", async (req, res) => {
     return;
   }
 
-  let audioInstance = await AudioNameMappingModel.findOne({
-    where: { filename: req.query.filename },
+  let audioInstance: any = await AudioNameMappingModel.findOne({
+    where: { audioId: req.query.audioId },
   });
 
   if (!audioInstance) {
-    res.status(400).send({ error: true, errorCode: "WRONG_FILENAME" });
-    logger.warn(`Tried to preview an unexisting audio ${req.query.filename}`);
+    res.status(400).send({ error: true, errorCode: "WRONG_AUDIO_ID" });
+    logger.warn(`Tried to preview an unexisting audio ${req.query.audioId}`);
     return;
   }
 
@@ -239,7 +246,7 @@ api.get("/previewAudio", async (req, res) => {
     audioPreviewInstance = null;
   }
 
-  audioPreviewInstance = new PlaySound(req.query.filename as string);
+  audioPreviewInstance = new PlaySound(audioInstance.filename);
   audioPreviewTimeout = setTimeout(() => {
     audioPreviewInstance.destroy();
     audioPreviewInstance = null;
@@ -247,7 +254,7 @@ api.get("/previewAudio", async (req, res) => {
   }, parseInt(req.query.duration as string) * 1000);
 
   logger.info(
-    `Playing a preview of file ${req.query.filename} for duration: ${parseInt(
+    `Playing a preview of file ${req.query.audioId} for duration: ${parseInt(
       req.query.duration as string
     )}s`
   );
@@ -286,10 +293,11 @@ async function init() {
 
   //Add the default audio to the table if it doesn't exist yet
   let defaultAudioObj = await AudioNameMappingModel.findOne({
-    where: { filename: "default.mp3" },
+    where: { audioId: "default" },
   });
   if (!defaultAudioObj) {
     await AudioNameMappingModel.create({
+      audioId: "default",
       filename: "default.mp3",
       friendlyName: "Default audio",
     });

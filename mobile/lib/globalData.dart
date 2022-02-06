@@ -84,6 +84,7 @@ class GlobalData {
               deleteAfterRinging: e?['deleteAfterRinging'] ?? false,
               maxTotalSnoozeDuration: e?['maxTotalSnoozeDuration'],
               sound: Audio(
+                  audioId: e['sound']['audioId'],
                   filename: e['sound']['filename'],
                   friendlyName:
                       e['sound']['friendlyName'] ?? e['sound']['filename']),
@@ -224,8 +225,10 @@ class GlobalData {
     } else {
       List audiosResponse = decodedResponse['data'];
       GlobalData.audios = audiosResponse
-          .map((e) =>
-              Audio(filename: e['filename'], friendlyName: e['friendlyName']))
+          .map((e) => Audio(
+              audioId: e['audioId'],
+              filename: e['filename'],
+              friendlyName: e['friendlyName']))
           .toList();
     }
 
@@ -287,15 +290,15 @@ class GlobalData {
     }
   }
 
-  static Future<void> deleteAudio(String filenameToDelete) async {
+  static Future<void> deleteAudio(String idToDelete) async {
     var response = await http.delete(Uri.parse("$serverIP/v1/deleteSound"),
-        body: json.encode({'filename': filenameToDelete}),
+        body: json.encode({'audioId': idToDelete}),
         headers: {"Content-Type": "application/json"});
     var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
 
     if (response.statusCode != 200 || decodedResponse['error'] == true) {
       throw APIException(
-          "Błąd podczas usuwania audio $filenameToDelete. Status code: ${response.statusCode}, response: ${response.body}");
+          "Błąd podczas usuwania audio $idToDelete. Status code: ${response.statusCode}, response: ${response.body}");
     }
   }
 
@@ -382,9 +385,9 @@ class GlobalData {
         decodedResponse['response']?['nextInvocationDate']);
   }
 
-  static Future<bool> previewAudio(String filename) async {
+  static Future<bool> previewAudio(String audioId) async {
     Map<String, String> requestData = {
-      'filename': filename,
+      'audioId': audioId,
       'duration': audioPreviewDurationSeconds.toString()
     };
 
@@ -397,7 +400,7 @@ class GlobalData {
     if (response.statusCode != 200 || decodedResponse['error'] == true) {
       if (decodedResponse['errorCode'] != null) {
         throw APIException(
-            "Błąd podczas podglądu audio $filename. Status code: ${response.statusCode}, response: ${response.body}");
+            "Błąd podczas podglądu audio $audioId. Status code: ${response.statusCode}, response: ${response.body}");
       }
       return false;
     }

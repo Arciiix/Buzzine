@@ -334,14 +334,20 @@ class _RingingAlarmState extends State<RingingAlarm>
                                       ]
                                     : [],
                               )),
-                          InkWell(
-                            onTap: navigateToWeather,
-                            child: Hero(
-                              tag: "WEATHER_WIDGET",
-                              child: WeatherWidget(
-                                backgroundColor: Colors.black,
-                              ),
-                            ),
+                          Column(
+                            children: GlobalData.weather != null
+                                ? [
+                                    InkWell(
+                                      onTap: navigateToWeather,
+                                      child: Hero(
+                                        tag: "WEATHER_WIDGET",
+                                        child: WeatherWidget(
+                                          backgroundColor: Colors.black,
+                                        ),
+                                      ),
+                                    ),
+                                  ]
+                                : [],
                           ),
                           const Text(
                               "DEV WARNING: This screen isn't ready yet 👀",
