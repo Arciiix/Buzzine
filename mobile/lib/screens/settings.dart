@@ -200,305 +200,315 @@ class _SettingsState extends State<Settings> {
               ],
             ),
             backgroundColor: Theme.of(context).cardColor,
-            body: SingleChildScrollView(
-              child: Form(
-                  key: _formKey,
-                  child: Padding(
-                      padding: EdgeInsets.all(10),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          SectionTitle(
-                            "Ogólne",
-                            withoutPadding: true,
-                          ),
-                          TextFormField(
-                            controller: _APIServerIPController,
-                            validator: (val) {
-                              return RegExp(
-                                          r"^http(s)?:\/\/*(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]):[0-9]+$")
-                                      .hasMatch(val ?? "")
-                                  ? null
-                                  : "Zły format adresu IP - pamiętaj, aby podać port i protokół (https lub http)";
-                            },
-                            decoration: InputDecoration(
-                                label: const Text("IP API (z portem)"),
-                                hintText: "http://xxx.xxx.x.x:1111",
-                                floatingLabelBehavior:
-                                    FloatingLabelBehavior.always,
-                                suffix: IconButton(
-                                  icon: const Icon(Icons.restart_alt),
-                                  onPressed: () => _APIServerIPController.text =
-                                      _prefsInstance
-                                              .getString("API_SERVER_IP") ??
-                                          "http://192.168.0.107:1111",
-                                )),
-                          ),
-                          SectionTitle("Drzemki"),
-                          TextFormField(
-                            controller: _minTotalSnoozeTimeValueController,
-                            keyboardType: TextInputType.number,
-                            inputFormatters: [
-                              FilteringTextInputFormatter.allow(
-                                  RegExp(r"[0-9]"))
-                            ],
-                            validator: (val) => int.tryParse(val ?? '') != null
-                                ? null
-                                : "Podaj poprawną liczbę całkowitą",
-                            decoration: InputDecoration(
-                                label: const Text(
-                                    "Min. łączny czas drzemek (minuty)"),
-                                hintText: "5",
-                                floatingLabelBehavior:
-                                    FloatingLabelBehavior.always,
-                                suffix: IconButton(
-                                  icon: const Icon(Icons.restart_alt),
-                                  onPressed: () =>
-                                      _minTotalSnoozeTimeValueController
-                                          .text = (_prefsInstance.getInt(
-                                                  'MIN_TOTAL_SNOOZE_TIME_VALUE') ??
-                                              5)
-                                          .toString(),
-                                )),
-                          ),
-                          TextFormField(
-                            controller: _maxTotalSnoozeTimeValueController,
-                            keyboardType: TextInputType.number,
-                            inputFormatters: [
-                              FilteringTextInputFormatter.allow(
-                                  RegExp(r"[0-9]"))
-                            ],
-                            validator: (val) => int.tryParse(val ?? '') != null
-                                ? null
-                                : "Podaj poprawną liczbę całkowitą",
-                            decoration: InputDecoration(
-                                label: const Text(
-                                    "Max. łączny czas drzemek (minuty)"),
-                                hintText: "60",
-                                floatingLabelBehavior:
-                                    FloatingLabelBehavior.always,
-                                suffix: IconButton(
-                                  icon: const Icon(Icons.restart_alt),
-                                  onPressed: () =>
-                                      _maxTotalSnoozeTimeValueController
-                                          .text = (_prefsInstance.getInt(
-                                                  'MAX_TOTAL_SNOOZE_TIME_VALUE') ??
-                                              60)
-                                          .toString(),
-                                )),
-                          ),
-                          SectionTitle("Audio"),
-                          TextFormField(
-                            controller: _tempMuteAudioDurationController,
-                            keyboardType: TextInputType.number,
-                            inputFormatters: [
-                              FilteringTextInputFormatter.allow(
-                                  RegExp(r"[0-9]"))
-                            ],
-                            validator: (val) {
-                              if (int.tryParse(val ?? '') == null ||
-                                  int.tryParse(val ?? '')! < 5 ||
-                                  int.tryParse(val ?? '')! > 300)
-                                return "Podaj poprawną liczbę całkowitą z przedziału 5-300";
-                              return null;
-                            },
-                            decoration: InputDecoration(
-                              label: const Text(
-                                  "Długość wyciszenia audio alarmu (sekundy)"),
-                              hintText: "30",
-                              floatingLabelBehavior:
-                                  FloatingLabelBehavior.always,
-                              suffix: IconButton(
-                                icon: const Icon(Icons.restart_alt),
-                                onPressed: () =>
-                                    _tempMuteAudioDurationController
-                                        .text = (_prefsInstance.getInt(
-                                                'TEMP_MUTE_AUDIO_DURATION') ??
-                                            30)
-                                        .toString(),
-                              ),
+            body: Scrollbar(
+              child: SingleChildScrollView(
+                child: Form(
+                    key: _formKey,
+                    child: Padding(
+                        padding: EdgeInsets.all(10),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            SectionTitle(
+                              "Ogólne",
+                              withoutPadding: true,
                             ),
-                          ),
-                          TextFormField(
-                            controller: _audioPreviewDurationSecondsController,
-                            keyboardType: TextInputType.number,
-                            inputFormatters: [
-                              FilteringTextInputFormatter.allow(
-                                  RegExp(r"[0-9]"))
-                            ],
-                            validator: (val) => int.tryParse(val ?? '') != null
-                                ? null
-                                : "Podaj poprawną liczbę całkowitą",
-                            decoration: InputDecoration(
+                            TextFormField(
+                              controller: _APIServerIPController,
+                              validator: (val) {
+                                return RegExp(
+                                            r"^http(s)?:\/\/*(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]):[0-9]+$")
+                                        .hasMatch(val ?? "")
+                                    ? null
+                                    : "Zły format adresu IP - pamiętaj, aby podać port i protokół (https lub http)";
+                              },
+                              decoration: InputDecoration(
+                                  label: const Text("IP API (z portem)"),
+                                  hintText: "http://xxx.xxx.x.x:1111",
+                                  floatingLabelBehavior:
+                                      FloatingLabelBehavior.always,
+                                  suffix: IconButton(
+                                    icon: const Icon(Icons.restart_alt),
+                                    onPressed: () => _APIServerIPController
+                                        .text = _prefsInstance
+                                            .getString("API_SERVER_IP") ??
+                                        "http://192.168.0.107:1111",
+                                  )),
+                            ),
+                            SectionTitle("Drzemki"),
+                            TextFormField(
+                              controller: _minTotalSnoozeTimeValueController,
+                              keyboardType: TextInputType.number,
+                              inputFormatters: [
+                                FilteringTextInputFormatter.allow(
+                                    RegExp(r"[0-9]"))
+                              ],
+                              validator: (val) =>
+                                  int.tryParse(val ?? '') != null
+                                      ? null
+                                      : "Podaj poprawną liczbę całkowitą",
+                              decoration: InputDecoration(
+                                  label: const Text(
+                                      "Min. łączny czas drzemek (minuty)"),
+                                  hintText: "5",
+                                  floatingLabelBehavior:
+                                      FloatingLabelBehavior.always,
+                                  suffix: IconButton(
+                                    icon: const Icon(Icons.restart_alt),
+                                    onPressed: () =>
+                                        _minTotalSnoozeTimeValueController
+                                            .text = (_prefsInstance.getInt(
+                                                    'MIN_TOTAL_SNOOZE_TIME_VALUE') ??
+                                                5)
+                                            .toString(),
+                                  )),
+                            ),
+                            TextFormField(
+                              controller: _maxTotalSnoozeTimeValueController,
+                              keyboardType: TextInputType.number,
+                              inputFormatters: [
+                                FilteringTextInputFormatter.allow(
+                                    RegExp(r"[0-9]"))
+                              ],
+                              validator: (val) =>
+                                  int.tryParse(val ?? '') != null
+                                      ? null
+                                      : "Podaj poprawną liczbę całkowitą",
+                              decoration: InputDecoration(
+                                  label: const Text(
+                                      "Max. łączny czas drzemek (minuty)"),
+                                  hintText: "60",
+                                  floatingLabelBehavior:
+                                      FloatingLabelBehavior.always,
+                                  suffix: IconButton(
+                                    icon: const Icon(Icons.restart_alt),
+                                    onPressed: () =>
+                                        _maxTotalSnoozeTimeValueController
+                                            .text = (_prefsInstance.getInt(
+                                                    'MAX_TOTAL_SNOOZE_TIME_VALUE') ??
+                                                60)
+                                            .toString(),
+                                  )),
+                            ),
+                            SectionTitle("Audio"),
+                            TextFormField(
+                              controller: _tempMuteAudioDurationController,
+                              keyboardType: TextInputType.number,
+                              inputFormatters: [
+                                FilteringTextInputFormatter.allow(
+                                    RegExp(r"[0-9]"))
+                              ],
+                              validator: (val) {
+                                if (int.tryParse(val ?? '') == null ||
+                                    int.tryParse(val ?? '')! < 5 ||
+                                    int.tryParse(val ?? '')! > 300)
+                                  return "Podaj poprawną liczbę całkowitą z przedziału 5-300";
+                                return null;
+                              },
+                              decoration: InputDecoration(
                                 label: const Text(
-                                    "Długość podglądu audio (sekundy)"),
+                                    "Długość wyciszenia audio alarmu (sekundy)"),
                                 hintText: "30",
                                 floatingLabelBehavior:
                                     FloatingLabelBehavior.always,
                                 suffix: IconButton(
                                   icon: const Icon(Icons.restart_alt),
                                   onPressed: () =>
-                                      _audioPreviewDurationSecondsController
+                                      _tempMuteAudioDurationController
                                           .text = (_prefsInstance.getInt(
-                                                  'AUDIO_PREVIEW_DURATION_SECONDS') ??
+                                                  'TEMP_MUTE_AUDIO_DURATION') ??
                                               30)
                                           .toString(),
-                                )),
-                          ),
-                          SectionTitle("Pogoda"),
-                          TextFormField(
-                            controller: _homeLatitudeController,
-                            key: _homeLatitudeKey,
-                            keyboardType: TextInputType.number,
-                            inputFormatters: [
-                              FilteringTextInputFormatter.allow(
-                                  RegExp(r"^-?[0-9]*(.|,)?[0-9]*$"))
-                            ],
-                            validator: (val) {
-                              if (val != null &&
-                                  val.isNotEmpty &&
-                                  (double.tryParse(val.replaceAll(",", ".")) ==
-                                          null ||
-                                      double.parse(val.replaceAll(",", ".")) >
-                                          90 ||
-                                      double.parse(val.replaceAll(",", ".")) <
-                                          -90 ||
-                                      !RegExp(r"^-?[0-9]*(.|,)?[0-9]*$")
-                                          .hasMatch(val))) {
-                                return "Podaj poprawną szerokość geograficzną";
-                              } else if (double.tryParse(
-                                          val?.replaceAll(",", ".") ?? '') ==
-                                      null &&
-                                  double.tryParse(_homeLongitudeController.text
-                                          .replaceAll(",", ".")) !=
-                                      null) {
-                                return "Podaj też szerokość geograficzną (podałeś długość)";
-                              } else {
-                                return null;
-                              }
-                            },
-                            decoration: InputDecoration(
-                                label:
-                                    const Text("Lokalizacja domu - szer. geo."),
-                                hintText: "",
-                                floatingLabelBehavior:
-                                    FloatingLabelBehavior.always,
-                                suffix: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    IconButton(
-                                        icon: const Icon(Icons.paste),
-                                        onPressed: () =>
-                                            pasteHomeCoordinates(true)),
-                                    IconButton(
-                                      icon: const Icon(Icons.restart_alt),
-                                      onPressed: () => _homeLatitudeController
-                                          .text = (_prefsInstance
-                                                  .getDouble('HOME_LATITUDE') ??
-                                              '')
-                                          .toString(),
-                                    ),
-                                  ],
-                                )),
-                          ),
-                          TextFormField(
-                            controller: _homeLongitudeController,
-                            key: _homeLongitudeKey,
-                            keyboardType: TextInputType.number,
-                            inputFormatters: [
-                              FilteringTextInputFormatter.allow(
-                                  RegExp(r"^-?[0-9]*(.|,)?[0-9]*$"))
-                            ],
-                            validator: (val) {
-                              if (val != null &&
-                                  val.isNotEmpty &&
-                                  (double.tryParse(val.replaceAll(",", ".")) ==
-                                          null ||
-                                      double.parse(val.replaceAll(",", ".")) >
-                                          180 ||
-                                      double.parse(val.replaceAll(",", ".")) <
-                                          -180 ||
-                                      !RegExp(r"^-?[0-9]*(.|,)?[0-9]*$")
-                                          .hasMatch(val))) {
-                                return "Podaj poprawną długość geograficzną";
-                              } else if (double.tryParse(
-                                          val?.replaceAll(",", ".") ?? '') ==
-                                      null &&
-                                  double.tryParse(_homeLatitudeController.text
-                                          .replaceAll(",", ".")) !=
-                                      null) {
-                                return "Podaj też długość geograficzną (podałeś szerokość)";
-                              } else {
-                                return null;
-                              }
-                            },
-                            decoration: InputDecoration(
-                                label:
-                                    const Text("Lokalizacja domu - dł. geo."),
-                                hintText: "",
-                                floatingLabelBehavior:
-                                    FloatingLabelBehavior.always,
-                                suffix: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    IconButton(
-                                        icon: const Icon(Icons.paste),
-                                        onPressed: () =>
-                                            pasteHomeCoordinates(false)),
-                                    IconButton(
-                                      icon: const Icon(Icons.restart_alt),
-                                      onPressed: () => _homeLongitudeController
-                                          .text = (_prefsInstance.getDouble(
-                                                  'HOME_LONGITUDE') ??
-                                              '')
-                                          .toString(),
-                                    ),
-                                  ],
-                                )),
-                          ),
-                          ElevatedButton(
-                              onPressed: chooseHomeOnMap,
-                              style: ButtonStyle(
-                                  backgroundColor: MaterialStateProperty.all(
-                                      Theme.of(context).primaryColor)),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: const [
-                                  Icon(Icons.place),
-                                  Text('Wybierz z mapy')
-                                ],
-                              )),
-                          TextFormField(
-                            controller: _weatherHoursCountController,
-                            keyboardType: TextInputType.number,
-                            inputFormatters: [
-                              FilteringTextInputFormatter.allow(
-                                  RegExp(r"[0-9]"))
-                            ],
-                            validator: (val) {
-                              if (int.tryParse(val ?? '') == null) {
-                                return "Podaj poprawną liczbę całkowitą";
-                              }
-                              return null;
-                            },
-                            decoration: InputDecoration(
-                              label: const Text(
-                                  "Ilość godzin w pogodzie (0 = brak limitu)"),
-                              hintText: "24",
-                              floatingLabelBehavior:
-                                  FloatingLabelBehavior.always,
-                              suffix: IconButton(
-                                icon: const Icon(Icons.restart_alt),
-                                onPressed: () => _weatherHoursCountController
-                                    .text = (_prefsInstance
-                                            .getInt('WEATHER_HOURS_COUNT') ??
-                                        24)
-                                    .toString(),
+                                ),
                               ),
                             ),
-                          ),
-                        ],
-                      ))),
+                            TextFormField(
+                              controller:
+                                  _audioPreviewDurationSecondsController,
+                              keyboardType: TextInputType.number,
+                              inputFormatters: [
+                                FilteringTextInputFormatter.allow(
+                                    RegExp(r"[0-9]"))
+                              ],
+                              validator: (val) =>
+                                  int.tryParse(val ?? '') != null
+                                      ? null
+                                      : "Podaj poprawną liczbę całkowitą",
+                              decoration: InputDecoration(
+                                  label: const Text(
+                                      "Długość podglądu audio (sekundy)"),
+                                  hintText: "30",
+                                  floatingLabelBehavior:
+                                      FloatingLabelBehavior.always,
+                                  suffix: IconButton(
+                                    icon: const Icon(Icons.restart_alt),
+                                    onPressed: () =>
+                                        _audioPreviewDurationSecondsController
+                                            .text = (_prefsInstance.getInt(
+                                                    'AUDIO_PREVIEW_DURATION_SECONDS') ??
+                                                30)
+                                            .toString(),
+                                  )),
+                            ),
+                            SectionTitle("Pogoda"),
+                            TextFormField(
+                              controller: _homeLatitudeController,
+                              key: _homeLatitudeKey,
+                              keyboardType: TextInputType.number,
+                              inputFormatters: [
+                                FilteringTextInputFormatter.allow(
+                                    RegExp(r"^-?[0-9]*(.|,)?[0-9]*$"))
+                              ],
+                              validator: (val) {
+                                if (val != null &&
+                                    val.isNotEmpty &&
+                                    (double.tryParse(
+                                                val.replaceAll(",", ".")) ==
+                                            null ||
+                                        double.parse(val.replaceAll(",", ".")) >
+                                            90 ||
+                                        double.parse(val.replaceAll(",", ".")) <
+                                            -90 ||
+                                        !RegExp(r"^-?[0-9]*(.|,)?[0-9]*$")
+                                            .hasMatch(val))) {
+                                  return "Podaj poprawną szerokość geograficzną";
+                                } else if (double.tryParse(
+                                            val?.replaceAll(",", ".") ?? '') ==
+                                        null &&
+                                    double.tryParse(_homeLongitudeController
+                                            .text
+                                            .replaceAll(",", ".")) !=
+                                        null) {
+                                  return "Podaj też szerokość geograficzną (podałeś długość)";
+                                } else {
+                                  return null;
+                                }
+                              },
+                              decoration: InputDecoration(
+                                  label: const Text(
+                                      "Lokalizacja domu - szer. geo."),
+                                  hintText: "",
+                                  floatingLabelBehavior:
+                                      FloatingLabelBehavior.always,
+                                  suffix: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      IconButton(
+                                          icon: const Icon(Icons.paste),
+                                          onPressed: () =>
+                                              pasteHomeCoordinates(true)),
+                                      IconButton(
+                                        icon: const Icon(Icons.restart_alt),
+                                        onPressed: () => _homeLatitudeController
+                                            .text = (_prefsInstance.getDouble(
+                                                    'HOME_LATITUDE') ??
+                                                '')
+                                            .toString(),
+                                      ),
+                                    ],
+                                  )),
+                            ),
+                            TextFormField(
+                              controller: _homeLongitudeController,
+                              key: _homeLongitudeKey,
+                              keyboardType: TextInputType.number,
+                              inputFormatters: [
+                                FilteringTextInputFormatter.allow(
+                                    RegExp(r"^-?[0-9]*(.|,)?[0-9]*$"))
+                              ],
+                              validator: (val) {
+                                if (val != null &&
+                                    val.isNotEmpty &&
+                                    (double.tryParse(
+                                                val.replaceAll(",", ".")) ==
+                                            null ||
+                                        double.parse(val.replaceAll(",", ".")) >
+                                            180 ||
+                                        double.parse(val.replaceAll(",", ".")) <
+                                            -180 ||
+                                        !RegExp(r"^-?[0-9]*(.|,)?[0-9]*$")
+                                            .hasMatch(val))) {
+                                  return "Podaj poprawną długość geograficzną";
+                                } else if (double.tryParse(
+                                            val?.replaceAll(",", ".") ?? '') ==
+                                        null &&
+                                    double.tryParse(_homeLatitudeController.text
+                                            .replaceAll(",", ".")) !=
+                                        null) {
+                                  return "Podaj też długość geograficzną (podałeś szerokość)";
+                                } else {
+                                  return null;
+                                }
+                              },
+                              decoration: InputDecoration(
+                                  label:
+                                      const Text("Lokalizacja domu - dł. geo."),
+                                  hintText: "",
+                                  floatingLabelBehavior:
+                                      FloatingLabelBehavior.always,
+                                  suffix: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      IconButton(
+                                          icon: const Icon(Icons.paste),
+                                          onPressed: () =>
+                                              pasteHomeCoordinates(false)),
+                                      IconButton(
+                                        icon: const Icon(Icons.restart_alt),
+                                        onPressed: () =>
+                                            _homeLongitudeController.text =
+                                                (_prefsInstance.getDouble(
+                                                            'HOME_LONGITUDE') ??
+                                                        '')
+                                                    .toString(),
+                                      ),
+                                    ],
+                                  )),
+                            ),
+                            ElevatedButton(
+                                onPressed: chooseHomeOnMap,
+                                style: ButtonStyle(
+                                    backgroundColor: MaterialStateProperty.all(
+                                        Theme.of(context).primaryColor)),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: const [
+                                    Icon(Icons.place),
+                                    Text('Wybierz z mapy')
+                                  ],
+                                )),
+                            TextFormField(
+                              controller: _weatherHoursCountController,
+                              keyboardType: TextInputType.number,
+                              inputFormatters: [
+                                FilteringTextInputFormatter.allow(
+                                    RegExp(r"[0-9]"))
+                              ],
+                              validator: (val) {
+                                if (int.tryParse(val ?? '') == null) {
+                                  return "Podaj poprawną liczbę całkowitą";
+                                }
+                                return null;
+                              },
+                              decoration: InputDecoration(
+                                label: const Text(
+                                    "Ilość godzin w pogodzie (0 = brak limitu)"),
+                                hintText: "24",
+                                floatingLabelBehavior:
+                                    FloatingLabelBehavior.always,
+                                suffix: IconButton(
+                                  icon: const Icon(Icons.restart_alt),
+                                  onPressed: () => _weatherHoursCountController
+                                      .text = (_prefsInstance
+                                              .getInt('WEATHER_HOURS_COUNT') ??
+                                          24)
+                                      .toString(),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ))),
+              ),
             )));
   }
 }

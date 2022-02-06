@@ -88,68 +88,71 @@ class _AudioManagerState extends State<AudioManager> {
               });
             },
             child: audios.isNotEmpty
-                ? ListView.builder(
-                    padding: const EdgeInsets.only(bottom: 56),
-                    itemCount: audios.length,
-                    itemBuilder: (BuildContext context, int index) {
-                      Audio e = audios[index];
-                      return Dismissible(
-                          key: ObjectKey(e),
-                          direction: DismissDirection.endToStart,
-                          background: Container(
-                              alignment: Alignment.centerLeft,
-                              padding: const EdgeInsets.only(right: 20),
-                              color: Colors.red,
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                children: const [
-                                  Icon(Icons.delete, color: Colors.white),
-                                  Text("Usuń",
-                                      style: TextStyle(color: Colors.white))
-                                ],
-                              )),
-                          confirmDismiss: (DismissDirection direction) async {
-                            return await showDialog(
-                              context: context,
-                              builder: (BuildContext context) {
-                                return AlertDialog(
-                                  title: const Text("Usuń audio"),
-                                  content: Text(
-                                      'Czy na pewno chcesz usunąć "${e.friendlyName ?? e.filename}"?'),
-                                  actions: <Widget>[
-                                    TextButton(
-                                      onPressed: () =>
-                                          Navigator.of(context).pop(false),
-                                      child: const Text("Anuluj"),
-                                    ),
-                                    TextButton(
-                                        onPressed: () =>
-                                            Navigator.of(context).pop(true),
-                                        child: const Text("Usuń")),
-                                  ],
+                ? Scrollbar(
+                    child: ListView.builder(
+                        padding: const EdgeInsets.only(bottom: 56),
+                        itemCount: audios.length,
+                        itemBuilder: (BuildContext context, int index) {
+                          Audio e = audios[index];
+                          return Dismissible(
+                              key: ObjectKey(e),
+                              direction: DismissDirection.endToStart,
+                              background: Container(
+                                  alignment: Alignment.centerLeft,
+                                  padding: const EdgeInsets.only(right: 20),
+                                  color: Colors.red,
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: const [
+                                      Icon(Icons.delete, color: Colors.white),
+                                      Text("Usuń",
+                                          style: TextStyle(color: Colors.white))
+                                    ],
+                                  )),
+                              confirmDismiss:
+                                  (DismissDirection direction) async {
+                                return await showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return AlertDialog(
+                                      title: const Text("Usuń audio"),
+                                      content: Text(
+                                          'Czy na pewno chcesz usunąć "${e.friendlyName ?? e.filename}"?'),
+                                      actions: <Widget>[
+                                        TextButton(
+                                          onPressed: () =>
+                                              Navigator.of(context).pop(false),
+                                          child: const Text("Anuluj"),
+                                        ),
+                                        TextButton(
+                                            onPressed: () =>
+                                                Navigator.of(context).pop(true),
+                                            child: const Text("Usuń")),
+                                      ],
+                                    );
+                                  },
                                 );
                               },
-                            );
-                          },
-                          onDismissed: (DismissDirection direction) {
-                            deleteAudio(e);
-                          },
-                          child: ListTile(
-                            onTap: widget.selectAudio
-                                ? () => Navigator.of(context).pop(e)
-                                : null,
-                            title: Text(e.friendlyName ?? e.filename),
-                            subtitle: Text(e.filename),
-                            trailing: IconButton(
-                                icon: Icon(
-                                    _isPreviewPlaying &&
-                                            _previewFilename == e.filename
-                                        ? Icons.pause
-                                        : Icons.play_arrow,
-                                    size: 32),
-                                onPressed: () => playPreview(e)),
-                          ));
-                    })
+                              onDismissed: (DismissDirection direction) {
+                                deleteAudio(e);
+                              },
+                              child: ListTile(
+                                onTap: widget.selectAudio
+                                    ? () => Navigator.of(context).pop(e)
+                                    : null,
+                                title: Text(e.friendlyName ?? e.filename),
+                                subtitle: Text(e.filename),
+                                trailing: IconButton(
+                                    icon: Icon(
+                                        _isPreviewPlaying &&
+                                                _previewFilename == e.filename
+                                            ? Icons.pause
+                                            : Icons.play_arrow,
+                                        size: 32),
+                                    onPressed: () => playPreview(e)),
+                              ));
+                        }),
+                  )
                 : const Center(
                     child: Text("Brak audio!",
                         style: TextStyle(fontSize: 32, color: Colors.white)))));
