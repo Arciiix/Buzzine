@@ -30,6 +30,7 @@ class _ScanQRCodeState extends State<ScanQRCode> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("Skanowanie kodu QR")),
+      backgroundColor: Theme.of(context).cardColor,
       body: Column(
         children: <Widget>[
           Expanded(

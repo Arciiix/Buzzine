@@ -75,7 +75,7 @@ class _AudioManagerState extends State<AudioManager> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(title: const Text("Audio")),
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).cardColor,
         floatingActionButton: FloatingActionButton(
           onPressed: addAudio,
           child: const Icon(Icons.add),

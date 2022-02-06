@@ -54,7 +54,8 @@ class _CarouselState extends State<Carousel> {
                     const EdgeInsets.symmetric(vertical: 8.0, horizontal: 2.0),
                 decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: (Colors.white)
+                    color: Theme.of(context)
+                        .backgroundColor
                         .withOpacity(_current == entry.key ? 0.9 : 0.4)),
               ),
             );
@@ -70,7 +71,7 @@ class _CarouselState extends State<Carousel> {
               margin: const EdgeInsets.all(5),
               height: widget.height ?? 300,
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).cardColor,
                 borderRadius: BorderRadius.circular(5),
               ),
               child: Center(

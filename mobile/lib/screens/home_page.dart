@@ -35,13 +35,15 @@ class _HomePageState extends State<HomePage> {
   GlobalKey<RefreshIndicatorState> _refreshState =
       GlobalKey<RefreshIndicatorState>();
 
-  void handleAlarmSelect(int? alarmIndex) {
-    Navigator.of(context).push(
+  void handleAlarmSelect(int? alarmIndex) async {
+    await Navigator.of(context).push(
       MaterialPageRoute(
           builder: (context) => AlarmList(
               selectedAlarm:
                   alarmIndex != null ? upcomingAlarms[alarmIndex] : null)),
     );
+
+    await refresh();
   }
 
   void navigateToAudioManager() {
@@ -176,6 +178,7 @@ class _HomePageState extends State<HomePage> {
       );
     } else {
       return Scaffold(
+          backgroundColor: const Color(0xFF00283F),
           body: Padding(
               padding: const EdgeInsets.all(10),
               child: SafeArea(
@@ -371,7 +374,7 @@ class _HomePageState extends State<HomePage> {
                                     padding: const EdgeInsets.all(10),
                                     margin: const EdgeInsets.all(5),
                                     decoration: BoxDecoration(
-                                      color: Colors.white,
+                                      color: Theme.of(context).cardColor,
                                       borderRadius: BorderRadius.circular(5),
                                     ),
                                     child: Column(
@@ -400,7 +403,7 @@ class _HomePageState extends State<HomePage> {
                                 padding: const EdgeInsets.all(10),
                                 margin: const EdgeInsets.all(5),
                                 decoration: BoxDecoration(
-                                  color: Colors.white,
+                                  color: Theme.of(context).cardColor,
                                   borderRadius: BorderRadius.circular(5),
                                 ),
                                 child: Column(
@@ -463,7 +466,11 @@ class _HomePageState extends State<HomePage> {
                                             onTap: navigateToWeather,
                                             child: Hero(
                                                 tag: "WEATHER_WIDGET",
-                                                child: WeatherWidget()))
+                                                child: WeatherWidget(
+                                                  backgroundColor:
+                                                      Theme.of(context)
+                                                          .cardColor,
+                                                )))
                                       ]
                                     : [],
                               ),
@@ -485,7 +492,7 @@ class _HomePageState extends State<HomePage> {
                                     padding: const EdgeInsets.all(10),
                                     margin: const EdgeInsets.all(5),
                                     decoration: BoxDecoration(
-                                      color: Colors.white,
+                                      color: Theme.of(context).cardColor,
                                       borderRadius: BorderRadius.circular(5),
                                     ),
                                     child: const Center(

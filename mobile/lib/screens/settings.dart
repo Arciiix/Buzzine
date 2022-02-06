@@ -199,7 +199,7 @@ class _SettingsState extends State<Settings> {
                 )
               ],
             ),
-            backgroundColor: Colors.white,
+            backgroundColor: Theme.of(context).cardColor,
             body: SingleChildScrollView(
               child: Form(
                   key: _formKey,
@@ -458,6 +458,9 @@ class _SettingsState extends State<Settings> {
                           ),
                           ElevatedButton(
                               onPressed: chooseHomeOnMap,
+                              style: ButtonStyle(
+                                  backgroundColor: MaterialStateProperty.all(
+                                      Theme.of(context).primaryColor)),
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: const [
@@ -513,7 +516,7 @@ class SectionTitle extends StatelessWidget {
           withoutPadding == true ? EdgeInsets.all(0) : EdgeInsets.only(top: 20),
       child: Text(name,
           style: TextStyle(
-              color: Theme.of(context).primaryColor,
+              color: Theme.of(context).textTheme.headline1?.color,
               fontWeight: FontWeight.bold)),
     );
   }

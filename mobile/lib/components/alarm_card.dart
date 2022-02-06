@@ -143,7 +143,7 @@ class _AlarmCardState extends State<AlarmCard> {
         padding: const EdgeInsets.all(10),
         margin: const EdgeInsets.all(5),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(5),
         ),
         child: Column(

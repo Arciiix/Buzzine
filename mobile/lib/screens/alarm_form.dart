@@ -182,7 +182,7 @@ class _AlarmFormState extends State<AlarmForm> {
               )
             ],
           ),
-          backgroundColor: Colors.white,
+          backgroundColor: Theme.of(context).cardColor,
           body: SingleChildScrollView(
               child: Padding(
                   padding: const EdgeInsets.all(8),
