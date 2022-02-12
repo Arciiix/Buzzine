@@ -20,6 +20,7 @@ class _SnoozeAlarmState extends State<SnoozeAlarm> {
   late double _maxSnoozeDurationValue;
   late Timer _remainingTimeTimer;
   late Duration selectedSnoozeDurationValue;
+  DateTime _snoozeInvocationDate = DateTime.now();
 
   Future<void> handleSnooze() async {
     Navigator.of(context).pop(selectedSnoozeDurationValue.inSeconds);
@@ -41,6 +42,8 @@ class _SnoozeAlarmState extends State<SnoozeAlarm> {
         seconds:
             (widget.leftSnooze > 300 ? 300 : widget.leftSnooze.toDouble() / 2)
                 .toInt());
+
+    _snoozeInvocationDate = DateTime.now()..add(selectedSnoozeDurationValue);
 
     _remainingTimeTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       setState(() {
@@ -77,6 +80,9 @@ class _SnoozeAlarmState extends State<SnoozeAlarm> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
+                    Text(
+                        "${addZero(_snoozeInvocationDate.hour)}:${addZero(_snoozeInvocationDate.minute)}",
+                        style: const TextStyle(fontSize: 32)),
                     Slider(
                       min: _minSnoozeDurationValue.toDouble(),
                       max: _maxSnoozeDurationValue.toDouble(),
@@ -84,12 +90,15 @@ class _SnoozeAlarmState extends State<SnoozeAlarm> {
                         setState(() {
                           selectedSnoozeDurationValue =
                               Duration(seconds: value.toInt());
+                          _snoozeInvocationDate =
+                              DateTime.now().add(selectedSnoozeDurationValue);
                         });
                       },
                       value: selectedSnoozeDurationValue.inSeconds.toDouble(),
                     ),
                     Text(
-                        "${addZero(selectedSnoozeDurationValue.inMinutes)}:${addZero(selectedSnoozeDurationValue.inSeconds.remainder(60))}")
+                        "${addZero(selectedSnoozeDurationValue.inMinutes)}:${addZero(selectedSnoozeDurationValue.inSeconds.remainder(60))}",
+                        style: const TextStyle(fontSize: 24))
                   ],
                 ),
               ),
