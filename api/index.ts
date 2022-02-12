@@ -542,7 +542,9 @@ api.delete("/deleteSound", async (req, res) => {
     });
     res.status(deleteReq.status).send(deleteReq.data);
     logger.info(
-      `Delete request is complete with response ${deleteReq.data} and status ${deleteReq.status}`
+      `Delete request is complete with response ${JSON.stringify(
+        deleteReq.data
+      )} and status ${deleteReq.status}`
     );
   } catch (err) {
     logger.warn(
@@ -551,6 +553,37 @@ api.delete("/deleteSound", async (req, res) => {
       )} with status ${err?.response?.status}`
     );
     res.status(500).send({ error: true });
+  }
+});
+
+api.put("/updateAudio", async (req, res) => {
+  logger.http(`PUT /updateAudio with data ${JSON.stringify(req.body)}`);
+
+  if (!req.body.audioId) {
+    res.send({ error: true, errorCode: "MISSING_AUDIO_ID" });
+    return;
+  }
+
+  //It's just the same request sent to the audio microservice
+  try {
+    let updateReq = await axios.put(`${AUDIO_URL}/v1/updateAudio`, {
+      audioId: req.body.audioId,
+      filename: req.body.filename,
+      friendlyName: req.body.friendlyName,
+    });
+    res.status(updateReq.status).send(updateReq.data);
+    logger.info(
+      `Update audio request is complete with response ${JSON.stringify(
+        updateReq.data
+      )} and status ${updateReq.status}`
+    );
+  } catch (err) {
+    logger.warn(
+      `Error while updating audio ${req.body.audioId}: ${JSON.stringify(
+        err?.response?.data
+      )} with status ${err?.response?.status}`
+    );
+    res.status(err?.response?.status).send(err?.response?.data);
   }
 });
 

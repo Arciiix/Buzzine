@@ -487,4 +487,18 @@ class GlobalData {
 
     return GlobalData.weather;
   }
+
+  static Future<void> changeAudioName(String audioId, String newName) async {
+    Map requestData = {'audioId': audioId, 'friendlyName': newName};
+
+    var response = await http.put(Uri.parse("$serverIP/v1/updateAudio"),
+        body: json.encode(requestData),
+        headers: {"Content-Type": "application/json"});
+    var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
+
+    if (response.statusCode != 200 || decodedResponse['error'] == true) {
+      throw APIException(
+          "Błąd podczas aktualizacji audio. Status code: ${response.statusCode}, response: ${response.body}");
+    }
+  }
 }

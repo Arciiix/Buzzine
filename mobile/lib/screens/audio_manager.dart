@@ -15,6 +15,9 @@ class AudioManager extends StatefulWidget {
 }
 
 class _AudioManagerState extends State<AudioManager> {
+  GlobalKey<RefreshIndicatorState> _refreshState =
+      GlobalKey<RefreshIndicatorState>();
+
   late List<Audio> audios;
 
   bool _isPreviewPlaying = false;
@@ -65,6 +68,43 @@ class _AudioManagerState extends State<AudioManager> {
     }
   }
 
+  void changeAudioName(Audio audio) async {
+    TextEditingController _audioNameTextFieldController =
+        TextEditingController()..text = audio.friendlyName ?? audio.filename;
+    await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Zmień nazwę audio"),
+          content: TextField(
+            controller: _audioNameTextFieldController,
+            decoration: const InputDecoration(hintText: "Nazwa audio"),
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text("Anuluj"),
+            ),
+            TextButton(
+                onPressed: () async {
+                  if (_audioNameTextFieldController.text !=
+                      audio.friendlyName) {
+                    if (_audioNameTextFieldController.text.isEmpty) {
+                      _audioNameTextFieldController.text = audio.filename;
+                    }
+                    await GlobalData.changeAudioName(
+                        audio.audioId, _audioNameTextFieldController.text);
+                    _refreshState.currentState!.show();
+                    Navigator.of(context).pop();
+                  }
+                },
+                child: const Text("Zmień")),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -81,6 +121,7 @@ class _AudioManagerState extends State<AudioManager> {
           child: const Icon(Icons.add),
         ),
         body: RefreshIndicator(
+            key: _refreshState,
             onRefresh: () async {
               await GlobalData.getData();
               setState(() {
@@ -142,6 +183,7 @@ class _AudioManagerState extends State<AudioManager> {
                                 onTap: widget.selectAudio
                                     ? () => Navigator.of(context).pop(e)
                                     : null,
+                                onLongPress: () => changeAudioName(e),
                                 title: Text(e.friendlyName ?? e.filename),
                                 subtitle: Text(e.filename),
                                 trailing: IconButton(

@@ -11,6 +11,7 @@ import PlaySound, {
   getAudioDurationFromFile,
 } from "./utils/playAudio";
 import fs from "fs";
+import path from "path";
 import AudioNameMappingModel from "./models/AudioNameMapping";
 import AlarmsAudioModel from "./models/AlarmsAudio";
 import { downloadFromYouTube } from "./utils/YouTubeDownloader";
@@ -119,6 +120,44 @@ api.post("/addYouTubeSound", async (req, res) => {
     req.body.url
   );
   res.status(statusCode).send({ error: error, errorCode: errorCode });
+});
+api.put("/updateAudio", async (req, res) => {
+  logger.http(`PUT /updateAudio with data ${JSON.stringify(req.body)}`);
+
+  if (!req.body.audioId) {
+    res.status(400).send({ error: true, errorCode: "MISSING_AUDIO_ID" });
+    return;
+  }
+
+  let audioInstance: any = await AudioNameMappingModel.findOne({
+    where: { audioId: req.body.audioId },
+  });
+  if (!audioInstance) {
+    res.status(404).send({ error: true, errorCode: "WRONG_AUDIO_ID" });
+    return;
+  } else {
+    if (req.body.friendlyName) {
+      audioInstance.friendlyName = req.body.friendlyName;
+    }
+    if (req.body.filename) {
+      let audioPath = path.join(__dirname, "audio", req.body.filename);
+      if (fs.existsSync(audioPath)) {
+        audioInstance.filename = req.body.filename;
+        audioInstance.duration = await getAudioDurationFromFile(
+          req.body.filename
+        );
+      } else {
+        res
+          .status(404)
+          .send({ error: true, errorCode: "NON_EXISTING_FILENAME" });
+        return;
+      }
+    }
+
+    await audioInstance.save();
+
+    res.send({ error: false });
+  }
 });
 
 api.put("/changeAlarmSound", async (req, res) => {
