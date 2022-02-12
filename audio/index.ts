@@ -8,6 +8,7 @@ import PlaySound, {
   changeAlarmSound,
   deleteSound,
   getAlarmAudio,
+  getAudioDurationFromFile,
 } from "./utils/playAudio";
 import fs from "fs";
 import AudioNameMappingModel from "./models/AudioNameMapping";
@@ -106,15 +107,18 @@ api.get("/getAlarmSoundList", async (req, res) => {
   });
 });
 
-api.post("/addYouTubeSound", (req, res) => {
+api.post("/addYouTubeSound", async (req, res) => {
   logger.http(`POST /addYouTubeSound with data ${JSON.stringify(req.body)}`);
 
   if (!req.body.url) {
     return res.status(400).send({ error: true, errorCode: "MISSING_URL" });
   }
 
-  downloadFromYouTube(req.body.url);
-  res.send({ error: false, message: "STARTED_DOWNLOADING" });
+  //Hang the request
+  let { error, errorCode, statusCode } = await downloadFromYouTube(
+    req.body.url
+  );
+  res.status(statusCode).send({ error: error, errorCode: errorCode });
 });
 
 api.put("/changeAlarmSound", async (req, res) => {
@@ -296,10 +300,12 @@ async function init() {
     where: { audioId: "default" },
   });
   if (!defaultAudioObj) {
+    let defaultAudioDuration = await getAudioDurationFromFile("default.mp3");
     await AudioNameMappingModel.create({
       audioId: "default",
       filename: "default.mp3",
       friendlyName: "Default audio",
+      duration: defaultAudioDuration,
     });
   }
 }

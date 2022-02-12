@@ -155,5 +155,29 @@ async function deleteSound(
   return { error: false };
 }
 
+function getAudioDurationFromFile(filename: string): Promise<number> {
+  return new Promise((resolve, reject) => {
+    childProcess.exec(
+      `ffprobe -v error -show_format -show_streams -print_format json -i ./audio/${filename}`,
+      (err, stdout, stderr) => {
+        if (err) {
+          logger.error(
+            `Error while getting audio ${filename} duration: ${stderr.toString()}`
+          );
+          reject(stderr);
+        } else {
+          let jsonOutput: any = JSON.parse(stdout);
+          resolve(jsonOutput.format.duration);
+        }
+      }
+    );
+  });
+}
+
 export default PlayAudio;
-export { getAlarmAudio, changeAlarmSound, deleteSound };
+export {
+  getAlarmAudio,
+  changeAlarmSound,
+  deleteSound,
+  getAudioDurationFromFile,
+};

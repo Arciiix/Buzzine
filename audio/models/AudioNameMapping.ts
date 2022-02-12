@@ -23,6 +23,10 @@ const AudioNameMappingModel = db.define("AudioNameMapping", {
     allowNull: true,
     type: DataTypes.STRING,
   },
+  duration: {
+    allowNull: true,
+    type: DataTypes.INTEGER,
+  },
 });
 
 AlarmsAudioModel.belongsTo(AudioNameMappingModel, { foreignKey: "audioId" });
