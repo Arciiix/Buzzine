@@ -23,14 +23,15 @@ class PlayAudio {
 
   play() {
     this.isPlaying = true;
-    this.process = childProcess.spawn("ffplay", [
+    let args: string[] = [
       `./audio/${this.filename}`,
       "-nodisp",
       "-autoexit",
       // 'loop 0' doesn't work, it has to be separate
       "-loop",
       "0",
-    ]);
+    ];
+    this.process = childProcess.spawn("ffplay", args);
 
     logger.info(`Audio ${this.filename} has started playing!`);
   }
@@ -74,18 +75,14 @@ class PlayAudio {
   }
 }
 
-async function getAlarmAudio(
-  alarmId: string
-): Promise<{ audioFilename: string; audioId: string }> {
-  if (!alarmId) return { audioFilename: "default.mp3", audioId: "default" };
+async function getAlarmAudio(alarmId: string): Promise<any> {
+  if (!alarmId) return { filename: "default.mp3", audioId: "default" };
   let audio: any = await AlarmsAudioModel.findOne({
     where: { alarmId: alarmId },
     include: AudioNameMappingModel,
   });
 
-  return audio
-    ? { audioFilename: audio.AudioNameMapping.filename, audioId: audio.audioId }
-    : { audioFilename: "default.mp3", audioId: "default" };
+  return audio ?? { filename: "default.mp3", audioId: "default" };
 }
 
 async function changeAlarmSound(alarmId: string, audioId?: string) {

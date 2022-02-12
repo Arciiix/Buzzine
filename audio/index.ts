@@ -43,8 +43,8 @@ io.on("hello", () => {
 
 io.on("ALARM_RINGING", async (data) => {
   if (!audioInstance) {
-    let { audioFilename } = await getAlarmAudio(data?.id);
-    audioInstance = new PlaySound(audioFilename);
+    let audioObj = await getAlarmAudio(data?.id);
+    audioInstance = new PlaySound(audioObj.filename);
   } else {
     logger.info(`Skipping playing audio since the audio is playing already...`);
   }

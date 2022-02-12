@@ -25,7 +25,7 @@ const AudioNameMappingModel = db.define("AudioNameMapping", {
   },
   duration: {
     allowNull: true,
-    type: DataTypes.INTEGER,
+    type: DataTypes.FLOAT,
   },
 });
 
