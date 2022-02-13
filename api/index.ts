@@ -700,6 +700,64 @@ api.get("/getYouTubeVideoInfo", async (req, res) => {
   }
 });
 
+api.put("/cutAudio", async (req, res) => {
+  logger.http(`PUT /cutAudio with body ${JSON.stringify(req.body)}`);
+
+  if (!req.body.audioId) {
+    res.status(400).send({ error: true, errorCode: "MISSING_AUDIO_ID" });
+    logger.warn(`Tried to cut audio but audioId is missing`);
+    return;
+  }
+
+  //It's just the same request sent to the audio microservice
+  try {
+    let audioReq = await axios.put(`${AUDIO_URL}/v1/cutAudio`, {
+      audioId: req.body.audioId,
+      start: req.body.start,
+      end: req.body.end,
+    });
+    res.status(audioReq.status).send(audioReq.data);
+  } catch (err) {
+    logger.warn(
+      `Error while cutting audio: ${JSON.stringify(
+        err?.response?.data
+      )} with status ${err?.response?.status}`
+    );
+    res
+      .status(err?.response?.status ?? 500)
+      .send({ ...err?.response?.data, ...{ error: true } });
+  }
+});
+
+api.put("/previewCut", async (req, res) => {
+  logger.http(`PUT /previewCut with body ${JSON.stringify(req.body)}`);
+
+  if (!req.body.audioId) {
+    res.status(400).send({ error: true, errorCode: "MISSING_AUDIO_ID" });
+    logger.warn(`Tried to cut audio but audioId is missing`);
+    return;
+  }
+
+  //It's just the same request sent to the audio microservice
+  try {
+    let audioReq = await axios.put(`${AUDIO_URL}/v1/previewCut`, {
+      audioId: req.body.audioId,
+      start: req.body.start,
+      end: req.body.end,
+    });
+    res.status(audioReq.status).send(audioReq.data);
+  } catch (err) {
+    logger.warn(
+      `Error while previewing audio cut: ${JSON.stringify(
+        err?.response?.data
+      )} with status ${err?.response?.status}`
+    );
+    res
+      .status(err?.response?.status ?? 500)
+      .send({ ...err?.response?.data, ...{ error: true } });
+  }
+});
+
 const socket = io(process.env.CORE_URL || "http://localhost:3333"); //DEV - to be changed with Docker
 
 socket.on("connect", () => {

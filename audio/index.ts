@@ -18,6 +18,7 @@ import {
   downloadFromYouTube,
   getYouTubeVideoInfo,
 } from "./utils/YouTubeDownloader";
+import { cutAudio, previewCut } from "./utils/cutAudio";
 
 //Load environment variables from file
 dotenv.config();
@@ -32,6 +33,7 @@ let audioInstance: PlaySound;
 let emergencyInstance: PlaySound;
 let audioPreviewInstance: PlaySound;
 let audioPreviewTimeout: ReturnType<typeof setTimeout>;
+let isRinging: boolean = false;
 
 //Socket events
 
@@ -46,7 +48,8 @@ io.on("hello", () => {
 });
 
 io.on("ALARM_RINGING", async (data) => {
-  if (!audioInstance) {
+  if (!audioInstance && !isRinging) {
+    isRinging = true;
     let audioObj = await getAlarmAudio(data?.id);
     audioInstance = new PlaySound(audioObj.filename);
   } else {
@@ -74,6 +77,7 @@ io.on("ALARM_MUTE", (data) => {
   }
   audioInstance.destroy();
   audioInstance = null;
+  isRinging = false;
 });
 
 app.get("/", async (req, res) => {
@@ -320,6 +324,11 @@ api.put("/stopAudioPreview", (req, res) => {
     audioPreviewInstance = null;
   }
 
+  setTimeout(() => {
+    //After a timeout because of speaker delay
+    fs.rmSync("./audio/cutPreviews/", { force: true, recursive: true });
+  }, 500);
+
   logger.info("User has stopped the preview audio playback");
 
   res.send({ error: false });
@@ -347,6 +356,122 @@ api.get("/getYouTubeVideoInfo", async (req, res) => {
   }
 
   res.send(videoInfo);
+});
+
+api.put("/cutAudio", async (req, res) => {
+  logger.http(`PUT /cutAudio with data ${JSON.stringify(req.body)}`);
+
+  if (!req.body.audioId) {
+    res.status(400).send({ error: true, errorCode: "MISSING_AUDIO_ID" });
+    logger.warn(`Tried to cut audio but audioId is missing`);
+    return;
+  }
+
+  let start, end;
+
+  if (req.body.from) {
+    start = parseFloat(req.body.start);
+    if (isNaN(start)) {
+      return res
+        .status(400)
+        .send({ error: true, errorCode: "WRONG_START_TIME" });
+    }
+  }
+  if (req.body.end) {
+    end = parseFloat(req.body.end);
+    if (isNaN(end)) {
+      return res.status(400).send({ error: true, errorCode: "WRONG_END_TIME" });
+    }
+  }
+
+  let cutAudioResult = await cutAudio(
+    req.body.audioId,
+    req.body.start,
+    req.body.end
+  );
+
+  if (cutAudioResult.error) {
+    res.status(400);
+  } else {
+    res.status(200);
+  }
+
+  res.send(cutAudioResult);
+});
+
+api.put("/previewCut", async (req, res) => {
+  logger.http(`PUT /previewCut with data ${JSON.stringify(req.body)}`);
+
+  if (!req.body.audioId) {
+    res.status(400).send({ error: true, errorCode: "MISSING_AUDIO_ID" });
+    logger.warn(`Tried to preview-cut audio but audioId is missing`);
+    return;
+  }
+
+  let start, end;
+
+  if (req.body.from) {
+    start = parseFloat(req.body.start);
+    if (isNaN(start)) {
+      return res
+        .status(400)
+        .send({ error: true, errorCode: "WRONG_START_TIME" });
+    }
+  }
+  if (req.body.end) {
+    end = parseFloat(req.body.end);
+    if (isNaN(end)) {
+      return res.status(400).send({ error: true, errorCode: "WRONG_END_TIME" });
+    }
+  }
+
+  let cutAudioResult = await previewCut(
+    req.body.audioId,
+    req.body.start,
+    req.body.end
+  );
+
+  if (cutAudioResult.error) {
+    res.status(400);
+  } else {
+    res.status(200);
+
+    let audioInstance: any = await AudioNameMappingModel.findOne({
+      where: { audioId: req.body.audioId },
+    });
+
+    if (!audioInstance) {
+      res.status(400).send({ error: true, errorCode: "WRONG_AUDIO_ID" });
+      logger.warn(`Tried to preview an unexisting audio ${req.body.audioId}`);
+      return;
+    }
+
+    if (audioPreviewTimeout) {
+      clearTimeout(audioPreviewTimeout);
+      audioPreviewTimeout = null;
+    }
+    if (audioPreviewInstance) {
+      audioPreviewInstance.destroy();
+      audioPreviewInstance = null;
+    }
+
+    audioPreviewInstance = new PlaySound(
+      `cutPreviews/${audioInstance.filename}`
+    );
+    audioPreviewTimeout = setTimeout(() => {
+      audioPreviewInstance.destroy();
+      audioPreviewInstance = null;
+      logger.info("Stopped the cut-preview audio playback because of timeout");
+
+      fs.rmSync("./audio/cutPreviews/", { force: true, recursive: true });
+    }, cutAudioResult.response.duration * 1000);
+
+    logger.info(
+      `Playing a cut-preview of file ${req.body.audioId} from ${req.body.start}s to ${req.body.end}s for duration: ${cutAudioResult.response.duration}s`
+    );
+  }
+
+  res.send(cutAudioResult);
 });
 
 async function init() {
