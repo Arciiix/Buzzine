@@ -5,6 +5,7 @@ import 'package:buzzine/types/Repeat.dart';
 import 'package:buzzine/types/RingingAlarmEntity.dart';
 import 'package:buzzine/types/Snooze.dart';
 import 'package:buzzine/types/Weather.dart';
+import 'package:buzzine/types/YouTubeVideoInfo.dart';
 import 'package:http/http.dart' as http;
 import 'package:buzzine/types/Alarm.dart';
 import 'package:buzzine/types/Audio.dart';
@@ -499,6 +500,59 @@ class GlobalData {
     if (response.statusCode != 200 || decodedResponse['error'] == true) {
       throw APIException(
           "Błąd podczas aktualizacji audio. Status code: ${response.statusCode}, response: ${response.body}");
+    }
+  }
+
+  static Future<YouTubeVideoInfo?> getYouTubeVideoInfo(String videoURL) async {
+    Map<String, String> requestData = {
+      'videoURL': videoURL,
+    };
+
+    var response = await http.get(
+      Uri.parse("$serverIP/v1/getYouTubeVideoInfo")
+          .replace(queryParameters: requestData),
+    );
+    var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
+
+    if (response.statusCode == 200 && decodedResponse['error'] == false) {
+      var videoInfo = decodedResponse['response'];
+      if (videoInfo == null) return null;
+      return YouTubeVideoInfo(
+          channel: YouTubeChannelInfo(
+              name: videoInfo['channel']['name'],
+              id: videoInfo['channel']?['id'],
+              isVerified: videoInfo['channel']?['isVerified'],
+              username: videoInfo['channel']?['username'],
+              url: Uri.tryParse(videoInfo['channel']?['url'])),
+          description: videoInfo['description'],
+          length: Duration(seconds: int.parse(videoInfo['lengthSeconds'])),
+          thumbnailURL: videoInfo['thumbnail']['url'],
+          title: videoInfo['title'],
+          uploadDate: DateTime.tryParse(videoInfo?['uploadDate']),
+          url: videoInfo?['url']);
+    }
+    return null;
+  }
+
+  static Future<String?> downloadYouTubeVideo(String videoURL) async {
+    Map requestData = {'url': videoURL};
+
+    var response = await http.post(Uri.parse("$serverIP/v1/addYouTubeSound"),
+        body: json.encode(requestData),
+        headers: {"Content-Type": "application/json"});
+    var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
+
+    if (response.statusCode != 201 || decodedResponse['error'] == true) {
+      if (decodedResponse['errorCode'] == 'ALREADY_EXISTS') {
+        return "to audio już istnieje";
+      } else if (decodedResponse['errorCode'] == 'WRONG_URL') {
+        return "zły URL";
+      } else if (decodedResponse['errorCode'] == 'YOUTUBE_ERROR') {
+        return "błąd YouTube. Prawdopodobnie zły adres URL lub stara wersja ytdl-core";
+      } else {
+        throw APIException(
+            "Błąd podczas pobierania audio z YouTube. Status code: ${response.statusCode}, response: ${response.body}");
+      }
     }
   }
 }

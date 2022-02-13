@@ -58,7 +58,7 @@ api.post("/addAlarm", async (req, res) => {
             audioId: req.body.sound.audioId,
           });
         } catch (err) {
-          res.status(err?.response?.status).send(err?.response?.data);
+          res.status(err?.response?.status ?? 500).send(err?.response?.data);
           logger.error(
             `Error when trying to associate an audio with an alarm. ${JSON.stringify(
               err?.response?.data ?? ""
@@ -298,7 +298,7 @@ api.post("/updateAlarm", async (req, res) => {
             audioId: req.body.sound.audioId,
           });
         } catch (err) {
-          res.status(err?.response?.status).send(err?.response?.data);
+          res.status(err?.response?.status ?? 500).send(err?.response?.data);
           logger.error(
             `Error when trying to associate an audio with an alarm. ${err.toString()}; response: ${JSON.stringify(
               err?.response?.data ?? ""
@@ -521,7 +521,7 @@ api.get("/getSoundList", async (req, res) => {
         err?.response?.data
       )} with status ${err?.response?.status}`
     );
-    res.status(err?.response?.status).send(err?.response?.data);
+    res.status(err?.response?.status ?? 500).send(err?.response?.data);
   }
 });
 
@@ -583,7 +583,7 @@ api.put("/updateAudio", async (req, res) => {
         err?.response?.data
       )} with status ${err?.response?.status}`
     );
-    res.status(err?.response?.status).send(err?.response?.data);
+    res.status(err?.response?.status ?? 500).send(err?.response?.data);
   }
 });
 
@@ -603,7 +603,7 @@ api.put("/tempMuteAudio", async (req, res) => {
       )} with status ${err?.response?.status}`
     );
     res
-      .status(err?.response?.status)
+      .status(err?.response?.status ?? 500)
       .send({ ...err?.response?.data, ...{ error: true } });
   }
 });
@@ -624,7 +624,7 @@ api.get("/previewAudio", async (req, res) => {
       )} with status ${err?.response?.status}`
     );
     res
-      .status(err?.response?.status)
+      .status(err?.response?.status ?? 500)
       .send({ ...err?.response?.data, ...{ error: true } });
   }
 });
@@ -643,7 +643,59 @@ api.put("/stopAudioPreview", async (req, res) => {
       )} with status ${err?.response?.status}`
     );
     res
-      .status(err?.response?.status)
+      .status(err?.response?.status ?? 500)
+      .send({ ...err?.response?.data, ...{ error: true } });
+  }
+});
+
+api.post("/addYouTubeSound", async (req, res) => {
+  logger.http(`POST /addYouTubeSound with body ${JSON.stringify(req.body)}`);
+
+  if (!req.body.url) {
+    return res.status(400).send({ error: true, errorCode: "MISSING_URL" });
+  }
+
+  //It's just the same request sent to the audio microservice
+  try {
+    let addAudioReq = await axios.post(`${AUDIO_URL}/v1/addYouTubeSound`, {
+      url: req.body.url,
+    });
+    res.status(addAudioReq.status).send(addAudioReq.data);
+  } catch (err) {
+    logger.warn(
+      `Error while trying to download a YouTube audio ${
+        req.body.url
+      }: ${JSON.stringify(err?.response?.data)} with status ${
+        err?.response?.status
+      }`
+    );
+    res
+      .status(err?.response?.status ?? 500)
+      .send({ ...err?.response?.data, ...{ error: true } });
+  }
+});
+
+api.get("/getYouTubeVideoInfo", async (req, res) => {
+  logger.http(
+    `GET /getYouTubeVideoInfo with body ${JSON.stringify(req.query)}`
+  );
+
+  //It's just the same request sent to the audio microservice
+  try {
+    let videoInfoReq = await axios.get(`${AUDIO_URL}/v1/getYouTubeVideoInfo`, {
+      params: req.query,
+    });
+    res.status(videoInfoReq.status).send(videoInfoReq.data);
+    logger.info(`Got the info for YouTube video ${req.query.videoURL}`);
+  } catch (err) {
+    //No error logs here - user could've just provided a wrong URL (which isn't an error itself)
+    logger.info(
+      `User tried to get YouTube video info but there's an error: ${JSON.stringify(
+        err?.response?.data
+      )} with status ${err?.response?.status}`
+    );
+    res
+      .status(err?.response?.status ?? 500)
       .send({ ...err?.response?.data, ...{ error: true } });
   }
 });

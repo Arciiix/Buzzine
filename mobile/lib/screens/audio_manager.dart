@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:buzzine/globalData.dart';
+import 'package:buzzine/screens/download_YouTube_audio.dart';
 import 'package:buzzine/types/Audio.dart';
 import 'package:flutter/material.dart';
 
@@ -24,9 +25,12 @@ class _AudioManagerState extends State<AudioManager> {
   String? _previewId;
   Timer? _audioPlaybackEndTimer;
 
-  void addAudio() {
-    //TODO: Add audio
-    print("TODO: Add audio");
+  void addAudio() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) => DownloadYouTubeAudio()),
+    );
+
+    await _refreshState.currentState!.show();
   }
 
   void deleteAudio(Audio e) async {
@@ -94,7 +98,7 @@ class _AudioManagerState extends State<AudioManager> {
                     }
                     await GlobalData.changeAudioName(
                         audio.audioId, _audioNameTextFieldController.text);
-                    _refreshState.currentState!.show();
+                    await _refreshState.currentState!.show();
                     Navigator.of(context).pop();
                   }
                 },

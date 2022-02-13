@@ -60,7 +60,7 @@ async function downloadFromYouTube(url): Promise<{
         resolve({
           error: true,
           statusCode: 502,
-          errorCode: "YOUTUBE_ERROR:" + err.toString(),
+          errorCode: "YOUTUBE_ERROR",
         });
       });
 
@@ -111,4 +111,70 @@ async function downloadFromYouTube(url): Promise<{
   return result;
 }
 
-export { downloadFromYouTube };
+async function getYouTubeVideoInfo(videoURL: string): Promise<{
+  error: boolean;
+  errorCode?: string;
+  response?: IYouTubeVideoInfo;
+}> {
+  try {
+    if (!ytdl.validateURL(videoURL)) {
+      return { error: true, errorCode: "WRONG_VIDEO_URL" };
+    }
+
+    let videoInfo = await ytdl.getBasicInfo(videoURL);
+    return {
+      error: false,
+      response: {
+        channel: {
+          name: videoInfo.videoDetails.ownerChannelName,
+          id: videoInfo.videoDetails.author.id,
+          isVerified: videoInfo.videoDetails.author.verified,
+          username: videoInfo.videoDetails.author.user,
+          url: videoInfo.videoDetails.author.channel_url,
+        },
+        description: videoInfo.videoDetails.description,
+        lengthSeconds: videoInfo.videoDetails.lengthSeconds,
+        thumbnail: {
+          url: videoInfo.videoDetails.thumbnails[
+            videoInfo.videoDetails.thumbnails.length - 1
+          ].url,
+          width:
+            videoInfo.videoDetails.thumbnails[
+              videoInfo.videoDetails.thumbnails.length - 1
+            ].width,
+          height:
+            videoInfo.videoDetails.thumbnails[
+              videoInfo.videoDetails.thumbnails.length - 1
+            ].height,
+        },
+        title: videoInfo.videoDetails.title,
+        uploadDate: new Date(videoInfo.videoDetails.uploadDate),
+        url: videoInfo.videoDetails.video_url,
+      },
+    };
+  } catch (err) {
+    return { error: true, errorCode: err.toString() };
+  }
+}
+
+interface IYouTubeVideoInfo {
+  channel: {
+    name: string;
+    id: string;
+    isVerified: boolean;
+    username: string;
+    url: string;
+  };
+  description: string;
+  lengthSeconds: string;
+  thumbnail: {
+    url: string;
+    width: number;
+    height: number;
+  };
+  title: string;
+  uploadDate: Date;
+  url: string;
+}
+
+export { downloadFromYouTube, getYouTubeVideoInfo };

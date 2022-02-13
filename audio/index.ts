@@ -14,7 +14,10 @@ import fs from "fs";
 import path from "path";
 import AudioNameMappingModel from "./models/AudioNameMapping";
 import AlarmsAudioModel from "./models/AlarmsAudio";
-import { downloadFromYouTube } from "./utils/YouTubeDownloader";
+import {
+  downloadFromYouTube,
+  getYouTubeVideoInfo,
+} from "./utils/YouTubeDownloader";
 
 //Load environment variables from file
 dotenv.config();
@@ -320,6 +323,30 @@ api.put("/stopAudioPreview", (req, res) => {
   logger.info("User has stopped the preview audio playback");
 
   res.send({ error: false });
+});
+
+api.get("/getYouTubeVideoInfo", async (req, res) => {
+  logger.http(
+    `GET /getYouTubeVideoInfo with data ${JSON.stringify(req.query)}`
+  );
+
+  if (!req.query.videoURL) {
+    res.status(400).send({ error: true, errorCode: "MISSING_VIDEO_URL" });
+    return;
+  }
+
+  let videoInfo = await getYouTubeVideoInfo(req.query.videoURL as string);
+  if (videoInfo.error) {
+    res.status(400);
+    logger.info(
+      `User tried to get YouTube video info but there's an error: ${videoInfo.errorCode}`
+    );
+  } else {
+    res.status(200);
+    logger.info(`Got the info for YouTube video ${req.query.videoURL}`);
+  }
+
+  res.send(videoInfo);
 });
 
 async function init() {
