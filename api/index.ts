@@ -3,7 +3,7 @@ import { io } from "socket.io-client";
 import dotenv from "dotenv";
 import logger from "./utils/logger";
 import bodyParser from "body-parser";
-import axios from "axios";
+import axios, { Method } from "axios";
 import guardRouter, { checkQRCode } from "./guard";
 import { initDatabase } from "./utils/db";
 import cdn from "./utils/cdn";
@@ -20,12 +20,16 @@ app.use(bodyParser.json());
 app.get("/", (req, res) => {
   res.send({ error: false, currentVersion: "v1", timestamp: new Date() });
 });
+
+const audioRouter = express.Router();
+
 //REST API
 const api = express.Router();
 app.use("/v1", api);
 api.use("/guard", guardRouter);
 app.use("/cdn", cdn);
 api.use("/weather", weatherRouter);
+api.use("/audio", audioRouter);
 
 api.post("/addAlarm", async (req, res) => {
   logger.http(`POST /addAlarm with data: ${JSON.stringify(req.body)}`);
@@ -503,258 +507,30 @@ api.put("/cancelAllAlarms", async (req, res) => {
   });
 });
 
-api.get("/getSoundList", async (req, res) => {
-  logger.http("GET /getSoundList");
+audioRouter.all("*", async (req, res) => {
+  logger.http(`[AUDIO] ${req.method.toUpperCase()} ${req.path}`);
 
   //It's just the same request sent to the audio microservice
   try {
-    let audiosReq = await axios.get(`${AUDIO_URL}/v1/getSoundList`);
-    if (audiosReq.status != 200) {
-      logger.warn(
-        `Error while getting audios: ${JSON.stringify(audiosReq.data)}`
-      );
-    }
+    let audiosReq = await axios({
+      url: `${AUDIO_URL}/v1${req.path}`,
+      method: req.method as Method,
+      data: req.body,
+      params: req.query,
+    });
+    logger.info(
+      `Made audio request ${req.path} with response ${JSON.stringify(
+        audiosReq.data
+      )}`
+    );
     res.status(audiosReq.status).send(audiosReq.data);
   } catch (err) {
     logger.error(
-      `Error while getting audios: ${JSON.stringify(
+      `Error while making audio request: ${JSON.stringify(
         err?.response?.data
       )} with status ${err?.response?.status}`
     );
     res.status(err?.response?.status ?? 500).send(err?.response?.data);
-  }
-});
-
-api.delete("/deleteSound", async (req, res) => {
-  logger.http(`DELETE /deleteSound with data ${JSON.stringify(req.body)}`);
-
-  if (!req.body.audioId) {
-    res.send({ error: true, errorCode: "MISSING_AUDIO_ID" });
-    return;
-  }
-
-  //It's just the same request sent to the audio microservice
-  try {
-    let deleteReq = await axios.delete(`${AUDIO_URL}/v1/deleteSound`, {
-      data: {
-        audioId: req.body.audioId,
-      },
-    });
-    res.status(deleteReq.status).send(deleteReq.data);
-    logger.info(
-      `Delete request is complete with response ${JSON.stringify(
-        deleteReq.data
-      )} and status ${deleteReq.status}`
-    );
-  } catch (err) {
-    logger.warn(
-      `Error while deleting audio ${req.body.audioId}: ${JSON.stringify(
-        err?.response?.data
-      )} with status ${err?.response?.status}`
-    );
-    res.status(500).send({ error: true });
-  }
-});
-
-api.put("/updateAudio", async (req, res) => {
-  logger.http(`PUT /updateAudio with data ${JSON.stringify(req.body)}`);
-
-  if (!req.body.audioId) {
-    res.send({ error: true, errorCode: "MISSING_AUDIO_ID" });
-    return;
-  }
-
-  //It's just the same request sent to the audio microservice
-  try {
-    let updateReq = await axios.put(`${AUDIO_URL}/v1/updateAudio`, {
-      audioId: req.body.audioId,
-      filename: req.body.filename,
-      friendlyName: req.body.friendlyName,
-    });
-    res.status(updateReq.status).send(updateReq.data);
-    logger.info(
-      `Update audio request is complete with response ${JSON.stringify(
-        updateReq.data
-      )} and status ${updateReq.status}`
-    );
-  } catch (err) {
-    logger.warn(
-      `Error while updating audio ${req.body.audioId}: ${JSON.stringify(
-        err?.response?.data
-      )} with status ${err?.response?.status}`
-    );
-    res.status(err?.response?.status ?? 500).send(err?.response?.data);
-  }
-});
-
-api.put("/tempMuteAudio", async (req, res) => {
-  logger.http(`PUT /tempMuteAudio with body ${JSON.stringify(req.body)}`);
-
-  //It's just the same request sent to the audio microservice
-  try {
-    let audioReq = await axios.put(`${AUDIO_URL}/v1/tempMuteAudio`, {
-      duration: req.body?.duration,
-    });
-    res.status(audioReq.status).send(audioReq.data);
-  } catch (err) {
-    logger.warn(
-      `Error while temp-muting the current audio: ${JSON.stringify(
-        err?.response?.data
-      )} with status ${err?.response?.status}`
-    );
-    res
-      .status(err?.response?.status ?? 500)
-      .send({ ...err?.response?.data, ...{ error: true } });
-  }
-});
-
-api.get("/previewAudio", async (req, res) => {
-  logger.http(`GET /previewAudio with body ${JSON.stringify(req.query)}`);
-
-  //It's just the same request sent to the audio microservice
-  try {
-    let audioReq = await axios.get(`${AUDIO_URL}/v1/previewAudio`, {
-      params: req.query,
-    });
-    res.status(audioReq.status).send(audioReq.data);
-  } catch (err) {
-    logger.warn(
-      `Error while trying to preview an audio: ${JSON.stringify(
-        err?.response?.data
-      )} with status ${err?.response?.status}`
-    );
-    res
-      .status(err?.response?.status ?? 500)
-      .send({ ...err?.response?.data, ...{ error: true } });
-  }
-});
-
-api.put("/stopAudioPreview", async (req, res) => {
-  logger.http(`PUT /stopAudioPreview with body ${JSON.stringify(req.body)}`);
-
-  //It's just the same request sent to the audio microservice
-  try {
-    let audioReq = await axios.put(`${AUDIO_URL}/v1/stopAudioPreview`);
-    res.status(audioReq.status).send(audioReq.data);
-  } catch (err) {
-    logger.warn(
-      `Error while stopping audio preview playback: ${JSON.stringify(
-        err?.response?.data
-      )} with status ${err?.response?.status}`
-    );
-    res
-      .status(err?.response?.status ?? 500)
-      .send({ ...err?.response?.data, ...{ error: true } });
-  }
-});
-
-api.post("/addYouTubeSound", async (req, res) => {
-  logger.http(`POST /addYouTubeSound with body ${JSON.stringify(req.body)}`);
-
-  if (!req.body.url) {
-    return res.status(400).send({ error: true, errorCode: "MISSING_URL" });
-  }
-
-  //It's just the same request sent to the audio microservice
-  try {
-    let addAudioReq = await axios.post(`${AUDIO_URL}/v1/addYouTubeSound`, {
-      url: req.body.url,
-    });
-    res.status(addAudioReq.status).send(addAudioReq.data);
-  } catch (err) {
-    logger.warn(
-      `Error while trying to download a YouTube audio ${
-        req.body.url
-      }: ${JSON.stringify(err?.response?.data)} with status ${
-        err?.response?.status
-      }`
-    );
-    res
-      .status(err?.response?.status ?? 500)
-      .send({ ...err?.response?.data, ...{ error: true } });
-  }
-});
-
-api.get("/getYouTubeVideoInfo", async (req, res) => {
-  logger.http(
-    `GET /getYouTubeVideoInfo with body ${JSON.stringify(req.query)}`
-  );
-
-  //It's just the same request sent to the audio microservice
-  try {
-    let videoInfoReq = await axios.get(`${AUDIO_URL}/v1/getYouTubeVideoInfo`, {
-      params: req.query,
-    });
-    res.status(videoInfoReq.status).send(videoInfoReq.data);
-    logger.info(`Got the info for YouTube video ${req.query.videoURL}`);
-  } catch (err) {
-    //No error logs here - user could've just provided a wrong URL (which isn't an error itself)
-    logger.info(
-      `User tried to get YouTube video info but there's an error: ${JSON.stringify(
-        err?.response?.data
-      )} with status ${err?.response?.status}`
-    );
-    res
-      .status(err?.response?.status ?? 500)
-      .send({ ...err?.response?.data, ...{ error: true } });
-  }
-});
-
-api.put("/cutAudio", async (req, res) => {
-  logger.http(`PUT /cutAudio with body ${JSON.stringify(req.body)}`);
-
-  if (!req.body.audioId) {
-    res.status(400).send({ error: true, errorCode: "MISSING_AUDIO_ID" });
-    logger.warn(`Tried to cut audio but audioId is missing`);
-    return;
-  }
-
-  //It's just the same request sent to the audio microservice
-  try {
-    let audioReq = await axios.put(`${AUDIO_URL}/v1/cutAudio`, {
-      audioId: req.body.audioId,
-      start: req.body.start,
-      end: req.body.end,
-    });
-    res.status(audioReq.status).send(audioReq.data);
-  } catch (err) {
-    logger.warn(
-      `Error while cutting audio: ${JSON.stringify(
-        err?.response?.data
-      )} with status ${err?.response?.status}`
-    );
-    res
-      .status(err?.response?.status ?? 500)
-      .send({ ...err?.response?.data, ...{ error: true } });
-  }
-});
-
-api.put("/previewCut", async (req, res) => {
-  logger.http(`PUT /previewCut with body ${JSON.stringify(req.body)}`);
-
-  if (!req.body.audioId) {
-    res.status(400).send({ error: true, errorCode: "MISSING_AUDIO_ID" });
-    logger.warn(`Tried to cut audio but audioId is missing`);
-    return;
-  }
-
-  //It's just the same request sent to the audio microservice
-  try {
-    let audioReq = await axios.put(`${AUDIO_URL}/v1/previewCut`, {
-      audioId: req.body.audioId,
-      start: req.body.start,
-      end: req.body.end,
-    });
-    res.status(audioReq.status).send(audioReq.data);
-  } catch (err) {
-    logger.warn(
-      `Error while previewing audio cut: ${JSON.stringify(
-        err?.response?.data
-      )} with status ${err?.response?.status}`
-    );
-    res
-      .status(err?.response?.status ?? 500)
-      .send({ ...err?.response?.data, ...{ error: true } });
   }
 });
 

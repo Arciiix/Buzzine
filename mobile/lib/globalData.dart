@@ -217,7 +217,7 @@ class GlobalData {
   }
 
   static Future<List<Audio>> getAudios() async {
-    var response = await http.get(Uri.parse("$serverIP/v1/getSoundList"));
+    var response = await http.get(Uri.parse("$serverIP/v1/audio/getSoundList"));
     var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
 
     if (response.statusCode != 200 || decodedResponse['error'] == true) {
@@ -292,7 +292,8 @@ class GlobalData {
   }
 
   static Future<void> deleteAudio(String idToDelete) async {
-    var response = await http.delete(Uri.parse("$serverIP/v1/deleteSound"),
+    var response = await http.delete(
+        Uri.parse("$serverIP/v1/audio/deleteSound"),
         body: json.encode({'audioId': idToDelete}),
         headers: {"Content-Type": "application/json"});
     var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
@@ -348,7 +349,7 @@ class GlobalData {
   static Future<bool> muteAudio(int duration) async {
     Map requestData = {'duration': duration};
 
-    var response = await http.put(Uri.parse("$serverIP/v1/tempMuteAudio"),
+    var response = await http.put(Uri.parse("$serverIP/v1/audio/tempMuteAudio"),
         body: json.encode(requestData),
         headers: {"Content-Type": "application/json"});
     var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
@@ -393,7 +394,7 @@ class GlobalData {
     };
 
     var response = await http.get(
-      Uri.parse("$serverIP/v1/previewAudio")
+      Uri.parse("$serverIP/v1/audio/previewAudio")
           .replace(queryParameters: requestData),
     );
     var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
@@ -410,7 +411,8 @@ class GlobalData {
   }
 
   static Future<void> stopAudioPreview() async {
-    var response = await http.put(Uri.parse("$serverIP/v1/stopAudioPreview"));
+    var response =
+        await http.put(Uri.parse("$serverIP/v1/audio/stopAudioPreview"));
     var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
 
     if (response.statusCode != 200 || decodedResponse['error'] == true) {
@@ -492,7 +494,7 @@ class GlobalData {
   static Future<void> changeAudioName(String audioId, String newName) async {
     Map requestData = {'audioId': audioId, 'friendlyName': newName};
 
-    var response = await http.put(Uri.parse("$serverIP/v1/updateAudio"),
+    var response = await http.put(Uri.parse("$serverIP/v1/audio/updateAudio"),
         body: json.encode(requestData),
         headers: {"Content-Type": "application/json"});
     var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
@@ -509,7 +511,7 @@ class GlobalData {
     };
 
     var response = await http.get(
-      Uri.parse("$serverIP/v1/getYouTubeVideoInfo")
+      Uri.parse("$serverIP/v1/audio/getYouTubeVideoInfo")
           .replace(queryParameters: requestData),
     );
     var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
@@ -537,7 +539,8 @@ class GlobalData {
   static Future<String?> downloadYouTubeVideo(String videoURL) async {
     Map requestData = {'url': videoURL};
 
-    var response = await http.post(Uri.parse("$serverIP/v1/addYouTubeSound"),
+    var response = await http.post(
+        Uri.parse("$serverIP/v1/audio/addYouTubeSound"),
         body: json.encode(requestData),
         headers: {"Content-Type": "application/json"});
     var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
