@@ -17,6 +17,8 @@ class AlarmList extends StatefulWidget {
 
 class _AlarmListState extends State<AlarmList> {
   late List<Alarm> alarms;
+  GlobalKey<RefreshIndicatorState> _refreshState =
+      GlobalKey<RefreshIndicatorState>();
 
   void addAlarm(Alarm? selectedAlarm) async {
     Alarm? alarm = await Navigator.of(context).push(MaterialPageRoute(
@@ -25,20 +27,14 @@ class _AlarmListState extends State<AlarmList> {
 
     if (alarm != null) {
       await GlobalData.addAlarm(alarm.toMap(), selectedAlarm != null);
-      await GlobalData.getData();
-      setState(() {
-        alarms = GlobalData.alarms;
-      });
+      await _refreshState.currentState!.show();
     }
   }
 
   void deleteAlarm(Alarm alarmToDelete) async {
     await GlobalData.deleteAlarm(alarmToDelete.id ?? "");
     showSnackbar(context, "Usunięto alarm!");
-    await GlobalData.getData();
-    setState(() {
-      alarms = GlobalData.alarms;
-    });
+    await _refreshState.currentState!.show();
   }
 
   @override
@@ -56,6 +52,7 @@ class _AlarmListState extends State<AlarmList> {
           child: const Icon(Icons.add),
         ),
         body: RefreshIndicator(
+            key: _refreshState,
             onRefresh: () async {
               await GlobalData.getData();
               setState(() {
