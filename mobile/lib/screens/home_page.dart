@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:buzzine/components/alarm_card.dart';
 import 'package:buzzine/components/audio_widget.dart';
 import 'package:buzzine/components/carousel.dart';
@@ -6,6 +8,7 @@ import 'package:buzzine/components/weather_widget.dart';
 import 'package:buzzine/globalData.dart';
 import 'package:buzzine/screens/alarm_list.dart';
 import 'package:buzzine/screens/audio_manager.dart';
+import 'package:buzzine/screens/download_YouTube_audio.dart';
 import 'package:buzzine/screens/loading.dart';
 import 'package:buzzine/screens/ringing_alarm.dart';
 import 'package:buzzine/screens/scan_qr_code.dart';
@@ -14,10 +17,12 @@ import 'package:buzzine/screens/weather_screen.dart';
 import 'package:buzzine/types/Alarm.dart';
 import 'package:buzzine/types/RingingAlarmEntity.dart';
 import 'package:buzzine/types/Snooze.dart';
+import 'package:buzzine/types/YouTubeVideoInfo.dart';
 import 'package:buzzine/utils/validate_qr_code.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -32,6 +37,7 @@ class _HomePageState extends State<HomePage> {
   List<RingingAlarmEntity> ringingAlarms = [];
   List<Snooze> activeSnoozes = [];
   late String qrCodeHash;
+  late StreamSubscription _intentData;
 
   GlobalKey<RefreshIndicatorState> _refreshState =
       GlobalKey<RefreshIndicatorState>();
@@ -150,9 +156,24 @@ class _HomePageState extends State<HomePage> {
     _refreshState.currentState!.show();
   }
 
+  void handleShareIntent(String? value) {
+    print("Intent data: $value");
+    if (youtubeRegExp.hasMatch(value ?? "")) {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+            builder: (context) =>
+                DownloadYouTubeAudio(initialURL: Uri.tryParse(value ?? ""))),
+      );
+    }
+  }
+
   @override
   void initState() {
     super.initState();
+
+    _intentData =
+        ReceiveSharingIntent.getTextStream().listen(handleShareIntent);
+    ReceiveSharingIntent.getInitialText().then(handleShareIntent);
 
     GlobalData.getData().then((value) {
       setState(() {

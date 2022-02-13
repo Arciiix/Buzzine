@@ -6,7 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:buzzine/globalData.dart';
 
 class DownloadYouTubeAudio extends StatefulWidget {
-  const DownloadYouTubeAudio({Key? key}) : super(key: key);
+  final Uri? initialURL;
+  const DownloadYouTubeAudio({Key? key, this.initialURL}) : super(key: key);
 
   @override
   _DownloadYouTubeAudioState createState() => _DownloadYouTubeAudioState();
@@ -44,9 +45,6 @@ class _DownloadYouTubeAudioState extends State<DownloadYouTubeAudio> {
   }
 
   bool validateYoutubeURL(String? url) {
-    RegExp youtubeRegExp =
-        RegExp(r"^(https?\:\/\/)?((www\.)?youtube\.com|youtu\.be)\/.+$");
-
     if (url == null) return false;
     if (url.isEmpty) return false;
     if (!youtubeRegExp.hasMatch(url)) return false;
@@ -92,6 +90,16 @@ class _DownloadYouTubeAudioState extends State<DownloadYouTubeAudio> {
       //Pop the screen navigation - go back to the previous route (screen).
       Navigator.of(context).pop();
     }
+  }
+
+  @override
+  void initState() {
+    if (widget.initialURL != null) {
+      _inputController.text = widget.initialURL.toString();
+      getVideoInfo();
+    }
+
+    super.initState();
   }
 
   @override

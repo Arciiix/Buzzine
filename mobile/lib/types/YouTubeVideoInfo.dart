@@ -27,3 +27,6 @@ class YouTubeChannelInfo {
   YouTubeChannelInfo(
       {required this.name, this.id, this.isVerified, this.username, this.url});
 }
+
+RegExp youtubeRegExp =
+    RegExp(r"^(https?\:\/\/)?((www\.)?youtube\.com|youtu\.be)\/.+$");
