@@ -147,18 +147,20 @@ class WeatherWidgetDisplay extends StatelessWidget {
               ),
             ],
           ),
-          SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                  children: hourlyWeather != null
-                      ? hourlyWeather!
-                          .map((e) => HourlyWeather(
-                              weather: e,
-                              darkMode: (backgroundColor ?? Colors.white)
-                                      .computeLuminance() <
-                                  0.5))
-                          .toList()
-                      : []))
+          Scrollbar(
+            child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                    children: hourlyWeather != null
+                        ? hourlyWeather!
+                            .map((e) => HourlyWeather(
+                                weather: e,
+                                darkMode: (backgroundColor ?? Colors.white)
+                                        .computeLuminance() <
+                                    0.5))
+                            .toList()
+                        : [])),
+          )
         ],
       ),
     );
