@@ -51,8 +51,8 @@ class _SnoozeAlarmState extends State<SnoozeAlarm> {
         if (selectedSnoozeDurationValue.inSeconds > _maxSnoozeDurationValue) {
           selectedSnoozeDurationValue =
               Duration(seconds: selectedSnoozeDurationValue.inSeconds - 1);
-          _snoozeInvocationDate = DateTime.now()
-            ..add(selectedSnoozeDurationValue);
+          _snoozeInvocationDate =
+              DateTime.now().add(selectedSnoozeDurationValue);
         }
       });
       //I assume 15 seconds is the lowest total remaining time
