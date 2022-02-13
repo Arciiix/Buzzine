@@ -6,19 +6,23 @@ cd ..
 echo Starting core...
 cd core
 cd dist
-pm2 start index.js --name buzzine-core
+call pm2 start index.js --name buzzine-core
 
+cd ..
+cd ..
 echo Starting API...
-cd API
+cd api
 cd dist
-pm2 start index.js --name buzzine-api
+call pm2 start index.js --name buzzine-api
 
+cd ..
+cd ..
 echo Starting audio...
 cd audio
 cd dist
-pm2 start index.js --name buzzine-audio
+call pm2 start index.js --name buzzine-audio
 
 echo Saving...
-pm2 save
+call pm2 save
 
 pause
