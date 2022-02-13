@@ -193,7 +193,7 @@ class _DetailedWeatherDataState extends State<DetailedWeatherData> {
                       textAlign: TextAlign.center,
                     ),
                     Text(
-                      "${widget.weather.windSpeed.toString()} m/s",
+                      "${widget.weather.windSpeed.toStringAsFixed(0)} m/s",
                       textAlign: TextAlign.center,
                     ),
                   ],
@@ -211,7 +211,7 @@ class _DetailedWeatherDataState extends State<DetailedWeatherData> {
                       textAlign: TextAlign.center,
                     ),
                     Text(
-                      "${widget.weather.pressure.toString()} hPa",
+                      "${widget.weather.pressure.toStringAsFixed(0)} hPa",
                       textAlign: TextAlign.center,
                     ),
                   ],
@@ -233,7 +233,7 @@ class _DetailedWeatherDataState extends State<DetailedWeatherData> {
                       textAlign: TextAlign.center,
                     ),
                     Text(
-                      "${widget.weather.humidity.toString()}%",
+                      "${widget.weather.humidity.toStringAsFixed(0)}%",
                       textAlign: TextAlign.center,
                     ),
                   ],
@@ -251,7 +251,7 @@ class _DetailedWeatherDataState extends State<DetailedWeatherData> {
                       textAlign: TextAlign.center,
                     ),
                     Text(
-                      "${widget.weather.clouds.toString()}%",
+                      "${widget.weather.clouds.toStringAsFixed(0)}%",
                       textAlign: TextAlign.center,
                     ),
                   ],
