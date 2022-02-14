@@ -545,6 +545,42 @@ class GlobalData {
     return null;
   }
 
+  static Future<void> previewAudioCut(
+      String audioId, double start, double end) async {
+    Map<String, String> requestData = {
+      'audioId': audioId,
+      'start': start.toString(),
+      'end': end.toString()
+    };
+
+    var response = await http.get(
+      Uri.parse("$serverIP/v1/audio/previewCut")
+          .replace(queryParameters: requestData),
+    );
+    var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
+
+    if (response.statusCode != 200 || decodedResponse['error'] == true) {
+      if (decodedResponse['errorCode'] != null) {
+        throw APIException(
+            "Błąd podczas podglądu przycinania audio $audioId. Status code: ${response.statusCode}, response: ${response.body}");
+      }
+    }
+  }
+
+  static Future<void> cutAudio(String audioId, double start, double end) async {
+    Map requestData = {'audioId': audioId, 'start': start, 'end': end};
+
+    var response = await http.put(Uri.parse("$serverIP/v1/audio/cutAudio"),
+        body: json.encode(requestData),
+        headers: {"Content-Type": "application/json"});
+    var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
+
+    if (response.statusCode != 200 || decodedResponse['error'] == true) {
+      throw APIException(
+          "Błąd podczas przycinania audio $audioId. Status code: ${response.statusCode}, response: ${response.body}");
+    }
+  }
+
   static Future<String?> downloadYouTubeVideo(String videoURL) async {
     Map requestData = {'url': videoURL};
 

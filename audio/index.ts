@@ -375,7 +375,7 @@ api.put("/cutAudio", async (req, res) => {
 
   let start, end;
 
-  if (req.body.from) {
+  if (req.body.start) {
     start = parseFloat(req.body.start);
     if (isNaN(start)) {
       return res
@@ -405,10 +405,10 @@ api.put("/cutAudio", async (req, res) => {
   res.send(cutAudioResult);
 });
 
-api.put("/previewCut", async (req, res) => {
-  logger.http(`PUT /previewCut with data ${JSON.stringify(req.body)}`);
+api.get("/previewCut", async (req, res) => {
+  logger.http(`GET /previewCut with data ${JSON.stringify(req.query)}`);
 
-  if (!req.body.audioId) {
+  if (!req.query.audioId) {
     res.status(400).send({ error: true, errorCode: "MISSING_AUDIO_ID" });
     logger.warn(`Tried to preview-cut audio but audioId is missing`);
     return;
@@ -416,25 +416,25 @@ api.put("/previewCut", async (req, res) => {
 
   let start, end;
 
-  if (req.body.from) {
-    start = parseFloat(req.body.start);
+  if (req.query.start) {
+    start = parseFloat(req.query.start as string);
     if (isNaN(start)) {
       return res
         .status(400)
         .send({ error: true, errorCode: "WRONG_START_TIME" });
     }
   }
-  if (req.body.end) {
-    end = parseFloat(req.body.end);
+  if (req.query.end) {
+    end = parseFloat(req.query.end as string);
     if (isNaN(end)) {
       return res.status(400).send({ error: true, errorCode: "WRONG_END_TIME" });
     }
   }
 
   let cutAudioResult = await previewCut(
-    req.body.audioId,
-    req.body.start,
-    req.body.end
+    req.query.audioId as string,
+    parseFloat(req.query.start as string),
+    parseFloat(req.query.end as string)
   );
 
   if (cutAudioResult.error) {
@@ -443,12 +443,12 @@ api.put("/previewCut", async (req, res) => {
     res.status(200);
 
     let audioInstance: any = await AudioNameMappingModel.findOne({
-      where: { audioId: req.body.audioId },
+      where: { audioId: req.query.audioId },
     });
 
     if (!audioInstance) {
       res.status(400).send({ error: true, errorCode: "WRONG_AUDIO_ID" });
-      logger.warn(`Tried to preview an unexisting audio ${req.body.audioId}`);
+      logger.warn(`Tried to preview an unexisting audio ${req.query.audioId}`);
       return;
     }
 
@@ -473,7 +473,7 @@ api.put("/previewCut", async (req, res) => {
     }, cutAudioResult.response.duration * 1000);
 
     logger.info(
-      `Playing a cut-preview of file ${req.body.audioId} from ${req.body.start}s to ${req.body.end}s for duration: ${cutAudioResult.response.duration}s`
+      `Playing a cut-preview of file ${req.query.audioId} from ${req.query.start}s to ${req.query.end}s for duration: ${cutAudioResult.response.duration}s`
     );
   }
 

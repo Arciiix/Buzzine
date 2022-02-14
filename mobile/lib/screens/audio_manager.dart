@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:buzzine/globalData.dart';
+import 'package:buzzine/screens/cut_audio.dart';
 import 'package:buzzine/screens/download_YouTube_audio.dart';
 import 'package:buzzine/types/Audio.dart';
 import 'package:buzzine/utils/formatting.dart';
@@ -110,6 +111,14 @@ class _AudioManagerState extends State<AudioManager> {
     );
   }
 
+  void navigateToAudioCut(Audio audio) async {
+    await Navigator.of(context).push(MaterialPageRoute(
+      builder: (context) => CutAudio(audio: audio),
+    ));
+
+    await _refreshState.currentState!.show();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -197,6 +206,10 @@ class _AudioManagerState extends State<AudioManager> {
                                       );
                                     },
                                   );
+                                } else if (direction ==
+                                    DismissDirection.startToEnd) {
+                                  //Navigate here, not in the onDismissed function - keep the audio list tile, don't destroy it
+                                  navigateToAudioCut(e);
                                 }
                               },
                               onDismissed: (DismissDirection direction) {
