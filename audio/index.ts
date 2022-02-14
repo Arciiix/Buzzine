@@ -115,6 +115,7 @@ api.get("/getAlarmSoundList", async (req, res) => {
     data: soundList.map((e: any) => {
       let newElem = { ...JSON.parse(JSON.stringify(e)) };
       newElem.filename = e.AudioNameMapping.filename;
+      newElem.duration = e.AudioNameMapping.duration;
       return newElem;
     }),
   });

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:buzzine/globalData.dart';
 import 'package:buzzine/screens/download_YouTube_audio.dart';
 import 'package:buzzine/types/Audio.dart';
+import 'package:buzzine/utils/formatting.dart';
 import 'package:flutter/material.dart';
 
 class AudioManager extends StatefulWidget {
@@ -189,7 +190,10 @@ class _AudioManagerState extends State<AudioManager> {
                                     : null,
                                 onLongPress: () => changeAudioName(e),
                                 title: Text(e.friendlyName ?? e.filename),
-                                subtitle: Text(e.filename),
+                                subtitle: Text(e.filename +
+                                    '\n' +
+                                    secondsToHHmm(e.duration)),
+                                isThreeLine: true,
                                 trailing: IconButton(
                                     icon: Icon(
                                         _isPreviewPlaying &&

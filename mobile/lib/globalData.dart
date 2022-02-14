@@ -236,7 +236,8 @@ class GlobalData {
           .map((e) => Audio(
               audioId: e['audioId'],
               filename: e['filename'],
-              friendlyName: e['friendlyName']))
+              friendlyName: e['friendlyName'],
+              duration: e?['duration']))
           .toList();
     }
 
