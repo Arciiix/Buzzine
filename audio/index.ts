@@ -92,6 +92,11 @@ app.get("/", async (req, res) => {
 const api = express.Router();
 app.use("/v1", api);
 
+api.get("/ping", (req, res) => {
+  logger.http("GET /ping");
+  res.send({ error: false, timestamp: new Date() });
+});
+
 api.get("/getSoundList", async (req, res) => {
   logger.http("GET /getSoundList");
 

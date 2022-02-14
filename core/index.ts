@@ -41,6 +41,15 @@ io.on("connection", (socket: Socket) => {
     } has connected! Request object: ${JSON.stringify(socket.handshake)}`
   );
 
+  socket.on("CMD/PING", async (_: any, cb?: any) => {
+    if (cb) {
+      logger.info(`Core has been pinged`);
+      cb({ error: false, timestamp: new Date() });
+    } else {
+      logger.warn("Missing callback on ping request");
+    }
+  });
+
   socket.on("CMD/CREATE_ALARM", async (payload: any, cb?: any) => {
     if (payload?.repeat && !payload.repeat?.tz) {
       logger.warn(

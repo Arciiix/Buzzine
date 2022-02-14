@@ -1,8 +1,8 @@
 import 'dart:async';
-
 import 'package:buzzine/components/alarm_card.dart';
 import 'package:buzzine/components/audio_widget.dart';
 import 'package:buzzine/components/carousel.dart';
+import 'package:buzzine/components/ping_result_indicator.dart';
 import 'package:buzzine/components/snooze_card.dart';
 import 'package:buzzine/components/weather_widget.dart';
 import 'package:buzzine/globalData.dart';
@@ -15,9 +15,11 @@ import 'package:buzzine/screens/scan_qr_code.dart';
 import 'package:buzzine/screens/settings.dart';
 import 'package:buzzine/screens/weather_screen.dart';
 import 'package:buzzine/types/Alarm.dart';
+import 'package:buzzine/types/PingResult.dart';
 import 'package:buzzine/types/RingingAlarmEntity.dart';
 import 'package:buzzine/types/Snooze.dart';
 import 'package:buzzine/types/YouTubeVideoInfo.dart';
+import 'package:buzzine/utils/formatting.dart';
 import 'package:buzzine/utils/validate_qr_code.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -37,6 +39,7 @@ class _HomePageState extends State<HomePage> {
   List<RingingAlarmEntity> ringingAlarms = [];
   List<Snooze> activeSnoozes = [];
   late String qrCodeHash;
+  PingResult? pingResult;
   late StreamSubscription _intentData;
 
   GlobalKey<RefreshIndicatorState> _refreshState =
@@ -183,6 +186,11 @@ class _HomePageState extends State<HomePage> {
         ringingAlarms = GlobalData.ringingAlarms;
         activeSnoozes = GlobalData.activeSnoozes;
       });
+      GlobalData.ping().then((PingResult result) {
+        setState(() {
+          pingResult = result;
+        });
+      });
       GlobalData.getWeatherData().then((_) {
         if (GlobalData.weather != null) {
           //Re-render the screen
@@ -215,6 +223,17 @@ class _HomePageState extends State<HomePage> {
                           ringingAlarms = GlobalData.ringingAlarms;
                           activeSnoozes = GlobalData.activeSnoozes;
                         });
+
+                        //Clear the current ping cached data
+                        setState(() {
+                          pingResult = null;
+                        });
+                        GlobalData.ping().then((PingResult result) {
+                          setState(() {
+                            pingResult = result;
+                          });
+                        });
+
                         //Clear the current cached weather data
                         GlobalData.weather = null;
                         await GlobalData.getWeatherData();
@@ -500,6 +519,118 @@ class _HomePageState extends State<HomePage> {
                                     child: const Center(
                                         child: Text("Zmień ustawienia",
                                             style: TextStyle(fontSize: 24))))),
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: const Padding(
+                                  padding: EdgeInsets.all(5),
+                                  child: Text("📈 Informacje",
+                                      style: TextStyle(
+                                          fontSize: 24, color: Colors.white))),
+                            ),
+                            Container(
+                                width: MediaQuery.of(context).size.width * 0.9,
+                                height: 140,
+                                padding: const EdgeInsets.all(10),
+                                margin: const EdgeInsets.all(5),
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context).cardColor,
+                                  borderRadius: BorderRadius.circular(5),
+                                ),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.max,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceAround,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: [
+                                        Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceAround,
+                                          children: [
+                                            Text(GlobalData.appVersion,
+                                                style: TextStyle(fontSize: 32)),
+                                            const Text("Wersja aplikacji",
+                                                style: TextStyle(fontSize: 18)),
+                                          ],
+                                        ),
+                                        Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceAround,
+                                          children: [
+                                            Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                PingResultIndicator(
+                                                  isSuccess:
+                                                      pingResult?.api.success,
+                                                  delay: 0,
+                                                  apiDelay:
+                                                      pingResult?.api.delay,
+                                                  serviceName: "API",
+                                                ),
+                                                PingResultIndicator(
+                                                  isSuccess:
+                                                      pingResult?.core.success,
+                                                  delay: pingResult?.core.delay,
+                                                  apiDelay:
+                                                      pingResult?.api.delay,
+                                                  serviceName: "core",
+                                                ),
+                                                PingResultIndicator(
+                                                  isSuccess:
+                                                      pingResult?.audio.success,
+                                                  delay:
+                                                      pingResult?.audio.delay,
+                                                  apiDelay:
+                                                      pingResult?.api.delay,
+                                                  serviceName: "audio",
+                                                )
+                                              ],
+                                            ),
+                                            const Text("Status",
+                                                style: TextStyle(fontSize: 18)),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                    Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: pingResult?.timestamp != null
+                                            ? [
+                                                Text(
+                                                    "Dane z ${addZero(pingResult!.timestamp.toLocal().hour)}:${addZero(pingResult!.timestamp.toLocal().minute)}:${addZero(pingResult!.timestamp.toLocal().second)}",
+                                                    style: const TextStyle(
+                                                        fontSize: 18)),
+                                                IconButton(
+                                                  icon:
+                                                      const Icon(Icons.refresh),
+                                                  onPressed: () async {
+                                                    //Clear the current data
+                                                    setState(() {
+                                                      pingResult = null;
+                                                    });
+                                                    PingResult pingResultTemp =
+                                                        await GlobalData.ping();
+                                                    setState(() {
+                                                      pingResult =
+                                                          pingResultTemp;
+                                                    });
+                                                  },
+                                                )
+                                              ]
+                                            : [
+                                                const Text("Ładowanie...",
+                                                    style:
+                                                        TextStyle(fontSize: 18))
+                                              ])
+                                  ],
+                                )),
                           ],
                         ),
                       )))));

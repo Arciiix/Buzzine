@@ -31,6 +31,86 @@ app.use("/cdn", cdn);
 api.use("/weather", weatherRouter);
 api.use("/audio", audioRouter);
 
+api.get("/ping", async (req, res) => {
+  logger.http(`GET /ping with data ${JSON.stringify(req.query)}`);
+
+  let now = new Date();
+  let services = {
+    api: {
+      success: true,
+      delay: null,
+    },
+    core: {
+      success: false,
+      delay: null,
+    },
+    audio: {
+      success: false,
+      delay: null,
+    },
+  };
+
+  if (
+    !req.query.timestamp ||
+    isNaN(new Date(req.query.timestamp as string).getTime())
+  ) {
+    logger.warn(
+      `Invalid/no timestamp provided in the ping request: ${req.query.timestamp}`
+    );
+  } else {
+    services.api.delay =
+      now.getTime() - new Date(req.query.timestamp as string).getTime();
+  }
+
+  await new Promise((resolve: any, reject) => {
+    //Ping the core
+    logger.info("Pinging the core...");
+    socket.emit("CMD/PING", null, (response) => {
+      if (!response.error) {
+        logger.info("Pinged the core successfully");
+        services.core.success = true;
+        if (response.timestamp) {
+          services.core.delay =
+            new Date(response.timestamp).getTime() - now.getTime();
+        }
+      } else {
+        logger.error(
+          `Error while pinging the core service: ${JSON.stringify(response)}`
+        );
+      }
+      resolve();
+    });
+  });
+
+  //Reset the now date
+  now = new Date();
+  await new Promise(async (resolve: any, reject) => {
+    //Ping the audio
+    logger.info("Pinging the audio...");
+    try {
+      let response = await axios.get(`${AUDIO_URL}/v1/ping`);
+      logger.info(`Pinged the audio service successfully`);
+      services.audio.success = true;
+      if (response.data.timestamp) {
+        services.audio.delay =
+          new Date(response.data.timestamp).getTime() - now.getTime();
+      }
+    } catch (err) {
+      logger.error(`Error while pinging the audio service`);
+    }
+
+    resolve();
+  });
+
+  let isError = false;
+  //If any of the services ping failed
+  if (Object.values(services).find((e) => !e.success)) {
+    res.status(502);
+    isError = true;
+  }
+  res.send({ error: isError, response: services });
+});
+
 api.post("/addAlarm", async (req, res) => {
   logger.http(`POST /addAlarm with data: ${JSON.stringify(req.body)}`);
 

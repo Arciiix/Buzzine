@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:buzzine/types/API_exception.dart';
+import 'package:buzzine/types/PingResult.dart';
 import 'package:buzzine/types/Repeat.dart';
 import 'package:buzzine/types/RingingAlarmEntity.dart';
 import 'package:buzzine/types/Snooze.dart';
@@ -10,6 +11,7 @@ import 'package:http/http.dart' as http;
 import 'package:buzzine/types/Alarm.dart';
 import 'package:buzzine/types/Audio.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class GlobalData {
@@ -21,11 +23,14 @@ class GlobalData {
   static late String qrCodeHash;
   static bool isLoading = true;
   static WeatherData? weather;
+  static PingResult? recentPing;
 
   static late String serverIP;
   static int audioPreviewDurationSeconds = 30;
   static LatLng? homeLocation;
   static int weatherHoursCount = 24;
+
+  static late String appVersion;
 
   GlobalData() {
     getData();
@@ -42,6 +47,8 @@ class GlobalData {
     await getActiveSnoozes();
     await getAudios();
     await getQrCodeHash();
+
+    await getAppVersion();
 
     isLoading = false;
   }
@@ -557,5 +564,49 @@ class GlobalData {
             "Błąd podczas pobierania audio z YouTube. Status code: ${response.statusCode}, response: ${response.body}");
       }
     }
+  }
+
+  static Future<String> getAppVersion() async {
+    PackageInfo packageInfo = await PackageInfo.fromPlatform();
+
+    GlobalData.appVersion = packageInfo.version + "+" + packageInfo.buildNumber;
+    return GlobalData.appVersion;
+  }
+
+  static Future<PingResult> ping() async {
+    Map<String, String> requestData = {
+      'timestamp': DateTime.now().toIso8601String(),
+    };
+
+    var response = await http.get(
+      Uri.parse("$serverIP/v1/ping").replace(queryParameters: requestData),
+    );
+    var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
+
+    if (decodedResponse['response'] == null) {
+      throw APIException(
+          "Błąd podczas pingowania serwisów. Status code: ${response.statusCode}, response: ${response.body}");
+    }
+    var responseData = decodedResponse['response'];
+
+    PingResult result = PingResult(
+        error: decodedResponse['error'],
+        api: ServicePing(
+          success: responseData['api']['success'],
+          delay: responseData['api']['delay'],
+        ),
+        core: ServicePing(
+            success: responseData['core']['success'],
+            delay: responseData['core']['delay']),
+        audio: ServicePing(
+            success: responseData['audio']['success'],
+            delay: responseData['audio']['delay']));
+
+    if (result.error) {
+      throw APIException(
+          "Błąd podczas pingowania serwisów. ${result.toString()}");
+    }
+    GlobalData.recentPing = result;
+    return result;
   }
 }
