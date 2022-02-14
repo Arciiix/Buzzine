@@ -529,7 +529,7 @@ class _HomePageState extends State<HomePage> {
                             ),
                             Container(
                                 width: MediaQuery.of(context).size.width * 0.9,
-                                height: 140,
+                                height: 220,
                                 padding: const EdgeInsets.all(10),
                                 margin: const EdgeInsets.all(5),
                                 decoration: BoxDecoration(
@@ -541,61 +541,110 @@ class _HomePageState extends State<HomePage> {
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Row(
+                                    Column(
                                       mainAxisAlignment:
                                           MainAxisAlignment.spaceAround,
                                       crossAxisAlignment:
                                           CrossAxisAlignment.center,
                                       children: [
-                                        Column(
+                                        Row(
                                           mainAxisAlignment:
                                               MainAxisAlignment.spaceAround,
                                           children: [
-                                            Text(GlobalData.appVersion,
-                                                style: TextStyle(fontSize: 32)),
-                                            const Text("Wersja aplikacji",
-                                                style: TextStyle(fontSize: 18)),
-                                          ],
-                                        ),
-                                        Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceAround,
-                                          children: [
-                                            Row(
+                                            Column(
                                               mainAxisAlignment:
-                                                  MainAxisAlignment.center,
+                                                  MainAxisAlignment.spaceAround,
                                               children: [
-                                                PingResultIndicator(
-                                                  isSuccess:
-                                                      pingResult?.api.success,
-                                                  delay: 0,
-                                                  apiDelay:
-                                                      pingResult?.api.delay,
-                                                  serviceName: "API",
-                                                ),
-                                                PingResultIndicator(
-                                                  isSuccess:
-                                                      pingResult?.core.success,
-                                                  delay: pingResult?.core.delay,
-                                                  apiDelay:
-                                                      pingResult?.api.delay,
-                                                  serviceName: "core",
-                                                ),
-                                                PingResultIndicator(
-                                                  isSuccess:
-                                                      pingResult?.audio.success,
-                                                  delay:
-                                                      pingResult?.audio.delay,
-                                                  apiDelay:
-                                                      pingResult?.api.delay,
-                                                  serviceName: "audio",
-                                                )
+                                                Text(GlobalData.appVersion,
+                                                    style: TextStyle(
+                                                        fontSize: 32)),
+                                                const Text("Wersja aplikacji",
+                                                    style: TextStyle(
+                                                        fontSize: 18)),
                                               ],
                                             ),
-                                            const Text("Status",
-                                                style: TextStyle(fontSize: 18)),
+                                            Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.spaceAround,
+                                              children: [
+                                                Text(GlobalData.appBuildNumber,
+                                                    style: TextStyle(
+                                                        fontSize: 32)),
+                                                const Text("Numer buildu",
+                                                    style: TextStyle(
+                                                        fontSize: 18)),
+                                              ],
+                                            ),
                                           ],
                                         ),
+                                        Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceAround,
+                                            children: [
+                                              Column(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceAround,
+                                                children: [
+                                                  Row(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .center,
+                                                    children: [
+                                                      PingResultIndicator(
+                                                        isSuccess: pingResult
+                                                            ?.api.success,
+                                                        delay: 0,
+                                                        apiDelay: pingResult
+                                                            ?.api.delay,
+                                                        serviceName: "API",
+                                                      ),
+                                                      PingResultIndicator(
+                                                        isSuccess: pingResult
+                                                            ?.core.success,
+                                                        delay: pingResult
+                                                            ?.core.delay,
+                                                        apiDelay: pingResult
+                                                            ?.api.delay,
+                                                        serviceName: "core",
+                                                      ),
+                                                      PingResultIndicator(
+                                                        isSuccess: pingResult
+                                                            ?.audio.success,
+                                                        delay: pingResult
+                                                            ?.audio.delay,
+                                                        apiDelay: pingResult
+                                                            ?.api.delay,
+                                                        serviceName: "audio",
+                                                      )
+                                                    ],
+                                                  ),
+                                                  const Text("Status",
+                                                      style: TextStyle(
+                                                          fontSize: 18)),
+                                                ],
+                                              ),
+                                              Column(
+                                                children: [
+                                                  Text(
+                                                      pingResult?.api
+                                                                  .uptimeText !=
+                                                              null
+                                                          ? pingResult!
+                                                              .api.uptimeText!
+                                                          : "Czekaj...",
+                                                      style: TextStyle(
+                                                          fontSize: 32)),
+                                                  const Text("Czas pracy",
+                                                      style: TextStyle(
+                                                          fontSize: 18)),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                        )
                                       ],
                                     ),
                                     Row(

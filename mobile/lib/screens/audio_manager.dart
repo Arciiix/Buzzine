@@ -142,46 +142,68 @@ class _AudioManagerState extends State<AudioManager> {
                           Audio e = audios[index];
                           return Dismissible(
                               key: ObjectKey(e),
-                              direction: DismissDirection.endToStart,
+                              direction: DismissDirection.horizontal,
                               background: Container(
                                   alignment: Alignment.centerLeft,
                                   padding: const EdgeInsets.only(right: 20),
                                   color: Colors.red,
                                   child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    children: const [
-                                      Icon(Icons.delete, color: Colors.white),
-                                      Text("Usuń",
-                                          style: TextStyle(color: Colors.white))
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Icon(Icons.content_cut,
+                                              color: Colors.white),
+                                          Text("Przytnij",
+                                              style: TextStyle(
+                                                  color: Colors.white)),
+                                        ],
+                                      ),
+                                      Row(
+                                        children: [
+                                          Icon(Icons.delete,
+                                              color: Colors.white),
+                                          Text("Usuń",
+                                              style: TextStyle(
+                                                  color: Colors.white)),
+                                        ],
+                                      ),
                                     ],
                                   )),
                               confirmDismiss:
                                   (DismissDirection direction) async {
-                                return await showDialog(
-                                  context: context,
-                                  builder: (BuildContext context) {
-                                    return AlertDialog(
-                                      title: const Text("Usuń audio"),
-                                      content: Text(
-                                          'Czy na pewno chcesz usunąć "${e.friendlyName ?? e.filename}"?'),
-                                      actions: <Widget>[
-                                        TextButton(
-                                          onPressed: () =>
-                                              Navigator.of(context).pop(false),
-                                          child: const Text("Anuluj"),
-                                        ),
-                                        TextButton(
+                                if (direction == DismissDirection.endToStart) {
+                                  return await showDialog(
+                                    context: context,
+                                    builder: (BuildContext context) {
+                                      return AlertDialog(
+                                        title: const Text("Usuń audio"),
+                                        content: Text(
+                                            'Czy na pewno chcesz usunąć "${e.friendlyName ?? e.filename}"?'),
+                                        actions: <Widget>[
+                                          TextButton(
                                             onPressed: () =>
-                                                Navigator.of(context).pop(true),
-                                            child: const Text("Usuń")),
-                                      ],
-                                    );
-                                  },
-                                );
+                                                Navigator.of(context)
+                                                    .pop(false),
+                                            child: const Text("Anuluj"),
+                                          ),
+                                          TextButton(
+                                              onPressed: () =>
+                                                  Navigator.of(context)
+                                                      .pop(true),
+                                              child: const Text("Usuń")),
+                                        ],
+                                      );
+                                    },
+                                  );
+                                }
                               },
                               onDismissed: (DismissDirection direction) {
-                                if (e.audioId != "default") {
-                                  deleteAudio(e);
+                                if (direction == DismissDirection.endToStart) {
+                                  if (e.audioId != "default") {
+                                    deleteAudio(e);
+                                  }
                                 }
                               },
                               child: ListTile(

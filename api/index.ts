@@ -23,6 +23,8 @@ app.get("/", (req, res) => {
 
 const audioRouter = express.Router();
 
+const uptime = new Date();
+
 //REST API
 const api = express.Router();
 app.use("/v1", api);
@@ -39,6 +41,9 @@ api.get("/ping", async (req, res) => {
     api: {
       success: true,
       delay: null,
+      uptimeSeconds: Math.floor(
+        (new Date().getTime() - uptime.getTime()) / 1000
+      ),
     },
     core: {
       success: false,

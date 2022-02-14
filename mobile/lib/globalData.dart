@@ -31,6 +31,7 @@ class GlobalData {
   static int weatherHoursCount = 24;
 
   static late String appVersion;
+  static late String appBuildNumber;
 
   GlobalData() {
     getData();
@@ -570,7 +571,8 @@ class GlobalData {
   static Future<String> getAppVersion() async {
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
 
-    GlobalData.appVersion = packageInfo.version + "+" + packageInfo.buildNumber;
+    GlobalData.appVersion = packageInfo.version;
+    GlobalData.appBuildNumber = packageInfo.buildNumber;
     return GlobalData.appVersion;
   }
 
@@ -593,9 +595,9 @@ class GlobalData {
     PingResult result = PingResult(
         error: decodedResponse['error'],
         api: ServicePing(
-          success: responseData['api']['success'],
-          delay: responseData['api']['delay'],
-        ),
+            success: responseData['api']['success'],
+            delay: responseData['api']['delay'],
+            uptime: responseData['api']['uptimeSeconds']),
         core: ServicePing(
             success: responseData['core']['success'],
             delay: responseData['core']['delay']),

@@ -1,4 +1,4 @@
-import 'dart:developer';
+import 'package:buzzine/utils/formatting.dart';
 
 class PingResult {
   DateTime timestamp = DateTime.now();
@@ -21,6 +21,10 @@ class PingResult {
 class ServicePing {
   bool success;
   int? delay;
+  int? uptime;
+  String? uptimeText;
 
-  ServicePing({required this.success, this.delay});
+  ServicePing({required this.success, this.delay, this.uptime}) {
+    this.uptimeText = secondsToNamedString(uptime);
+  }
 }
