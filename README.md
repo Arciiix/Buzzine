@@ -16,7 +16,9 @@ Everything is under development, the app will evolve slowly, step by step. Even 
 2. Provide the OpenWeatherMap API key as an API microservice environment variable OPEN_WEATHER_MAP_API_KEY (see below).
 3. Remember - if you compile the code using `tsc` command, you will find the output files in the /dist folder of each microservice.
 
-   **Important: copy all the necessary assets into that folder**, e.g., audio/default.mp3 when it comes to the audio service or the database.
+   **Important: copy all the necessary assets into that folder**, e.g., audio/default.mp3 when it comes to the audio service or the database. Use the `copyFilesToDist.cmd` script.
+
+4. Adapter is a microservice used for emergency. If you wish to use it, flash ESP8266 with Tasmota and pass its IP adress as an environment variable to the adapter.
 
 ### Environment variables
 
@@ -46,3 +48,14 @@ Everything is under development, the app will evolve slowly, step by step. Even 
 | -------- | ------------------------------------------------- | ----------------------------- | ---- |
 | PORT     | 7777                                              | A port the API will run on    |      |
 | CORE_URL | http://localhost:3333 (to be changed with Docker) | Used for socket.io connection |      |
+
+#### Adapter
+
+| Name                | Default value                                     | Description                                                                                       | Unit |
+| ------------------- | ------------------------------------------------- | ------------------------------------------------------------------------------------------------- | ---- |
+| PORT                | 2222                                              | A port the app will run on.                                                                       |      |
+| TAMOSTA_URL         | http://192.168.0.130                              | Tasmota's IP adress used to communicate with the module.                                          |      |
+| RELAY_INDEX         | 1                                                 | Which Tasmota relay to use as emergency. It will inject this into "Power" command, e.g. "Power1". |      |
+| CORE_URL            | http://localhost:3333 (to be changed with Docker) | Used for socket.io connection.                                                                    |      |
+| HEARTBEAT_CRONJOB   | _/3 _ \* \* \*                                    | Cronjob used to send the heartbeat to Tasmota. Default is every 3rd minute.                       | cron |
+| TEMPERATURE_CRONJOB | _/15 _ \* \* \*                                   | Cronjob used to fetch the temperature. Default is every 15th minute.                              | cron |

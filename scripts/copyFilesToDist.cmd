@@ -16,4 +16,6 @@ mkdir %directory%\audio\dist\audio
 echo Emergency.wav (file)
 xcopy %directory%\audio\emergency.wav %directory%\audio\dist\emergency.wav /w /f /s /e /i
 
+echo Current service: adapter
+
 pause

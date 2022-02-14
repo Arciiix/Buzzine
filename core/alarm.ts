@@ -10,7 +10,7 @@ import logger from "./utils/logger";
 import dotenv from "dotenv";
 import Snooze from "./snooze";
 import AlarmModel from "./models/Alarm.model";
-import { saveUpcomingAlarms } from "./utils/alarmProtection";
+import { saveUpcomingAlarms, sendEmergency } from "./utils/alarmProtection";
 import shortUUID from "short-uuid";
 import UpcomingAlarmModel from "./models/UpcomingAlarm.model";
 
@@ -413,6 +413,7 @@ class Alarm {
       alarmSilentTimeout: setTimeout(() => {
         logger.warn(`Alarm ${this.id} was muted due to user inactivity!`);
         this.mute();
+        sendEmergency([this.toObject()]);
       }, (parseInt(process.env.MUTE_AFTER) || 15) * 1000 * 60),
     };
 

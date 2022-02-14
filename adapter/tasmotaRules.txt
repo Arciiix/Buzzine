@@ -1,0 +1,6 @@
+//Note: it's for power relay 2
+
+Rule1
+ON System#Init DO Backlog power2 1; RuleTimer2 5; RuleTimer1 600 ENDON
+ON Rules#Timer=1 DO power2 1 ENDON
+ON Rules#Timer=2 DO power2 0 ENDON

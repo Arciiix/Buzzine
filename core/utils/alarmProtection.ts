@@ -4,6 +4,9 @@ import AlarmModel from "../models/Alarm.model";
 import UpcomingAlarmModel from "../models/UpcomingAlarm.model";
 import logger from "./logger";
 
+import dotenv from "dotenv";
+dotenv.config();
+
 let emergency: IEmergency = {
   interval: null,
   startDate: null,
@@ -24,7 +27,7 @@ async function checkForAlarmProtection() {
     io.emit("EMERGENCY_ALARM", {
       missedAlarms: missedAlarms,
     });
-    sendEmergnecy(missedAlarms);
+    sendEmergency(missedAlarms);
     logger.warn(
       `Missed alarms. Count: ${
         missedAlarms.length
@@ -35,7 +38,8 @@ async function checkForAlarmProtection() {
   }
 }
 
-function sendEmergnecy(missedAlarms: any) {
+function sendEmergency(missedAlarms: any) {
+  if (process.env.DISABLE_EMERGENCY) return;
   if (emergency) {
     clearInterval(emergency.interval);
     emergency = null;
@@ -134,4 +138,9 @@ interface IEmergency {
   timeElapsed: number;
 }
 
-export { checkForAlarmProtection, getUpcomingAlarms, saveUpcomingAlarms };
+export {
+  checkForAlarmProtection,
+  sendEmergency,
+  getUpcomingAlarms,
+  saveUpcomingAlarms,
+};

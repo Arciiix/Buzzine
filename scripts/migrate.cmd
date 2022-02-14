@@ -31,4 +31,8 @@ xcopy %old%\audio\dist\emergency.wav %new%\audio\dist\emergency.wav /w /f /s /e 
 echo ENV (file)
 xcopy %old%\audio\dist\.env %new%\audio\dist\.env /w /f /s /e /i
 
+echo Current service: adapter
+echo ENV (file)
+xcopy %old%\adapter\dist\.env %new%\adapter\dist\.env /w /f /s /e /i
+
 pause
