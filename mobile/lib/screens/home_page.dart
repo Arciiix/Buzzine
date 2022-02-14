@@ -516,9 +516,19 @@ class _HomePageState extends State<HomePage> {
                                       color: Theme.of(context).cardColor,
                                       borderRadius: BorderRadius.circular(5),
                                     ),
-                                    child: const Center(
-                                        child: Text("Zmień ustawienia",
-                                            style: TextStyle(fontSize: 24))))),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: const [
+                                        Padding(
+                                          padding: EdgeInsets.symmetric(
+                                              horizontal: 2),
+                                          child: Icon(Icons.settings),
+                                        ),
+                                        Text("Zmień ustawienia",
+                                            style: TextStyle(fontSize: 24)),
+                                      ],
+                                    ))),
                             Align(
                               alignment: Alignment.centerLeft,
                               child: const Padding(
