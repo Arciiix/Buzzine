@@ -22,6 +22,7 @@ class Alarm {
 
   bool? isRepeating;
   Repeat? repeat;
+  int? emergencyAlarmTimeoutSeconds;
 
   Alarm(
       {this.id,
@@ -37,7 +38,8 @@ class Alarm {
       this.deleteAfterRinging,
       this.notes,
       this.isRepeating,
-      this.repeat});
+      this.repeat,
+      this.emergencyAlarmTimeoutSeconds});
 
   Map toMap() {
     return {
@@ -55,6 +57,7 @@ class Alarm {
       'notes': notes,
       'isRepeating': isRepeating,
       'repeat': (isRepeating ?? false) ? repeat?.toMap() : null,
+      'emergencyAlarmTimeoutSeconds': emergencyAlarmTimeoutSeconds,
     };
   }
 }

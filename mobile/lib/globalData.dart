@@ -107,7 +107,8 @@ class GlobalData {
                       months: e['repeat']['month']?.cast<int>(),
                     )
                   : null,
-              nextInvocation: DateTime.tryParse(e['nextInvocationDate'] ?? "")))
+              nextInvocation: DateTime.tryParse(e['nextInvocationDate'] ?? ""),
+              emergencyAlarmTimeoutSeconds: e['emergencyAlarmTimeoutSeconds']))
           .toList();
     }
 

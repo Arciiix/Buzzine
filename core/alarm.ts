@@ -121,6 +121,7 @@ class Alarm {
       name: this.name,
       notes: this.notes,
       repeat: this.repeat,
+      emergencyAlarmTimeoutSeconds: this.emergencyAlarmTimeoutSeconds,
     };
   }
 
@@ -494,6 +495,7 @@ interface IAlarm {
   name?: string;
   notes?: string;
   repeat?: RecurrenceObject;
+  emergencyAlarmTimeoutSeconds?: number;
 }
 
 interface IRingingStats {

@@ -17,6 +17,7 @@ class GetDatabaseData {
         name: alarm?.name,
         notes: alarm?.notes,
         repeat: alarm?.repeat,
+        emergencyAlarmTimeoutSeconds: alarm?.emergencyAlarmTimeoutSeconds,
       };
     });
     return alarms;
