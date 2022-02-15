@@ -655,7 +655,7 @@ class _HomePageState extends State<HomePage> {
                                                               .api.uptimeText!
                                                           : "Czekaj...",
                                                       style: TextStyle(
-                                                          fontSize: 32)),
+                                                          fontSize: 28)),
                                                   const Text("Czas pracy",
                                                       style: TextStyle(
                                                           fontSize: 18)),
@@ -672,7 +672,7 @@ class _HomePageState extends State<HomePage> {
                                         children: pingResult?.timestamp != null
                                             ? [
                                                 Text(
-                                                    "Dane z ${addZero(pingResult!.timestamp.toLocal().hour)}:${addZero(pingResult!.timestamp.toLocal().minute)}:${addZero(pingResult!.timestamp.toLocal().second)}",
+                                                    "Dane z ${dateToTimeString(pingResult!.timestamp.toLocal())}",
                                                     style: const TextStyle(
                                                         fontSize: 18)),
                                                 IconButton(

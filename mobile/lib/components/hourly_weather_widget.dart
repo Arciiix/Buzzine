@@ -22,7 +22,7 @@ class _HourlyWeatherState extends State<HourlyWeather> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text(
-              "${GlobalData.weather!.cityName} - ${addZero(widget.weather.timestamp.toLocal().hour)}:${addZero(widget.weather.timestamp.toLocal().minute)} ${addZero(widget.weather.timestamp.toLocal().day)}.${addZero(widget.weather.timestamp.toLocal().month)}.${widget.weather.timestamp.toLocal().year}"),
+              "${GlobalData.weather!.cityName} - ${dateToDateTimeString(widget.weather.timestamp.toLocal())}"),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [

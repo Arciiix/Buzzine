@@ -34,3 +34,11 @@ String secondsToNamedString(num? seconds) {
 
   return output;
 }
+
+String dateToDateTimeString(DateTime date) {
+  return "${addZero(date.hour)}:${addZero(date.minute)} ${addZero(date.day)}.${addZero(date.month)}.${date.year}";
+}
+
+String dateToTimeString(DateTime date) {
+  return "${addZero(date.hour)}:${addZero(date.minute)}:${addZero(date.second)}";
+}

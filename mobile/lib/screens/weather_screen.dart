@@ -59,7 +59,7 @@ class _WeatherScreenState extends State<WeatherScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                        "Dane z ${addZero(GlobalData.weather!.updatedAt.hour)}:${addZero(GlobalData.weather!.updatedAt.minute)}:${addZero(GlobalData.weather!.updatedAt.second)}"),
+                        "Dane z ${dateToTimeString(GlobalData.weather!.updatedAt)}"),
                     IconButton(
                       icon: const Icon(Icons.refresh, color: Colors.white),
                       onPressed: refreshWeatherData,
