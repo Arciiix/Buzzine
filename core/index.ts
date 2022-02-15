@@ -75,6 +75,7 @@ io.on("connection", (socket: Socket) => {
         repeat: payload?.repeat,
         maxTotalSnoozeDuration: payload?.maxTotalSnoozeDuration,
         deleteAfterRinging: payload?.deleteAfterRinging ?? false,
+        emergencyAlarmTimeoutSeconds: payload?.emergencyAlarmTimeoutSeconds,
       });
       if (cb) {
         cb(newAlarm);
@@ -94,6 +95,7 @@ io.on("connection", (socket: Socket) => {
           name: newAlarm?.name,
           notes: newAlarm?.notes,
           repeat: newAlarm?.repeat,
+          emergencyAlarmTimeoutSeconds: newAlarm?.emergencyAlarmTimeoutSeconds,
         })
       );
     } catch (err) {
@@ -252,6 +254,7 @@ io.on("connection", (socket: Socket) => {
         repeat: payload?.repeat,
         maxTotalSnoozeDuration: payload?.maxTotalSnoozeDuration,
         deleteAfterRinging: payload?.deleteAfterRinging ?? false,
+        emergencyAlarmTimeoutSeconds: payload?.emergencyAlarmTimeoutSeconds,
       });
       await alarm.save();
       //I can't just refetch the alarms - e.g. it would cancel all snoozes
@@ -269,6 +272,7 @@ io.on("connection", (socket: Socket) => {
         name: alarm?.name,
         notes: alarm?.notes,
         repeat: alarm?.repeat,
+        emergencyAlarmTimeoutSeconds: alarm?.emergencyAlarmTimeoutSeconds,
       });
 
       if (cb) {

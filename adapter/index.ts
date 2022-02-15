@@ -137,6 +137,9 @@ socket.on("hello", () => {
 socket.on("EMERGENCY_ALARM", async (data) => {
   toogleEmergencyDevice(true);
 });
+socket.on("TOOGLE_EMERGENCY_DEVICE", async (data) => {
+  toogleEmergencyDevice(data.isTurnedOn ?? true);
+});
 
 async function toogleEmergencyDevice(isTurnedOn: boolean): Promise<boolean> {
   logger.info(`Turning ${isTurnedOn ? "on" : "off"} the emergency device...`);
@@ -162,7 +165,7 @@ async function toogleEmergencyDevice(isTurnedOn: boolean): Promise<boolean> {
 async function sendHeartbeat() {
   try {
     //The heartbeat is Timer1 600 command (setting timer 1 for 600 seconds). Timer1 is a timer which turns on the emergency device.
-    await axios.get(`${TASMOTA_URL}/cm?cmnd=Timer1%20600`);
+    await axios.get(`${TASMOTA_URL}/cm?cmnd=RuleTimer1%20600`);
     logger.info("Sent the heartbeat to Tasmota");
   } catch (err) {
     logger.error(

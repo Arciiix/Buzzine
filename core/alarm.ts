@@ -28,6 +28,7 @@ class Alarm {
   name?: string;
   notes?: string;
   repeat?: RecurrenceObject;
+  emergencyAlarmTimeoutSeconds?: number;
 
   ringingStats: IRingingStats;
   snoozes: Snooze[] = [];
@@ -51,6 +52,7 @@ class Alarm {
     name,
     notes,
     repeat,
+    emergencyAlarmTimeoutSeconds,
   }: {
     hour: number;
     minute: number;
@@ -63,6 +65,7 @@ class Alarm {
     name?: string;
     notes?: string;
     repeat?: RecurrenceObject;
+    emergencyAlarmTimeoutSeconds?: number;
   }) {
     if (name) {
       this.name = name;
@@ -90,6 +93,7 @@ class Alarm {
         },
       };
     }
+    this.emergencyAlarmTimeoutSeconds = emergencyAlarmTimeoutSeconds;
     this.getDBObject();
     if (isActive) {
       this.turnOn();
@@ -216,7 +220,9 @@ class Alarm {
     if (this.ringingStats) {
       clearInterval(this.ringingStats?.eventResendingInterval);
       clearTimeout(this.ringingStats?.alarmSilentTimeout);
+      clearTimeout(this.ringingStats?.emergencyAlarmTimeout);
     }
+    this.toogleEmergencyDevice(false);
     Buzzine.currentlyRingingAlarms = Buzzine.currentlyRingingAlarms.filter(
       (e) => e.id !== this.id
     );
@@ -233,8 +239,10 @@ class Alarm {
     if (this.ringingStats) {
       clearInterval(this.ringingStats?.eventResendingInterval);
       clearTimeout(this.ringingStats?.alarmSilentTimeout);
+      clearTimeout(this.ringingStats?.emergencyAlarmTimeout);
     }
     this.ringingStats = null;
+    this.toogleEmergencyDevice(false);
     if (!this.repeat) {
       this.cancelJob();
       this.isActive = false;
@@ -275,8 +283,10 @@ class Alarm {
     if (this.ringingStats) {
       clearInterval(this.ringingStats?.eventResendingInterval);
       clearTimeout(this.ringingStats?.alarmSilentTimeout);
+      clearTimeout(this.ringingStats?.emergencyAlarmTimeout);
     }
     this.ringingStats = null;
+    this.toogleEmergencyDevice(false);
     this.cancelJob();
     this.isActive = false;
 
@@ -390,6 +400,7 @@ class Alarm {
     if (this.ringingStats) {
       clearInterval(this.ringingStats?.eventResendingInterval);
       clearTimeout(this.ringingStats?.alarmSilentTimeout);
+      clearTimeout(this.ringingStats?.emergencyAlarmTimeout);
     }
     this.ringingStats = {
       timeElapsed: 0,
@@ -414,7 +425,13 @@ class Alarm {
         logger.warn(`Alarm ${this.id} was muted due to user inactivity!`);
         this.mute();
         sendEmergency([this.toObject()]);
-      }, (parseInt(process.env.MUTE_AFTER) || 15) * 1000 * 60),
+      }, (parseInt(process.env.MUTE_AFTER) || 5) * 1000 * 60),
+      emergencyAlarmTimeout:
+        this.emergencyAlarmTimeoutSeconds &&
+        setTimeout(
+          () => this.toogleEmergencyDevice(true),
+          this.emergencyAlarmTimeoutSeconds * 1000
+        ),
     };
 
     Buzzine.currentlyRingingAlarms.push(this);
@@ -427,6 +444,7 @@ class Alarm {
     if (this.ringingStats) {
       this.mute();
     }
+    this.toogleEmergencyDevice(false);
     this.snoozes.forEach((e) => {
       e.cancelJob();
     });
@@ -445,6 +463,10 @@ class Alarm {
 
   onSnoozeRinging(snooze: Snooze): void {
     this.onAlarmRinging();
+  }
+
+  async toogleEmergencyDevice(isTurnedOn: boolean): Promise<void> {
+    io.emit("TOOGLE_EMERGENCY_DEVICE", { isTurnedOn });
   }
 }
 
@@ -479,6 +501,7 @@ interface IRingingStats {
   dateStarted: Date;
   eventResendingInterval: ReturnType<typeof setInterval>;
   alarmSilentTimeout: ReturnType<typeof setTimeout>;
+  emergencyAlarmTimeout?: ReturnType<typeof setTimeout>;
 }
 
 type RingingAlarm = IAlarm & { maxAlarmDate?: Date };

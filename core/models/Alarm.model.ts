@@ -52,6 +52,10 @@ const AlarmModel = db.define("Alarm", {
     type: DataTypes.BOOLEAN,
     defaultValue: false,
   },
+  emergencyAlarmTimeoutSeconds: {
+    type: DataTypes.INTEGER,
+    defaultValue: 0,
+  },
 });
 
 export default AlarmModel;
