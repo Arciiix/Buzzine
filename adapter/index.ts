@@ -140,6 +140,9 @@ socket.on("EMERGENCY_ALARM", async (data) => {
 socket.on("TOOGLE_EMERGENCY_DEVICE", async (data) => {
   toogleEmergencyDevice(data.isTurnedOn ?? true);
 });
+socket.on("EMERGENCY_ALARM_CANCELLED", async (data) => {
+  toogleEmergencyDevice(false);
+});
 
 async function toogleEmergencyDevice(isTurnedOn: boolean): Promise<boolean> {
   logger.info(`Turning ${isTurnedOn ? "on" : "off"} the emergency device...`);

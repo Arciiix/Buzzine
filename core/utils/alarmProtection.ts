@@ -140,6 +140,18 @@ async function saveUpcomingAlarms() {
   isSavingUpcomingAlarms = false;
 }
 
+function cancelEmergencyAlarm() {
+  if (emergency.startDate) {
+    clearInterval(emergency.interval);
+    emergency = { interval: null, startDate: null, timeElapsed: 0 };
+    io.emit("EMERGENCY_ALARM_CANCELLED");
+
+    logger.warn(`Cancelled the emergency alarm`);
+  } else {
+    logger.warn(`User tried to cancel non-existing emergency`);
+  }
+}
+
 //TODO: Send emergency alarm on exit
 
 interface IUpcomingAlarm {
@@ -157,4 +169,5 @@ export {
   sendEmergency,
   getUpcomingAlarms,
   saveUpcomingAlarms,
+  cancelEmergencyAlarm,
 };

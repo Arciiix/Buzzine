@@ -6,6 +6,7 @@ import Alarm from "./alarm";
 import { initDatabase } from "./utils/db";
 import GetDatabaseData from "./utils/loadFromDb";
 import {
+  cancelEmergencyAlarm,
   checkForAlarmProtection,
   getUpcomingAlarms,
   saveUpcomingAlarms,
@@ -333,6 +334,13 @@ io.on("connection", (socket: Socket) => {
       logger.warn("Missing callback on GET request - GET_ACTIVE_SNOOZES");
     }
   });
+  socket.on("CMD/CANCEL_EMERGENCY_ALARM", (cb) => {
+    cancelEmergencyAlarm();
+    if (cb) {
+      cb({ error: false });
+    }
+  });
+
   socket.on("CMD/CANCEL_ALL_ALARMS", async (cb) => {
     for await (const element of Buzzine.currentlyRingingAlarms) {
       await element.turnOff();

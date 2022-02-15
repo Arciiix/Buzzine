@@ -68,6 +68,18 @@ io.on("EMERGENCY_ALARM", async (data) => {
   }
 });
 
+io.on("EMERGENCY_ALARM_CANCELLED", async (data) => {
+  if (emergencyInstance) {
+    emergencyInstance.destroy();
+    emergencyInstance = null;
+    logger.info("Emergency cancelled");
+  } else {
+    logger.warn(
+      `User tried to cancel the emergency but no emergency audio is playing`
+    );
+  }
+});
+
 io.on("ALARM_MUTE", (data) => {
   if (!audioInstance) {
     logger.warn(

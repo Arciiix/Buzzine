@@ -143,6 +143,30 @@ api.get("/ping", async (req, res) => {
   res.send({ error: isError, response: services });
 });
 
+api.put("/cancelEmergencyAlarm", async (req, res) => {
+  logger.http(
+    `PUT /cancelEmergencyAlarm with data: ${JSON.stringify(req.body)}`
+  );
+
+  socket.emit("CMD/CANCEL_EMERGENCY_ALARM", (response) => {
+    if (response.error) {
+      res.status(500).send(response);
+      logger.warn(
+        `Response error when cancelling (cancelling) the emergency alarm: ${JSON.stringify(
+          response
+        )}`
+      );
+    } else {
+      res.status(200).send(response);
+      logger.info(
+        `Cancelled the emergency alarm successfully. Response: ${JSON.stringify(
+          response
+        )}`
+      );
+    }
+  });
+});
+
 api.post("/addAlarm", async (req, res) => {
   logger.http(`POST /addAlarm with data: ${JSON.stringify(req.body)}`);
 
