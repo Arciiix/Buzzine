@@ -28,6 +28,7 @@ class _AudioManagerState extends State<AudioManager> {
   Timer? _audioPlaybackEndTimer;
 
   void addAudio() async {
+    await GlobalData.stopAudioPreview();
     await Navigator.of(context).push(
       MaterialPageRoute(builder: (context) => DownloadYouTubeAudio()),
     );
