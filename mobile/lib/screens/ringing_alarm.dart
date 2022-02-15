@@ -12,8 +12,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class RingingAlarm extends StatefulWidget {
   final RingingAlarmEntity ringingAlarm;
+  final bool? overrideIsSnoozeEnabled;
 
-  const RingingAlarm({Key? key, required this.ringingAlarm}) : super(key: key);
+  const RingingAlarm(
+      {Key? key, required this.ringingAlarm, this.overrideIsSnoozeEnabled})
+      : super(key: key);
 
   @override
   _RingingAlarmState createState() => _RingingAlarmState();
@@ -39,7 +42,7 @@ class _RingingAlarmState extends State<RingingAlarm>
 
   Future<bool> onDismiss(DismissDirection direction) async {
     if (direction == DismissDirection.startToEnd) {
-      if (!(widget.ringingAlarm.alarm.isSnoozeEnabled ?? false)) {
+      if (!isSnoozeAvailable) {
         return false;
       }
       //If no snooze is left
@@ -183,7 +186,9 @@ class _RingingAlarmState extends State<RingingAlarm>
         seconds: maxAlarmTime?.difference(now).inSeconds ??
             widget.ringingAlarm.alarm.maxTotalSnoozeDuration ??
             300);
-    isSnoozeAvailable = widget.ringingAlarm.alarm.isSnoozeEnabled ?? false;
+    isSnoozeAvailable = widget.overrideIsSnoozeEnabled ??
+        widget.ringingAlarm.alarm.isSnoozeEnabled ??
+        false;
     _blinkingTimer = Timer.periodic(const Duration(seconds: 1), (_) {
       setState(() => _isBlinkVisible = !_isBlinkVisible);
     });

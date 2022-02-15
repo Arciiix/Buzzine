@@ -68,10 +68,12 @@ class _HomePageState extends State<HomePage> {
     await refresh();
   }
 
-  void navigateToRingingAlarm(RingingAlarmEntity ringingAlarm) async {
+  void navigateToRingingAlarm(RingingAlarmEntity ringingAlarm,
+      {bool? overrideIsSnoozeEnabled}) async {
     await Navigator.of(context).push(MaterialPageRoute(
         builder: (context) => RingingAlarm(
               ringingAlarm: ringingAlarm,
+              overrideIsSnoozeEnabled: overrideIsSnoozeEnabled,
             )));
 
     //Refresh everything - for example alarm could've been deleted because of the deleteAfterRinging option
@@ -319,7 +321,9 @@ class _HomePageState extends State<HomePage> {
                                           onSelect: (_) =>
                                               navigateToRingingAlarm(
                                                   activeSnoozes.first
-                                                      .ringingAlarmInstance),
+                                                      .ringingAlarmInstance,
+                                                  overrideIsSnoozeEnabled:
+                                                      false),
                                           children:
                                               activeSnoozes.map((Snooze e) {
                                             return SnoozeCard(
@@ -357,7 +361,8 @@ class _HomePageState extends State<HomePage> {
                                   : [],
                             ),
                             Column(
-                              children: ringingAlarms.isEmpty
+                              children: ringingAlarms.isEmpty &&
+                                      activeSnoozes.isEmpty
                                   ? [
                                       Align(
                                         alignment: Alignment.centerLeft,
