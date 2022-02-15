@@ -112,6 +112,7 @@ class _AudioManagerState extends State<AudioManager> {
   }
 
   void navigateToAudioCut(Audio audio) async {
+    await GlobalData.stopAudioPreview();
     await Navigator.of(context).push(MaterialPageRoute(
       builder: (context) => CutAudio(audio: audio),
     ));
@@ -160,23 +161,29 @@ class _AudioManagerState extends State<AudioManager> {
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
                                     children: [
-                                      Row(
-                                        children: [
-                                          Icon(Icons.content_cut,
-                                              color: Colors.white),
-                                          Text("Przytnij",
-                                              style: TextStyle(
-                                                  color: Colors.white)),
-                                        ],
+                                      Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: Row(
+                                          children: [
+                                            Icon(Icons.content_cut,
+                                                color: Colors.white),
+                                            Text("Przytnij",
+                                                style: TextStyle(
+                                                    color: Colors.white)),
+                                          ],
+                                        ),
                                       ),
-                                      Row(
-                                        children: [
-                                          Icon(Icons.delete,
-                                              color: Colors.white),
-                                          Text("Usuń",
-                                              style: TextStyle(
-                                                  color: Colors.white)),
-                                        ],
+                                      Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: Row(
+                                          children: [
+                                            Icon(Icons.delete,
+                                                color: Colors.white),
+                                            Text("Usuń",
+                                                style: TextStyle(
+                                                    color: Colors.white)),
+                                          ],
+                                        ),
                                       ),
                                     ],
                                   )),
