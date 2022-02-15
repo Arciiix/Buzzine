@@ -16,7 +16,10 @@ async function cutAudio(
   let filename = audioObj.filename;
   let cutResponse = await cutAudioFile(filename, start, end, audioObj.duration);
   if (!cutResponse.error) {
-    audioObj.duraton = cutResponse.response.duration;
+    audioObj.duration = cutResponse.response.duration;
+    //If it was a YouTube audio, it's not the whole video anymore, so clear the id
+    audioObj.youtubeID = null;
+    await audioObj.save();
   }
   return cutResponse;
 }

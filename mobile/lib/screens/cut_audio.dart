@@ -27,7 +27,7 @@ class _CutAudioState extends State<CutAudio> {
         return AlertDialog(
           title: const Text("Przytnij"),
           content: Text(
-              'Czy na pewno chcesz przyciąć plik ${widget.audio.filename} ${widget.audio.friendlyName != null ? "(" + widget.audio.friendlyName! + ")?" : "?"} Tej operacji nie można cofnąć.'),
+              'Czy na pewno chcesz przyciąć plik ${widget.audio.filename} ${widget.audio.friendlyName != null ? "(" + widget.audio.friendlyName! + ")?" : "?"} Jeżeli jest to audio z YouTube, będzie można pobrać je ponownie (jeśli jest dalej dostępne). Tej operacji nie można cofnąć.'),
           actions: <Widget>[
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
