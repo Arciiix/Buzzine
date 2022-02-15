@@ -42,6 +42,7 @@ io.on("connection", (socket: Socket) => {
   );
 
   socket.on("CMD/PING", async (_: any, cb?: any) => {
+    await saveUpcomingAlarms();
     if (cb) {
       logger.info(`Core has been pinged`);
       cb({ error: false, timestamp: new Date() });
