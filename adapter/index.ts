@@ -1,22 +1,32 @@
+import bodyParser from "body-parser";
 import express from "express";
 import socketio from "socket.io-client";
-import dotenv from "dotenv";
 import logger from "./logger";
 import axios from "axios";
 import schedule from "node-schedule";
-
-dotenv.config();
-
-const PORT = process.env.PORT ?? 2222;
-const TASMOTA_URL: string = process.env.TASMOTA_URL ?? "http://192.168.0.130";
-const RELAY_INDEX: number = parseInt(process.env.RELAY_INDEX ?? "1");
-const CORE_URL: string = process.env.CORE_URL ?? "http://localhost:3333";
-const HEARTBEAT_CRONJOB = process.env.HEARTBEAT_CRONJOB ?? "*/3 * * * *";
-const TEMPERATURE_CRONJOB = process.env.TEMPERATURE_CRONJOB ?? "*/15 * * * *";
+import { initDatabase } from "./db";
+import {
+  calculateCurrentTemperatureData,
+  calculateTemperatureDataForDay,
+  fetchTemperature,
+  ICurrentTemperatureData,
+  ITemperatureData,
+  saveTemperature,
+} from "./temperature";
+import {
+  CORE_URL,
+  HEARTBEAT_CRONJOB,
+  PORT,
+  RELAY_INDEX,
+  TASMOTA_URL,
+  TEMPERATURE_CRONJOB,
+} from "./constants";
+import TemperatureModel from "./models/Temperature";
 
 let heartbeatsJob: schedule.Job, temperaturesJob: schedule.Job;
 
 const app = express();
+app.use(bodyParser.json());
 const api = express.Router();
 app.use("/v1", api);
 const socket = socketio(CORE_URL);
@@ -48,6 +58,69 @@ api.get("/getTemperature", async (req, res) => {
   res.send({ error: false, temperature });
 });
 
+api.get("/getCurrentTemperatureData", async (req, res) => {
+  let temperatureData: ICurrentTemperatureData =
+    await calculateCurrentTemperatureData();
+  res.send({ error: false, response: temperatureData });
+});
+
+api.get("/getHistoricalDailyTemperatureData", async (req, res) => {
+  if (!req.query.date) {
+    res.status(400).send({ error: true, errorCode: "MISSING_DATE" });
+    return;
+  }
+
+  if (isNaN(new Date(req.query.date as string)?.getTime())) {
+    res.status(400).send({ error: true, errorCode: "WRONG_DATE" });
+    return;
+  }
+
+  let temperatureData: ITemperatureData = await calculateTemperatureDataForDay(
+    new Date(req.query.date as string)
+  );
+  res.send({ error: false, response: temperatureData });
+});
+
+api.put("/toogleEmergency", async (req, res) => {
+  //Don't check if user provided the isTurnedOn param - the default is to turn on
+  let success = await toogleEmergencyDevice(
+    Boolean(req.body.isTurnedOn ?? true)
+  );
+
+  res.send({ error: !success });
+});
+
+api.put("/toogleProtection", async (req, res) => {
+  if (req.body.isTurnedOn === undefined || req.body.isTurnedOn === null) {
+    res.status(400).send({ error: true, errorCode: "MISSING_IS_TURNED_ON" });
+    return;
+  }
+
+  try {
+    if (req.body.isTurnedOn) {
+      await sendHeartbeat();
+      //Signal the change by shorter signal
+      await axios.get(`${TASMOTA_URL}/cm?cmnd=RuleTimer3%201`);
+    } else {
+      //Turn off the RuleTimer
+      await axios.get(`${TASMOTA_URL}/cm?cmnd=RuleTimer1%200`);
+      //Signal the change by longer signal
+      await axios.get(`${TASMOTA_URL}/cm?cmnd=RuleTimer4%201`);
+    }
+
+    res.send({ error: false });
+  } catch (err) {
+    logger.error(
+      `Error while trying to turn the protection ${
+        req.body.isTurnedOn ? "on" : "off"
+      }: ${err?.response?.status} with data: ${JSON.stringify(
+        err?.response?.data
+      )}`
+    );
+    res.status(502).send({ error: true, errorCode: err?.response?.data });
+  }
+});
+
 socket.on("connect", () => {
   logger.info(
     `Made a connection with the core, waiting for the initial message...`
@@ -57,21 +130,27 @@ socket.on("hello", () => {
   logger.info(`Successfully connected to the core`);
 });
 socket.on("EMERGENCY_ALARM", async (data) => {
-  turnOnEmergencyDevice();
+  toogleEmergencyDevice(true);
 });
 
-async function turnOnEmergencyDevice() {
-  logger.info("Turning on the emergency device...");
+async function toogleEmergencyDevice(isTurnedOn: boolean): Promise<boolean> {
+  logger.info(`Turning ${isTurnedOn ? "on" : "off"} the emergency device...`);
 
   try {
-    await axios.get(`${TASMOTA_URL}/cm?cmnd=Power${RELAY_INDEX}%201`);
-    logger.info("Turned on the emergency device");
+    await axios.get(
+      `${TASMOTA_URL}/cm?cmnd=Power${RELAY_INDEX}%20${isTurnedOn ? "1" : "0"}`
+    );
+    logger.info(`Turned ${isTurnedOn ? "on" : "off"} the emergency device`);
+    return true;
   } catch (err) {
     logger.error(
-      `Error while trying to turn on the emergency device: ${
+      `Error while trying to turn ${
+        isTurnedOn ? "on" : "off"
+      } the emergency device: ${
         err?.response?.status
-      } with data: ${JSON.stringify(err?.response?.data)}}`
+      } with data: ${JSON.stringify(err?.response?.data)}`
     );
+    return false;
   }
 }
 
@@ -89,26 +168,10 @@ async function sendHeartbeat() {
   }
 }
 
-async function fetchTemperature(): Promise<number> {
-  try {
-    let response = await axios.get(`${TASMOTA_URL}/cm?cmnd=Status%2010`);
-    let temperature: number = parseFloat(
-      response.data.StatusSNS.DS18B20.Temperature
-    );
-    logger.info(`Got the temperature: ${temperature}`);
-    return temperature;
-  } catch (err) {
-    logger.error(
-      `Error while trying to send the heartbeat to Tasmota: ${
-        err?.response?.status
-      } with data: ${JSON.stringify(err?.response?.data)}}`
-    );
-  }
-}
-
-function init() {
+async function init() {
+  await initDatabase();
   heartbeatsJob = schedule.scheduleJob(HEARTBEAT_CRONJOB, sendHeartbeat);
-  temperaturesJob = schedule.scheduleJob(TEMPERATURE_CRONJOB, fetchTemperature);
+  temperaturesJob = schedule.scheduleJob(TEMPERATURE_CRONJOB, saveTemperature);
 }
 
 app.listen(PORT, () => {

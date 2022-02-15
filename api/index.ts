@@ -13,6 +13,7 @@ import weatherRouter from "./weather";
 dotenv.config();
 const PORT = process.env.PORT || 1111;
 const AUDIO_URL = process.env.AUDIO_URL || "http://localhost:7777"; //DEV TODO: Change it
+const ADAPTER_URL = process.env.ADAPTER_URL || "http://localhost:2222"; //DEV TODO: Change it
 
 const app = express();
 app.use(bodyParser.json());
@@ -22,6 +23,7 @@ app.get("/", (req, res) => {
 });
 
 const audioRouter = express.Router();
+const emergencyRouter = express.Router();
 
 const uptime = new Date();
 
@@ -32,6 +34,7 @@ api.use("/guard", guardRouter);
 app.use("/cdn", cdn);
 api.use("/weather", weatherRouter);
 api.use("/audio", audioRouter);
+api.use("/emergency", emergencyRouter);
 
 api.get("/ping", async (req, res) => {
   logger.http(`GET /ping with data ${JSON.stringify(req.query)}`);
@@ -615,7 +618,34 @@ audioRouter.all("*", async (req, res) => {
         err?.response?.data
       )} with status ${err?.response?.status}`
     );
-    res.status(err?.response?.status ?? 500).send(err?.response?.data);
+    res.status(err?.response?.status ?? 502).send(err?.response?.data);
+  }
+});
+
+emergencyRouter.all("*", async (req, res) => {
+  logger.http(`[EMERGENCY] ${req.method.toUpperCase()} ${req.path}`);
+
+  //It's just the same request sent to the adapter
+  try {
+    let emergencyReq = await axios({
+      url: `${ADAPTER_URL}/v1${req.path}`,
+      method: req.method as Method,
+      data: req.body,
+      params: req.query,
+    });
+    logger.info(
+      `Made emergency request ${req.path} with response ${JSON.stringify(
+        emergencyReq.data
+      )}`
+    );
+    res.status(emergencyReq.status).send(emergencyReq.data);
+  } catch (err) {
+    logger.error(
+      `Error while making emergency request: ${JSON.stringify(
+        err?.response?.data
+      )} with status ${err?.response?.status}`
+    );
+    res.status(err?.response?.status ?? 502).send(err?.response?.data);
   }
 });
 
