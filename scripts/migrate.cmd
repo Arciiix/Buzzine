@@ -34,5 +34,7 @@ xcopy %old%\audio\dist\.env %new%\audio\dist\.env /w /f /s /e /i
 echo Current service: adapter
 echo ENV (file)
 xcopy %old%\adapter\dist\.env %new%\adapter\dist\.env /w /f /s /e /i
+echo Database (file)
+xcopy %old%\adapter\dist\buzzineAdapter.db %new%\adapter\dist\buzzineAdapter.db /w /f /s /e /i
 
 pause
