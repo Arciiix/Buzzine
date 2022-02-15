@@ -28,6 +28,8 @@ String secondsToNamedString(num? seconds) {
   }
   if (minutes > 0) {
     output += minutes.toString() + "m ";
+  } else {
+    output += "0m ";
   }
 
   return output;
