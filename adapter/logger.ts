@@ -2,14 +2,14 @@ import * as winston from "winston";
 import DailyRotateFile = require("winston-daily-rotate-file");
 
 const fileTransport = new DailyRotateFile({
-  filename: "./logs/buzzine-audio-%DATE%.log",
+  filename: "./logs/buzzine-adapter-%DATE%.log",
   datePattern: "DD.MM.YYYY",
   zippedArchive: true,
   maxFiles: "14d",
   level: "info",
 });
 const errorFileTransport = new DailyRotateFile({
-  filename: "./logs/errors-buzzine-audio-%DATE%.log",
+  filename: "./logs/errors-buzzine-adapter-%DATE%.log",
   datePattern: "DD.MM.YYYY",
   zippedArchive: true,
   maxFiles: "14d",
