@@ -222,6 +222,25 @@ api.delete("/deleteSound", async (req, res) => {
     return;
   }
 
+  //Check if sound exists
+  let soundObj: any = await AudioNameMappingModel.findOne({
+    where: { audioId: req.body.audioId },
+  });
+  if (!soundObj) {
+    res.status(400).send({ error: true, errorCode: "SOUND_DOES_NOT_EXIST" });
+    return;
+  }
+
+  //If the sound is being played right now, stop it
+  if (audioInstance?.filename === soundObj.filename) {
+    res.status(409).send({ error: true, errorCode: "AUDIO_IS_RINGING_NOW" });
+    return;
+  }
+  if (audioPreviewInstance?.filename === soundObj.filename) {
+    audioPreviewInstance.destroy();
+    audioPreviewInstance = null;
+  }
+
   let deleteSoundResult = await deleteSound(req.body.audioId);
   if (!deleteSoundResult.error) {
     res.send({ error: false });

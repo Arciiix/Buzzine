@@ -40,6 +40,10 @@ async function checkForAlarmProtection() {
 
 function sendEmergency(missedAlarms: any) {
   if (process.env.DISABLE_EMERGENCY) return;
+  io.emit("EMERGENCY_ALARM", {
+    missedAlarms: missedAlarms,
+    timeElapsed: emergency.timeElapsed,
+  });
   if (emergency) {
     clearInterval(emergency.interval);
     emergency = null;
@@ -96,7 +100,17 @@ function getUpcomingAlarms() {
       };
     });
 
-  upcomingAlarms = [...upcomingAlarms, ...snoozes];
+  //All ringing alarms
+  let ringingAlarms: IUpcomingAlarm[] = Buzzine.currentlyRingingAlarms.map(
+    (e) => {
+      return {
+        alarmId: e.id,
+        invocationDate: new Date(),
+      };
+    }
+  );
+
+  upcomingAlarms = [...upcomingAlarms, ...snoozes, ...ringingAlarms];
 
   //Remove null dates from the array
   upcomingAlarms = upcomingAlarms.filter((el) => el.invocationDate);
