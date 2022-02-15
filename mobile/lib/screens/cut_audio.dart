@@ -52,7 +52,8 @@ class _CutAudioState extends State<CutAudio> {
         );
       },
     );
-    await GlobalData.cutAudio(widget.audio.audioId, _values.start, _values.end);
+    await GlobalData.cutAudio(
+        widget.audio.audioId, _values.start.floor(), _values.end.floor());
 
     //The current context is the AlertDialog, so exit it.
     Navigator.of(context).pop();
@@ -73,7 +74,7 @@ class _CutAudioState extends State<CutAudio> {
     );
 
     await GlobalData.previewAudioCut(
-        widget.audio.audioId, _values.start, _values.end);
+        widget.audio.audioId, _values.start.floor(), _values.end.floor());
     setState(() {
       _isPreviewPlaying = true;
       _previewCleaner = Timer(

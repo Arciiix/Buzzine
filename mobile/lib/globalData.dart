@@ -546,7 +546,7 @@ class GlobalData {
   }
 
   static Future<void> previewAudioCut(
-      String audioId, double start, double end) async {
+      String audioId, int start, int end) async {
     Map<String, String> requestData = {
       'audioId': audioId,
       'start': start.toString(),
@@ -567,7 +567,7 @@ class GlobalData {
     }
   }
 
-  static Future<void> cutAudio(String audioId, double start, double end) async {
+  static Future<void> cutAudio(String audioId, int start, int end) async {
     Map requestData = {'audioId': audioId, 'start': start, 'end': end};
 
     var response = await http.put(Uri.parse("$serverIP/v1/audio/cutAudio"),
