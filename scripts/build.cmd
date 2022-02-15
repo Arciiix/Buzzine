@@ -22,4 +22,11 @@ call npm install
 echo Audio - building...
 call npm run build
 
+cd ..
+cd adapter
+echo Adapter - installing packages...
+call npm install
+echo Adapter - building...
+call npm run build
+
 pause
