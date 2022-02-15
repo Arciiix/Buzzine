@@ -56,6 +56,10 @@ api.get("/ping", async (req, res) => {
       success: false,
       delay: null,
     },
+    adapter: {
+      success: false,
+      delay: null,
+    },
   };
 
   if (
@@ -105,6 +109,26 @@ api.get("/ping", async (req, res) => {
       }
     } catch (err) {
       logger.error(`Error while pinging the audio service`);
+    }
+
+    resolve();
+  });
+
+  //Reset the now date
+  now = new Date();
+  await new Promise(async (resolve: any, reject) => {
+    //Ping the adapter
+    logger.info("Pinging the adapter...");
+    try {
+      let response = await axios.get(`${ADAPTER_URL}/v1/ping`);
+      logger.info(`Pinged the adapter successfully`);
+      services.adapter.success = true;
+      if (response.data.timestamp) {
+        services.adapter.delay =
+          new Date(response.data.timestamp).getTime() - now.getTime();
+      }
+    } catch (err) {
+      logger.error(`Error while pinging the adapter`);
     }
 
     resolve();

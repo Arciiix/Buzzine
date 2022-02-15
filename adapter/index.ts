@@ -53,6 +53,11 @@ app.get("/", async (req, res) => {
   });
 });
 
+api.get("/ping", (req, res) => {
+  logger.http("GET /ping");
+  res.send({ error: false, timestamp: new Date() });
+});
+
 api.get("/getTemperature", async (req, res) => {
   let temperature = await fetchTemperature();
   res.send({ error: false, temperature });

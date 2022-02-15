@@ -6,16 +6,18 @@ class PingResult {
   ServicePing api;
   ServicePing core;
   ServicePing audio;
+  ServicePing adapter;
 
   String toString() {
-    return "API: ${api.success}; core: ${core.success}; audio: ${audio.success}";
+    return "API: ${api.success}; core: ${core.success}; audio: ${audio.success}; adapter: ${adapter.success}";
   }
 
   PingResult(
       {required this.error,
       required this.api,
       required this.core,
-      required this.audio});
+      required this.audio,
+      required this.adapter});
 }
 
 class ServicePing {

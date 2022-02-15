@@ -628,6 +628,15 @@ class _HomePageState extends State<HomePage> {
                                                         apiDelay: pingResult
                                                             ?.api.delay,
                                                         serviceName: "audio",
+                                                      ),
+                                                      PingResultIndicator(
+                                                        isSuccess: pingResult
+                                                            ?.adapter.success,
+                                                        delay: pingResult
+                                                            ?.adapter.delay,
+                                                        apiDelay: pingResult
+                                                            ?.api.delay,
+                                                        serviceName: "adapter",
                                                       )
                                                     ],
                                                   ),

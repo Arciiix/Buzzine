@@ -639,7 +639,10 @@ class GlobalData {
             delay: responseData['core']['delay']),
         audio: ServicePing(
             success: responseData['audio']['success'],
-            delay: responseData['audio']['delay']));
+            delay: responseData['audio']['delay']),
+        adapter: ServicePing(
+            success: responseData['adapter']['success'],
+            delay: responseData['adapter']['delay']));
 
     if (result.error) {
       throw APIException(
