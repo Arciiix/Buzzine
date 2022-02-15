@@ -191,8 +191,11 @@ class _DetailedWeatherDataState extends State<DetailedWeatherData> {
                 child: Column(
                   children: [
                     Text(
-                      "Szybkość wiatru",
+                      "Szybkość\nwiatru",
                       textAlign: TextAlign.center,
+                      softWrap: false,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontSize: 18),
                     ),
                     Text(
                       "${widget.weather.windSpeed.toStringAsFixed(0)} m/s",
@@ -211,6 +214,9 @@ class _DetailedWeatherDataState extends State<DetailedWeatherData> {
                     Text(
                       "Ciśnienie",
                       textAlign: TextAlign.center,
+                      softWrap: false,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontSize: 18),
                     ),
                     Text(
                       "${widget.weather.pressure.toStringAsFixed(0)} hPa",
@@ -233,6 +239,9 @@ class _DetailedWeatherDataState extends State<DetailedWeatherData> {
                     Text(
                       "Wilgotność",
                       textAlign: TextAlign.center,
+                      softWrap: false,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontSize: 18),
                     ),
                     Text(
                       "${widget.weather.humidity.toStringAsFixed(0)}%",
@@ -251,6 +260,9 @@ class _DetailedWeatherDataState extends State<DetailedWeatherData> {
                     Text(
                       "Zachmurzenie",
                       textAlign: TextAlign.center,
+                      softWrap: false,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontSize: 18),
                     ),
                     Text(
                       "${widget.weather.clouds.toStringAsFixed(0)}%",
@@ -273,8 +285,11 @@ class _DetailedWeatherDataState extends State<DetailedWeatherData> {
                       child: Column(
                         children: [
                           Text(
-                            "Godz. wschodu",
+                            "Godzina\nwschodu",
                             textAlign: TextAlign.center,
+                            softWrap: false,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(fontSize: 18),
                           ),
                           Text(
                             "${addZero(widget.weather.sunrise!.toLocal().hour)}:${addZero(widget.weather.sunrise!.toLocal().minute)}",
@@ -292,8 +307,11 @@ class _DetailedWeatherDataState extends State<DetailedWeatherData> {
                       child: Column(
                         children: [
                           Text(
-                            "Godz. zachodu",
+                            "Godzina\nzachodu",
                             textAlign: TextAlign.center,
+                            softWrap: false,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(fontSize: 18),
                           ),
                           Text(
                             "${addZero(widget.weather.sunset!.toLocal().hour)}:${addZero(widget.weather.sunset!.toLocal().minute)}",
