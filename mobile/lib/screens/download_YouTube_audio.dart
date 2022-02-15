@@ -2,8 +2,10 @@ import 'dart:async';
 
 import 'package:buzzine/types/YouTubeVideoInfo.dart';
 import 'package:buzzine/utils/formatting.dart';
+import 'package:buzzine/utils/show_snackbar.dart';
 import 'package:flutter/material.dart';
 import 'package:buzzine/globalData.dart';
+import 'package:flutter/services.dart';
 
 class DownloadYouTubeAudio extends StatefulWidget {
   final Uri? initialURL;
@@ -92,6 +94,21 @@ class _DownloadYouTubeAudioState extends State<DownloadYouTubeAudio> {
     }
   }
 
+  void pasteFromClipboard() async {
+    ClipboardData? data = await Clipboard.getData(Clipboard.kTextPlain);
+    if (data != null) {
+      if (validateYoutubeURL(data.text)) {
+        setState(() {
+          _inputController.text = data.text!;
+        });
+      } else {
+        showSnackbar(context, "Niepoprawny format linku");
+      }
+    } else {
+      showSnackbar(context, "Pusty schowek");
+    }
+  }
+
   @override
   void initState() {
     if (widget.initialURL != null) {
@@ -111,96 +128,104 @@ class _DownloadYouTubeAudioState extends State<DownloadYouTubeAudio> {
           child: const Icon(Icons.download),
         ),
         body: SingleChildScrollView(
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(10),
-                child: Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(8),
-                    child: Column(
-                      children: _fetchedInfo != null
-                          ? [
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: const [
-                                    Padding(
-                                      padding: EdgeInsets.only(right: 8),
-                                      child: Icon(Icons.remove_red_eye),
-                                    ),
-                                    Text("Podgląd",
-                                        style: TextStyle(fontSize: 32)),
-                                  ],
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 72),
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(10),
+                  child: Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(8),
+                      child: Column(
+                        children: _fetchedInfo != null
+                            ? [
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: const [
+                                      Padding(
+                                        padding: EdgeInsets.only(right: 8),
+                                        child: Icon(Icons.remove_red_eye),
+                                      ),
+                                      Text("Podgląd",
+                                          style: TextStyle(fontSize: 32)),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(10),
-                                child: Image.network(_fetchedInfo!.thumbnailURL,
-                                    width:
-                                        MediaQuery.of(context).size.width * 0.8,
-                                    fit: BoxFit.contain),
-                              ),
-                              ListTile(
-                                title: Text(_fetchedInfo!.title),
-                                subtitle: Text(_fetchedInfo!.channel.name +
-                                    "\n" +
-                                    addZero(_fetchedInfo!.length.inMinutes) +
-                                    ":" +
-                                    addZero(_fetchedInfo!.length.inSeconds
-                                        .remainder(60))),
-                                isThreeLine: true,
-                              )
-                            ]
-                          : [
-                              Padding(
-                                padding: const EdgeInsets.all(12.0),
-                                child: Column(
-                                  children: [
-                                    Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: const [
-                                        Padding(
-                                          padding: EdgeInsets.only(right: 8),
-                                          child: Icon(Icons.remove_red_eye),
-                                        ),
-                                        Text("Podgląd",
-                                            style: TextStyle(fontSize: 32)),
-                                      ],
-                                    ),
-                                    Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: const [
-                                        Icon(Icons.link),
-                                        Text("Wpisz link do video"),
-                                      ],
-                                    ),
-                                  ],
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(10),
+                                  child: Image.network(
+                                      _fetchedInfo!.thumbnailURL,
+                                      width: MediaQuery.of(context).size.width *
+                                          0.8,
+                                      fit: BoxFit.contain),
                                 ),
-                              )
-                            ],
+                                ListTile(
+                                  title: Text(_fetchedInfo!.title),
+                                  subtitle: Text(_fetchedInfo!.channel.name +
+                                      "\n" +
+                                      addZero(_fetchedInfo!.length.inMinutes) +
+                                      ":" +
+                                      addZero(_fetchedInfo!.length.inSeconds
+                                          .remainder(60))),
+                                  isThreeLine: true,
+                                )
+                              ]
+                            : [
+                                Padding(
+                                  padding: const EdgeInsets.all(12.0),
+                                  child: Column(
+                                    children: [
+                                      Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: const [
+                                          Padding(
+                                            padding: EdgeInsets.only(right: 8),
+                                            child: Icon(Icons.remove_red_eye),
+                                          ),
+                                          Text("Podgląd",
+                                              style: TextStyle(fontSize: 32)),
+                                        ],
+                                      ),
+                                      Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: const [
+                                          Icon(Icons.link),
+                                          Text("Wpisz link do video"),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                )
+                              ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: TextFormField(
-                  key: _inputKey,
-                  controller: _inputController,
-                  validator: (String? content) {
-                    if (!validateYoutubeURL(content)) {
-                      return "Zły format URL filmu z YouTube";
-                    }
-                  },
-                  onChanged: handleInputChange,
-                  decoration: const InputDecoration(
-                      labelText: "Adres URL filmu",
-                      floatingLabelBehavior: FloatingLabelBehavior.always),
-                ),
-              )
-            ],
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: TextFormField(
+                    key: _inputKey,
+                    controller: _inputController,
+                    validator: (String? content) {
+                      if (!validateYoutubeURL(content)) {
+                        return "Zły format URL filmu z YouTube";
+                      }
+                    },
+                    onChanged: handleInputChange,
+                    decoration: InputDecoration(
+                        labelText: "Adres URL filmu",
+                        floatingLabelBehavior: FloatingLabelBehavior.always,
+                        suffixIcon: IconButton(
+                          icon: Icon(Icons.paste),
+                          onPressed: pasteFromClipboard,
+                        )),
+                  ),
+                )
+              ],
+            ),
           ),
         ));
   }
@@ -208,6 +233,7 @@ class _DownloadYouTubeAudioState extends State<DownloadYouTubeAudio> {
   @override
   void dispose() {
     _inputChangeTimer?.cancel();
+
     super.dispose();
   }
 }
