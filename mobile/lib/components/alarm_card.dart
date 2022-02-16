@@ -24,6 +24,7 @@ class AlarmCard extends StatefulWidget {
 
   final bool? isRepeating;
   final Repeat? repeat;
+  final int? emergencyAlarmTimeoutSeconds;
 
   final bool? hideSwitch;
 
@@ -45,6 +46,7 @@ class AlarmCard extends StatefulWidget {
       this.notes,
       this.isRepeating,
       this.repeat,
+      this.emergencyAlarmTimeoutSeconds,
       this.hideSwitch,
       this.refresh})
       : super(key: key);
@@ -204,7 +206,7 @@ class _AlarmCardState extends State<AlarmCard> {
               ],
             ),
             Row(children: [
-              const Icon(Icons.verified_user),
+              Icon(widget.isGuardEnabled ? Icons.lock : Icons.lock_open),
               Padding(
                   padding: const EdgeInsets.all(5),
                   child: Text(
@@ -274,6 +276,18 @@ class _AlarmCardState extends State<AlarmCard> {
                                     Text("Ręczny")
                                   ]),
                       ]),
+            Row(
+              children: [
+                Icon(Icons.verified_user),
+                Flexible(
+                    child: Text(
+                  widget.notes ??
+                      "Zapasowy alarm: ${widget.emergencyAlarmTimeoutSeconds != null && widget.emergencyAlarmTimeoutSeconds != 0 ? addZero((widget.emergencyAlarmTimeoutSeconds! / 60).floor()) + ":" + addZero(widget.emergencyAlarmTimeoutSeconds!.remainder(60)) : "tylko ochrona"}",
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                )),
+              ],
+            ),
             Row(
               children: [
                 const Icon(Icons.subject),

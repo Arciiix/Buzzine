@@ -1,11 +1,9 @@
 import 'package:buzzine/components/hourly_weather_widget.dart';
 import 'package:buzzine/globalData.dart';
-import 'package:buzzine/screens/loading.dart';
 import 'package:buzzine/types/Weather.dart';
 import 'package:buzzine/utils/formatting.dart';
 import 'package:buzzine/utils/weather_icons_mapping.dart';
 import "package:flutter/material.dart";
-import 'package:flutter/rendering.dart';
 
 class WeatherWidget extends StatefulWidget {
   final bool? dontGetData;
@@ -26,9 +24,11 @@ class _WeatherWidgetState extends State<WeatherWidget> {
     if (widget.dontGetData != true) {
       GlobalData.loadSettings().then((_) {
         GlobalData.getWeatherData().then((_) {
-          setState(() {
-            isLoaded = true;
-          });
+          if (mounted) {
+            setState(() {
+              isLoaded = true;
+            });
+          }
         });
       });
     } else {

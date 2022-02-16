@@ -426,7 +426,7 @@ class Alarm {
         logger.warn(`Alarm ${this.id} was muted due to user inactivity!`);
         this.mute();
         sendEmergency([this.toObject()]);
-      }, (parseInt(process.env.MUTE_AFTER) || 5) * 1000 * 60),
+      }, (parseInt(process.env.MUTE_AFTER) || 10) * 1000 * 60),
       emergencyAlarmTimeout:
         this.emergencyAlarmTimeoutSeconds &&
         setTimeout(

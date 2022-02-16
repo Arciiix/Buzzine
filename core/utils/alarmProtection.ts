@@ -66,7 +66,7 @@ function sendEmergency(missedAlarms: any) {
 
       if (
         emergency.timeElapsed >=
-        (parseInt(process.env.MUTE_AFTER) || 15) * 60
+        (parseInt(process.env.EMERGENCY_MUTE_AFTER) || 15) * 60
       ) {
         clearInterval(emergency.interval);
         emergency = null;

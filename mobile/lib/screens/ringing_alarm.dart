@@ -12,10 +12,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class RingingAlarm extends StatefulWidget {
   final RingingAlarmEntity ringingAlarm;
-  final bool? overrideIsSnoozeEnabled;
+  final bool? isItActuallyRinging;
 
   const RingingAlarm(
-      {Key? key, required this.ringingAlarm, this.overrideIsSnoozeEnabled})
+      {Key? key, required this.ringingAlarm, this.isItActuallyRinging})
       : super(key: key);
 
   @override
@@ -129,7 +129,7 @@ class _RingingAlarmState extends State<RingingAlarm>
   }
 
   Future<void> tempMuteAlarm() async {
-    if (didMuteAudio) return;
+    if (didMuteAudio || widget.isItActuallyRinging == false) return;
     bool? shouldMuteAudio = await showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -186,9 +186,9 @@ class _RingingAlarmState extends State<RingingAlarm>
         seconds: maxAlarmTime?.difference(now).inSeconds ??
             widget.ringingAlarm.alarm.maxTotalSnoozeDuration ??
             300);
-    isSnoozeAvailable = widget.overrideIsSnoozeEnabled ??
-        widget.ringingAlarm.alarm.isSnoozeEnabled ??
-        false;
+    isSnoozeAvailable = widget.isItActuallyRinging == false
+        ? false
+        : widget.ringingAlarm.alarm.isSnoozeEnabled ?? false;
     _blinkingTimer = Timer.periodic(const Duration(seconds: 1), (_) {
       setState(() => _isBlinkVisible = !_isBlinkVisible);
     });
@@ -381,15 +381,16 @@ class _RingingAlarmState extends State<RingingAlarm>
                           (1 - _animation.value)) +
                       10,
                   child: Column(
-                    children: didMuteAudio
-                        ? []
-                        : [
-                            const Icon(Icons.keyboard_arrow_up,
-                                color: Colors.white),
-                            Text("Wycisz",
-                                style: const TextStyle(
-                                    color: Colors.white, fontSize: 15))
-                          ],
+                    children:
+                        didMuteAudio || widget.isItActuallyRinging == false
+                            ? []
+                            : [
+                                const Icon(Icons.keyboard_arrow_up,
+                                    color: Colors.white),
+                                Text("Wycisz",
+                                    style: const TextStyle(
+                                        color: Colors.white, fontSize: 15))
+                              ],
                   )),
             ],
           )),

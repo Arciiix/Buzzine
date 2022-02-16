@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:buzzine/types/API_exception.dart';
+import 'package:buzzine/types/Constants.dart';
 import 'package:buzzine/types/PingResult.dart';
 import 'package:buzzine/types/Repeat.dart';
 import 'package:buzzine/types/RingingAlarmEntity.dart';
@@ -30,6 +31,7 @@ class GlobalData {
   static LatLng? homeLocation;
   static int weatherHoursCount = 24;
 
+  static late Constants constants;
   static late String appVersion;
   static late String appBuildNumber;
 
@@ -42,14 +44,24 @@ class GlobalData {
 
     await loadSettings();
 
+    print("Fetching data...");
     await getAlarms();
+    print("Got alarms");
     await getUpcomingAlarms();
+    print("Got upcoming alarms");
     await getRingingAlarms();
+    print("Got ringing alarms");
     await getActiveSnoozes();
+    print("Got snoozes");
     await getAudios();
+    print("Got audios");
     await getQrCodeHash();
+    print("Got hash");
 
+    await getConstants();
+    print("Got constants");
     await getAppVersion();
+    print("Got app version");
 
     isLoading = false;
   }
@@ -605,6 +617,24 @@ class GlobalData {
     }
   }
 
+  static Future<Constants> getConstants() async {
+    var response = await http.get(
+      Uri.parse("$serverIP/v1/getConstants"),
+    );
+    var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
+
+    if (response.statusCode != 200 || decodedResponse['error'] == true) {
+      throw APIException(
+          "Błąd podczas pobierania wartości stałych. Status code: ${response.statusCode}, response: ${response.body}");
+    }
+
+    var responseData = decodedResponse['response'];
+    GlobalData.constants =
+        Constants(muteAfter: responseData['core']['MUTE_AFTER']);
+
+    return GlobalData.constants;
+  }
+
   static Future<String> getAppVersion() async {
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
 
@@ -625,7 +655,7 @@ class GlobalData {
 
     if (decodedResponse['response'] == null) {
       throw APIException(
-          "Błąd podczas pingowania serwisów. Status code: ${response.statusCode}, response: ${response.body}");
+          "Błąd podczas pingowania serwisów. Status code: ${response.statusCode}, response: ${response.body}; ");
     }
     var responseData = decodedResponse['response'];
 

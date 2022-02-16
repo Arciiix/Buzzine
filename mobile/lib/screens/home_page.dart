@@ -69,11 +69,11 @@ class _HomePageState extends State<HomePage> {
   }
 
   void navigateToRingingAlarm(RingingAlarmEntity ringingAlarm,
-      {bool? overrideIsSnoozeEnabled}) async {
+      {bool? isItActuallyRinging}) async {
     await Navigator.of(context).push(MaterialPageRoute(
         builder: (context) => RingingAlarm(
               ringingAlarm: ringingAlarm,
-              overrideIsSnoozeEnabled: overrideIsSnoozeEnabled,
+              isItActuallyRinging: isItActuallyRinging,
             )));
 
     //Refresh everything - for example alarm could've been deleted because of the deleteAfterRinging option
@@ -271,7 +271,7 @@ class _HomePageState extends State<HomePage> {
                                         ),
                                       ),
                                       Carousel(
-                                          height: 320,
+                                          height: 360,
                                           onSelect: (_) =>
                                               navigateToRingingAlarm(
                                                   ringingAlarms.first),
@@ -297,6 +297,9 @@ class _HomePageState extends State<HomePage> {
                                                 isRepeating:
                                                     e.alarm.isRepeating,
                                                 repeat: e.alarm.repeat,
+                                                emergencyAlarmTimeoutSeconds: e
+                                                    .alarm
+                                                    .emergencyAlarmTimeoutSeconds,
                                                 hideSwitch: true);
                                           }).toList()),
                                     ]
@@ -322,8 +325,7 @@ class _HomePageState extends State<HomePage> {
                                               navigateToRingingAlarm(
                                                   activeSnoozes.first
                                                       .ringingAlarmInstance,
-                                                  overrideIsSnoozeEnabled:
-                                                      false),
+                                                  isItActuallyRinging: false),
                                           children:
                                               activeSnoozes.map((Snooze e) {
                                             return SnoozeCard(
@@ -375,7 +377,7 @@ class _HomePageState extends State<HomePage> {
                                         ),
                                       ),
                                       Carousel(
-                                          height: 320,
+                                          height: 360,
                                           onSelect: handleAlarmSelect,
                                           children: upcomingAlarms.map((e) {
                                             return AlarmCard(
@@ -399,6 +401,8 @@ class _HomePageState extends State<HomePage> {
                                                 notes: e.notes,
                                                 isRepeating: e.isRepeating,
                                                 repeat: e.repeat,
+                                                emergencyAlarmTimeoutSeconds: e
+                                                    .emergencyAlarmTimeoutSeconds,
                                                 refresh: refresh);
                                           }).toList()),
                                     ]

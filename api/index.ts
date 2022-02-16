@@ -27,6 +27,10 @@ const emergencyRouter = express.Router();
 
 const uptime = new Date();
 
+//This variable has each microservices useful safe (without API keys etc.) environment variables, such as MUTE_AFTER from core which is used to specify max emergencyAlarmTimeoutSeconds value
+//Set the variables to its default
+let servicesConstants: IServicesConstants;
+
 //REST API
 const api = express.Router();
 app.use("/v1", api);
@@ -142,6 +146,43 @@ api.get("/ping", async (req, res) => {
   }
   res.send({ error: isError, response: services });
 });
+
+api.get("/getConstants", async (req, res) => {
+  logger.http(`GET /getConstants`);
+
+  res.send({ error: false, response: await getServicesConstants() });
+});
+
+async function getServicesConstants(): Promise<IServicesConstants> {
+  let newServicesConstants: IServicesConstants = {
+    core: { MUTE_AFTER: 10 },
+    api: {},
+    audio: {},
+    adapter: {},
+  };
+  //Core
+  await new Promise((resolve: any, reject) => {
+    socket.emit("CMD/GET_CONSTANTS", (response) => {
+      if (response.error) {
+        logger.warn(
+          `Response error when getting the constants from the core: ${JSON.stringify(
+            response
+          )}`
+        );
+        reject(response);
+      } else {
+        logger.info(
+          `Got the core constants. Response: ${JSON.stringify(response)}`
+        );
+        newServicesConstants.core = response.response;
+        resolve();
+      }
+    });
+  });
+
+  servicesConstants = newServicesConstants;
+  return newServicesConstants;
+}
 
 api.put("/cancelEmergencyAlarm", async (req, res) => {
   logger.http(
@@ -661,7 +702,7 @@ audioRouter.all("*", async (req, res) => {
     );
     res.status(audiosReq.status).send(audiosReq.data);
   } catch (err) {
-    logger.error(
+    logger.warn(
       `Error while making audio request: ${JSON.stringify(
         err?.response?.data
       )} with status ${err?.response?.status}`
@@ -688,7 +729,7 @@ emergencyRouter.all("*", async (req, res) => {
     );
     res.status(emergencyReq.status).send(emergencyReq.data);
   } catch (err) {
-    logger.error(
+    logger.warn(
       `Error while making emergency request: ${JSON.stringify(
         err?.response?.data
       )} with status ${err?.response?.status}`
@@ -714,6 +755,14 @@ const server = app.listen(PORT, () => {
 
 async function init() {
   await initDatabase();
+  await getServicesConstants();
+}
+
+interface IServicesConstants {
+  core: { MUTE_AFTER: number };
+  api: {};
+  audio: {};
+  adapter: {};
 }
 
 init();

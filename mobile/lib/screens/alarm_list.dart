@@ -117,7 +117,7 @@ class _AlarmListState extends State<AlarmList> {
                                   child: InkWell(
                                       onTap: () => addAlarm(e),
                                       child: SizedBox(
-                                          height: 320,
+                                          height: 360,
                                           child: AlarmCard(
                                             id: e.id!,
                                             name: e.name,
@@ -134,6 +134,8 @@ class _AlarmListState extends State<AlarmList> {
                                             isGuardEnabled: e.isGuardEnabled,
                                             notes: e.notes,
                                             isRepeating: e.isRepeating,
+                                            emergencyAlarmTimeoutSeconds:
+                                                e.emergencyAlarmTimeoutSeconds,
                                             repeat: e.repeat,
                                           )))));
                         }),

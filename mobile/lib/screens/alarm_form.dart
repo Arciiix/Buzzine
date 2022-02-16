@@ -1,4 +1,5 @@
 import 'package:buzzine/components/multiple_select.dart';
+import 'package:buzzine/globalData.dart';
 import 'package:buzzine/screens/audio_manager.dart';
 import 'package:buzzine/screens/loading.dart';
 import 'package:buzzine/types/Alarm.dart';
@@ -39,6 +40,9 @@ class _AlarmFormState extends State<AlarmForm> {
 
   bool _isRepeating = false;
   Repeat _repeat = Repeat();
+  int _emergencyAlarmTimeoutSeconds = 0;
+  int _tempEmergencyAlarmTimeoutSeconds =
+      GlobalData.constants.muteAfter < 60 ? 1 : 60;
 
   int _minTotalSnoozeDurationValue = 5;
   int _maxTotalSnoozeDurationValue = 60;
@@ -79,6 +83,7 @@ class _AlarmFormState extends State<AlarmForm> {
         notes: _notesController.text,
         isRepeating: _isRepeating,
         repeat: _repeat,
+        emergencyAlarmTimeoutSeconds: _emergencyAlarmTimeoutSeconds,
         isActive: widget.baseAlarm?.isActive ?? true);
 
     Navigator.of(context).pop(returnedAlarm);
@@ -155,6 +160,8 @@ class _AlarmFormState extends State<AlarmForm> {
       _notesController.text = widget.baseAlarm?.notes ?? "";
       _isRepeating = widget.baseAlarm?.isRepeating ?? false;
       _repeat = widget.baseAlarm?.repeat ?? Repeat();
+      _emergencyAlarmTimeoutSeconds =
+          widget.baseAlarm?.emergencyAlarmTimeoutSeconds ?? 0;
     }
     initVariables();
   }
@@ -512,6 +519,55 @@ class _AlarmFormState extends State<AlarmForm> {
                                   },
                                 )
                               ])),
+                      InkWell(
+                          onTap: () => setState(() {
+                                _emergencyAlarmTimeoutSeconds =
+                                    _emergencyAlarmTimeoutSeconds == 0
+                                        ? _tempEmergencyAlarmTimeoutSeconds
+                                        : 0;
+                              }),
+                          child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text("Dodatkowy zapasowy alarm"),
+                                Switch(
+                                  value: _emergencyAlarmTimeoutSeconds != 0,
+                                  onChanged: (bool value) {
+                                    setState(() {
+                                      _emergencyAlarmTimeoutSeconds =
+                                          _emergencyAlarmTimeoutSeconds == 0
+                                              ? _tempEmergencyAlarmTimeoutSeconds
+                                              : 0;
+                                    });
+                                  },
+                                )
+                              ])),
+                      Column(
+                        children: _emergencyAlarmTimeoutSeconds != 0
+                            ? [
+                                Slider(
+                                  min: 1,
+                                  max: GlobalData.constants.muteAfter * 60 - 1,
+                                  onChanged: (double value) {
+                                    setState(() {
+                                      _tempEmergencyAlarmTimeoutSeconds =
+                                          value.floor();
+                                      _emergencyAlarmTimeoutSeconds =
+                                          value.floor();
+                                    });
+                                  },
+                                  value: _tempEmergencyAlarmTimeoutSeconds
+                                      .toDouble(),
+                                ),
+                                Text(addZero(
+                                        (_tempEmergencyAlarmTimeoutSeconds / 60)
+                                            .floor()) +
+                                    ":" +
+                                    addZero(_tempEmergencyAlarmTimeoutSeconds
+                                        .remainder(60)))
+                              ]
+                            : [],
+                      ),
                       TextFormField(
                         controller: _notesController,
                         maxLines: 2,

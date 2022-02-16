@@ -42,13 +42,25 @@ io.on("connection", (socket: Socket) => {
     } has connected! Request object: ${JSON.stringify(socket.handshake)}`
   );
 
-  socket.on("CMD/PING", async (_: any, cb?: any) => {
-    await saveUpcomingAlarms();
+  socket.on("CMD/PING", (_: any, cb?: any) => {
+    // await saveUpcomingAlarms();
     if (cb) {
       logger.info(`Core has been pinged`);
       cb({ error: false, timestamp: new Date() });
     } else {
       logger.warn("Missing callback on ping request");
+    }
+  });
+
+  socket.on("CMD/GET_CONSTANTS", async (cb) => {
+    //Get the useful safe constants - in this case MUTE_AFTER, used to determine the max emergencyAlarmTimeoutSeconds value
+    let constants = {
+      MUTE_AFTER: parseInt(process.env.MUTE_AFTER) || 10,
+    };
+    if (cb) {
+      cb({ error: false, response: constants });
+    } else {
+      logger.warn("Missing callback on GET request - GET_CONSTANTS");
     }
   });
 
