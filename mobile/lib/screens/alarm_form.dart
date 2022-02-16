@@ -1,4 +1,6 @@
 import 'package:buzzine/components/multiple_select.dart';
+import 'package:buzzine/components/number_vertical_picker.dart';
+import 'package:buzzine/components/time_number_picker.dart';
 import 'package:buzzine/globalData.dart';
 import 'package:buzzine/screens/audio_manager.dart';
 import 'package:buzzine/screens/loading.dart';
@@ -141,6 +143,56 @@ class _AlarmFormState extends State<AlarmForm> {
               ? _maxTotalSnoozeDuration
               : maxTotalSnoozeDurationValue)!;
     });
+  }
+
+  Future<Duration?> selectTimeManually(int min, int max, int init) async {
+    Duration? userSelection =
+        await Navigator.of(context).push(MaterialPageRoute(
+      builder: (context) => TimeNumberPicker(
+        minDuration: min,
+        maxDuration: max,
+        initialTime: init,
+      ),
+    ));
+    return userSelection;
+  }
+
+  Future<int?> selectValueManually(
+      int min, int max, int init, String quantityName, String unit) async {
+    int selectedValue = init;
+    bool? change = await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Zmień ${quantityName.toLowerCase()}"),
+          content: Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              NumberVerticalPicker(
+                onChanged: (int val) => selectedValue = val,
+                initValue: init,
+                minValue: min,
+                maxValue: max,
+                propertyName: quantityName + " ($unit)",
+              ),
+              Text(unit)
+            ],
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text("Anuluj"),
+            ),
+            TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: const Text("Zmień")),
+          ],
+        );
+      },
+    );
+
+    return change == true ? selectedValue : null;
   }
 
   @override
@@ -295,9 +347,28 @@ class _AlarmFormState extends State<AlarmForm> {
                                   value: _maxTotalSnoozeDuration?.toDouble() ??
                                       15.0,
                                 ),
-                                Text(
-                                  "$_maxTotalSnoozeDuration min",
-                                )
+                                InkWell(
+                                  onTap: () async {
+                                    int? selectedValue =
+                                        await selectValueManually(
+                                            _minTotalSnoozeDurationValue,
+                                            _maxTotalSnoozeDurationValue,
+                                            _maxTotalSnoozeDuration ?? 15,
+                                            "Maksymalny łączny czas drzemek",
+                                            "min");
+                                    if (selectedValue != null) {
+                                      setState(() {
+                                        _maxTotalSnoozeDuration = selectedValue;
+                                      });
+                                    }
+                                  },
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Text(
+                                      "$_maxTotalSnoozeDuration min",
+                                    ),
+                                  ),
+                                ),
                               ]
                             : [],
                       ),
@@ -559,12 +630,34 @@ class _AlarmFormState extends State<AlarmForm> {
                                   value: _tempEmergencyAlarmTimeoutSeconds
                                       .toDouble(),
                                 ),
-                                Text(addZero(
-                                        (_tempEmergencyAlarmTimeoutSeconds / 60)
-                                            .floor()) +
-                                    ":" +
-                                    addZero(_tempEmergencyAlarmTimeoutSeconds
-                                        .remainder(60)))
+                                InkWell(
+                                  onTap: () async {
+                                    Duration? userSelection =
+                                        await selectTimeManually(
+                                            1,
+                                            GlobalData.constants.muteAfter *
+                                                    60 -
+                                                1,
+                                            _tempEmergencyAlarmTimeoutSeconds);
+                                    if (userSelection != null) {
+                                      setState(() {
+                                        _tempEmergencyAlarmTimeoutSeconds =
+                                            userSelection.inSeconds;
+                                      });
+                                    }
+                                  },
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Text(addZero(
+                                            (_tempEmergencyAlarmTimeoutSeconds /
+                                                    60)
+                                                .floor()) +
+                                        ":" +
+                                        addZero(
+                                            _tempEmergencyAlarmTimeoutSeconds
+                                                .remainder(60))),
+                                  ),
+                                )
                               ]
                             : [],
                       ),

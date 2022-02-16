@@ -1,5 +1,5 @@
+import 'package:buzzine/components/number_vertical_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:numberpicker/numberpicker.dart';
 
 class TimeNumberPicker extends StatefulWidget {
   final int maxDuration;
@@ -29,36 +29,6 @@ class _TimeNumberPickerState extends State<TimeNumberPicker> {
     super.initState();
   }
 
-  Future<int?> getValueFromUserInput(int currentValue, String unit) async {
-    TextEditingController _inputController = TextEditingController()
-      ..text = currentValue.toString();
-    return await showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(unit),
-          content: TextField(
-            controller: _inputController,
-            keyboardType: TextInputType.number,
-            decoration: InputDecoration(hintText: unit),
-          ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text("Anuluj"),
-            ),
-            TextButton(
-                onPressed: () async {
-                  Navigator.of(context)
-                      .pop(int.tryParse(_inputController.text));
-                },
-                child: const Text("Zmień")),
-          ],
-        );
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -78,34 +48,24 @@ class _TimeNumberPickerState extends State<TimeNumberPicker> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const Text("H"),
-                  GestureDetector(
-                    onTap: () async {
-                      int? newValue =
-                          await getValueFromUserInput(hour, "Godzina");
-                      if (newValue != null) {
-                        if (newValue * 3600 + minute * 60 + second <=
-                                widget.maxDuration &&
-                            newValue * 3600 + minute * 60 + second >=
-                                (widget.minDuration ?? -1)) {
-                          setState(() => hour = newValue);
-                        }
+                  NumberVerticalPicker(
+                    validator: (int newValue) {
+                      if (newValue * 3600 + minute * 60 + second <=
+                              widget.maxDuration &&
+                          newValue * 3600 + minute * 60 + second >=
+                              (widget.minDuration ?? -1)) {
+                        return true;
                       }
+                      return false;
                     },
-                    child: NumberPicker(
-                      value: hour,
-                      minValue: 0,
-                      maxValue: 99,
-                      zeroPad: true,
-                      onChanged: (value) {
-                        if (value * 3600 + minute * 60 + second <=
-                                widget.maxDuration &&
-                            value * 3600 + minute * 60 + second >=
-                                (widget.minDuration ?? -1)) {
-                          setState(() => hour = value);
-                        }
-                      },
-                    ),
-                  ),
+                    onChanged: (int newValue) {
+                      setState(() => hour = newValue);
+                    },
+                    initValue: hour,
+                    minValue: 0,
+                    maxValue: 99,
+                    propertyName: "Godzina",
+                  )
                 ],
               ),
               Text(":"),
@@ -113,34 +73,24 @@ class _TimeNumberPickerState extends State<TimeNumberPicker> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const Text("M"),
-                  GestureDetector(
-                    onTap: () async {
-                      int? newValue =
-                          await getValueFromUserInput(minute, "Minuta");
-                      if (newValue != null) {
-                        if (hour * 3600 + newValue * 60 + second <=
-                                widget.maxDuration &&
-                            hour * 3600 + newValue * 60 + second >=
-                                (widget.minDuration ?? -1)) {
-                          setState(() => minute = newValue);
-                        }
+                  NumberVerticalPicker(
+                    validator: (int newValue) {
+                      if (hour * 3600 + newValue * 60 + second <=
+                              widget.maxDuration &&
+                          hour * 3600 + newValue * 60 + second >=
+                              (widget.minDuration ?? -1)) {
+                        return true;
                       }
+                      return false;
                     },
-                    child: NumberPicker(
-                      value: minute,
-                      minValue: 0,
-                      maxValue: 59,
-                      zeroPad: true,
-                      onChanged: (value) {
-                        if (hour * 3600 + value * 60 + second <=
-                                widget.maxDuration &&
-                            hour * 3600 + value * 60 + second >=
-                                (widget.minDuration ?? -1)) {
-                          setState(() => minute = value);
-                        }
-                      },
-                    ),
-                  ),
+                    onChanged: (int newValue) {
+                      setState(() => minute = newValue);
+                    },
+                    initValue: minute,
+                    minValue: 0,
+                    maxValue: 59,
+                    propertyName: "Minuta",
+                  )
                 ],
               ),
               Text(":"),
@@ -148,33 +98,25 @@ class _TimeNumberPickerState extends State<TimeNumberPicker> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const Text("S"),
-                  GestureDetector(
-                    onTap: () async {
-                      int? newValue =
-                          await getValueFromUserInput(second, "Sekunda");
-                      if (newValue != null) {
-                        if (hour * 3600 + minute * 60 + newValue <=
-                                widget.maxDuration &&
-                            hour * 3600 + minute * 60 + newValue >=
-                                (widget.minDuration ?? -1)) {
-                          setState(() => hour = newValue);
-                        }
+                  NumberVerticalPicker(
+                    validator: (int newValue) {
+                      if (hour * 3600 + minute * 60 + newValue <=
+                              widget.maxDuration &&
+                          hour * 3600 + minute * 60 + newValue >=
+                              (widget.minDuration ?? -1)) {
+                        return true;
                       }
+                      return false;
                     },
-                    child: NumberPicker(
-                      value: second,
-                      minValue: 0,
-                      maxValue: 59,
-                      zeroPad: true,
-                      onChanged: (value) {
-                        if (hour * 3600 + minute * 60 + value <=
-                                widget.maxDuration &&
-                            hour * 3600 + minute * 60 + value >=
-                                (widget.minDuration ?? -1)) {
-                          setState(() => second = value);
-                        }
-                      },
-                    ),
+                    onChanged: (int newValue) {
+                      setState(() {
+                        second = newValue;
+                      });
+                    },
+                    initValue: second,
+                    minValue: 0,
+                    maxValue: 59,
+                    propertyName: "Sekunda",
                   ),
                 ],
               ),

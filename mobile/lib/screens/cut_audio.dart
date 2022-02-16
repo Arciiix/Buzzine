@@ -98,11 +98,12 @@ class _CutAudioState extends State<CutAudio> {
     return true;
   }
 
-  Future<Duration?> selectNumberFromPicker(int initialTime, int minTime) async {
+  Future<Duration?> selectNumberFromPicker(
+      int initialTime, int minTime, int maxTime) async {
     Duration? userSelection =
         await Navigator.of(context).push(MaterialPageRoute(
       builder: (context) => TimeNumberPicker(
-        maxDuration: widget.audio.duration!.floor(),
+        maxDuration: maxTime,
         minDuration: minTime,
         initialTime: initialTime,
       ),
@@ -179,8 +180,11 @@ class _CutAudioState extends State<CutAudio> {
                 children: [
                   InkWell(
                       onTap: () async {
+                        await stopPreview();
                         Duration? userSelection = await selectNumberFromPicker(
-                            _values.start.toInt(), 0);
+                            _values.start.toInt(),
+                            0,
+                            (_values.end - 3).floor());
 
                         if (userSelection != null) {
                           if (userSelection.inSeconds <
@@ -199,8 +203,11 @@ class _CutAudioState extends State<CutAudio> {
                       )),
                   InkWell(
                       onTap: () async {
+                        await stopPreview();
                         Duration? userSelection = await selectNumberFromPicker(
-                            _values.end.toInt(), _values.start.toInt());
+                            _values.end.toInt(),
+                            _values.start.toInt() + 3,
+                            widget.audio.duration!.floor());
                         if (userSelection != null) {
                           if (userSelection.inSeconds <
                               widget.audio.duration!) {
