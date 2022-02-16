@@ -39,6 +39,7 @@ app.use("/cdn", cdn);
 api.use("/weather", weatherRouter);
 api.use("/audio", audioRouter);
 api.use("/emergency", emergencyRouter);
+api.use("/temperature", emergencyRouter);
 
 api.get("/ping", async (req, res) => {
   logger.http(`GET /ping with data ${JSON.stringify(req.query)}`);
