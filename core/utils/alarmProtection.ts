@@ -152,6 +152,22 @@ function cancelEmergencyAlarm() {
   }
 }
 
+function getEmergencyStatus(): {
+  isActive: boolean;
+  startDate?: Date;
+  timeElapsed?: number;
+} {
+  if (!emergency.startDate) {
+    return { isActive: false };
+  } else {
+    return {
+      isActive: true,
+      startDate: emergency.startDate,
+      timeElapsed: emergency.timeElapsed,
+    };
+  }
+}
+
 //TODO: Send emergency alarm on exit
 
 interface IUpcomingAlarm {
@@ -170,4 +186,5 @@ export {
   getUpcomingAlarms,
   saveUpcomingAlarms,
   cancelEmergencyAlarm,
+  getEmergencyStatus,
 };

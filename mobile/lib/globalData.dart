@@ -32,6 +32,7 @@ class GlobalData {
   static int weatherHoursCount = 24;
 
   static late Constants constants;
+  static late bool isEmergencyActive;
   static late String appVersion;
   static late String appBuildNumber;
 
@@ -60,6 +61,8 @@ class GlobalData {
 
     await getConstants();
     print("Got constants");
+    await getEmergencyStatus();
+    print("Got emergency status");
     await getAppVersion();
     print("Got app version");
 
@@ -635,12 +638,41 @@ class GlobalData {
     return GlobalData.constants;
   }
 
+  static Future<bool> getEmergencyStatus() async {
+    var response = await http.get(
+      Uri.parse("$serverIP/v1/getEmergencyStatus"),
+    );
+    var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
+
+    if (response.statusCode != 200 || decodedResponse['error'] == true) {
+      throw APIException(
+          "Błąd podczas pobierania statusu systemu przeciwawaryjnego. Status code: ${response.statusCode}, response: ${response.body}");
+    }
+
+    GlobalData.isEmergencyActive =
+        decodedResponse['response']?['isActive'] ?? false;
+    return GlobalData.isEmergencyActive;
+  }
+
   static Future<String> getAppVersion() async {
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
 
     GlobalData.appVersion = packageInfo.version;
     GlobalData.appBuildNumber = packageInfo.buildNumber;
     return GlobalData.appVersion;
+  }
+
+  static Future<void> turnOffEmergency() async {
+    var response =
+        await http.put(Uri.parse("$serverIP/v1/cancelEmergencyAlarm"));
+    var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
+
+    if (response.statusCode != 200 || decodedResponse['error'] == true) {
+      throw APIException(
+          "Błąd podczas wyłączania systemu przeciwawaryjnego. Status code: ${response.statusCode}, response: ${response.body}");
+    }
+    GlobalData.isEmergencyActive = false;
+    return;
   }
 
   static Future<PingResult> ping() async {

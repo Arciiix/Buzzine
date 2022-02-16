@@ -8,6 +8,7 @@ import GetDatabaseData from "./utils/loadFromDb";
 import {
   cancelEmergencyAlarm,
   checkForAlarmProtection,
+  getEmergencyStatus,
   getUpcomingAlarms,
   saveUpcomingAlarms,
 } from "./utils/alarmProtection";
@@ -62,6 +63,18 @@ io.on("connection", (socket: Socket) => {
     } else {
       logger.warn("Missing callback on GET request - GET_CONSTANTS");
     }
+    logger.info("Sent constants");
+  });
+
+  socket.on("CMD/GET_EMERGENCY_STATUS", async (cb) => {
+    let emergencyStatus = getEmergencyStatus();
+
+    if (cb) {
+      cb({ error: false, response: emergencyStatus });
+    } else {
+      logger.warn("Missing callback on GET request - GET_EMERGENCY_STATUS");
+    }
+    logger.info("Sent emergency status");
   });
 
   socket.on("CMD/CREATE_ALARM", async (payload: any, cb?: any) => {

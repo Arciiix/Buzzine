@@ -184,6 +184,32 @@ async function getServicesConstants(): Promise<IServicesConstants> {
   return newServicesConstants;
 }
 
+api.get("/getEmergencyStatus", async (req, res) => {
+  logger.http(`GET /getEmergencyStatus`);
+
+  let emergencyStatus = await new Promise((resolve, reject) => {
+    socket.emit("CMD/GET_EMERGENCY_STATUS", (response) => {
+      if (response.error) {
+        logger.warn(
+          `Response error when getting the emergency status: ${JSON.stringify(
+            response
+          )}`
+        );
+        resolve(null);
+      } else {
+        logger.info(
+          `Got the emergency status constants. Response: ${JSON.stringify(
+            response
+          )}`
+        );
+        resolve(response.response);
+      }
+    });
+  });
+
+  res.send({ error: false, response: emergencyStatus });
+});
+
 api.put("/cancelEmergencyAlarm", async (req, res) => {
   logger.http(
     `PUT /cancelEmergencyAlarm with data: ${JSON.stringify(req.body)}`
