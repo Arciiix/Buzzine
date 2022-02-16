@@ -82,7 +82,6 @@ async function calculateTemperatureDataForDay(
     max: data.dataValues.maxTemp,
     average: data.dataValues.averageTemp,
   };
-  console.log(temperatureData);
   return temperatureData;
 }
 
