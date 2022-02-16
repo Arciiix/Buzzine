@@ -81,6 +81,7 @@ async function calculateTemperatureDataForDay(
     min: data.dataValues.minTemp,
     max: data.dataValues.maxTemp,
     average: data.dataValues.averageTemp,
+    range: Math.abs(data.dataValues.maxTemp - data.dataValues.minTemp),
   };
   return temperatureData;
 }
@@ -117,6 +118,7 @@ interface ITemperatureData {
   average: number;
   min: number;
   max: number;
+  range: number;
 }
 
 type ICurrentTemperatureData = ITemperatureData & {
