@@ -24,6 +24,7 @@ import {
 import TemperatureModel from "./models/Temperature";
 
 let heartbeatsJob: schedule.Job, temperaturesJob: schedule.Job;
+let isProtectionTurnedOn = true;
 
 const app = express();
 app.use(bodyParser.json());
@@ -86,6 +87,29 @@ api.get("/getHistoricalDailyTemperatureData", async (req, res) => {
   res.send({ error: false, response: temperatureData });
 });
 
+api.get("/getStatus", async (req, res) => {
+  try {
+    let response = await axios.get(
+      `${TASMOTA_URL}/cm?cmnd=Power${RELAY_INDEX}`
+    );
+    let isRelayOn = response.data["POWER" + RELAY_INDEX] === "ON";
+    res.send({
+      error: false,
+      response: {
+        isRelayOn,
+        isProtectionTurnedOn,
+      },
+    });
+  } catch (err) {
+    logger.error(
+      `Error while trying to get the device status: ${
+        err?.response?.status
+      } with data: ${JSON.stringify(err?.response?.data)}`
+    );
+    res.status(502).send({ error: true, errorCode: err?.response?.data });
+  }
+});
+
 api.put("/toogleEmergency", async (req, res) => {
   //Don't check if user provided the isTurnedOn param - the default is to turn on
   let success = await toogleEmergencyDevice(
@@ -106,13 +130,14 @@ api.put("/toogleProtection", async (req, res) => {
       await sendHeartbeat();
       //Signal the change by shorter signal
       await axios.get(`${TASMOTA_URL}/cm?cmnd=RuleTimer3%201`);
+      isProtectionTurnedOn = true;
     } else {
       //Turn off the RuleTimer
       await axios.get(`${TASMOTA_URL}/cm?cmnd=RuleTimer1%200`);
       //Signal the change by longer signal
       await axios.get(`${TASMOTA_URL}/cm?cmnd=RuleTimer4%201`);
+      isProtectionTurnedOn = false;
     }
-
     res.send({ error: false });
   } catch (err) {
     logger.error(

@@ -187,7 +187,7 @@ async function getServicesConstants(): Promise<IServicesConstants> {
 api.get("/getEmergencyStatus", async (req, res) => {
   logger.http(`GET /getEmergencyStatus`);
 
-  let emergencyStatus = await new Promise((resolve, reject) => {
+  let emergencyStatus: object = await new Promise((resolve, reject) => {
     socket.emit("CMD/GET_EMERGENCY_STATUS", (response) => {
       if (response.error) {
         logger.warn(
@@ -206,6 +206,26 @@ api.get("/getEmergencyStatus", async (req, res) => {
       }
     });
   });
+
+  try {
+    let emergencyDeviceStatus = await axios.get(`${ADAPTER_URL}/v1/getStatus`);
+    emergencyStatus = {
+      ...emergencyStatus,
+      ...emergencyDeviceStatus.data.response,
+    };
+    logger.info(
+      `Got the emergency status: ${JSON.stringify(
+        emergencyDeviceStatus.data.response
+      )}`
+    );
+  } catch (err) {
+    logger.warn(
+      `Error while trying to get the emergency status: ${JSON.stringify(
+        err?.response?.data
+      )} with status ${err?.response?.status}`
+    );
+    res.status(err?.response?.status ?? 502).send(err?.response?.data);
+  }
 
   res.send({ error: false, response: emergencyStatus });
 });

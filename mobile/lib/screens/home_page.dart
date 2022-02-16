@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:buzzine/components/alarm_card.dart';
 import 'package:buzzine/components/audio_widget.dart';
 import 'package:buzzine/components/carousel.dart';
+import 'package:buzzine/components/emergency_device_status.dart';
 import 'package:buzzine/components/logo.dart';
 import 'package:buzzine/components/ping_result_indicator.dart';
 import 'package:buzzine/components/snooze_card.dart';
@@ -17,6 +18,7 @@ import 'package:buzzine/screens/settings.dart';
 import 'package:buzzine/screens/unlock_alarm.dart';
 import 'package:buzzine/screens/weather_screen.dart';
 import 'package:buzzine/types/Alarm.dart';
+import 'package:buzzine/types/EmergencyStatus.dart';
 import 'package:buzzine/types/PingResult.dart';
 import 'package:buzzine/types/RingingAlarmEntity.dart';
 import 'package:buzzine/types/Snooze.dart';
@@ -42,7 +44,7 @@ class _HomePageState extends State<HomePage> {
   List<Snooze> activeSnoozes = [];
   late String qrCodeHash;
   PingResult? pingResult;
-  bool isEmergencyActive = false;
+  late EmergencyStatus emergencyStatus;
   late StreamSubscription _intentData;
 
   GlobalKey<RefreshIndicatorState> _refreshState =
@@ -228,7 +230,7 @@ class _HomePageState extends State<HomePage> {
         qrCodeHash = GlobalData.qrCodeHash;
         ringingAlarms = GlobalData.ringingAlarms;
         activeSnoozes = GlobalData.activeSnoozes;
-        isEmergencyActive = GlobalData.isEmergencyActive;
+        emergencyStatus = GlobalData.emergencyStatus;
       });
       GlobalData.ping().then((PingResult result) {
         setState(() {
@@ -266,7 +268,7 @@ class _HomePageState extends State<HomePage> {
                           qrCodeHash = GlobalData.qrCodeHash;
                           ringingAlarms = GlobalData.ringingAlarms;
                           activeSnoozes = GlobalData.activeSnoozes;
-                          isEmergencyActive = GlobalData.isEmergencyActive;
+                          emergencyStatus = GlobalData.emergencyStatus;
                         });
 
                         //Clear the current ping cached data
@@ -287,17 +289,17 @@ class _HomePageState extends State<HomePage> {
                       },
                       child: SingleChildScrollView(
                         physics: const AlwaysScrollableScrollPhysics(),
-                        scrollDirection: isEmergencyActive
+                        scrollDirection: emergencyStatus.isEmergencyActive
                             ? Axis.horizontal
                             : Axis
                                 .vertical, //A workaround to center the content in the emergency case
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.center,
-                          mainAxisAlignment: isEmergencyActive
+                          mainAxisAlignment: emergencyStatus.isEmergencyActive
                               ? MainAxisAlignment.center
                               : MainAxisAlignment
                                   .start, //A workaround to center the content in the emergency case
-                          children: isEmergencyActive
+                          children: emergencyStatus.isEmergencyActive
                               ? [
                                   Container(
                                     width: MediaQuery.of(context).size.width *
@@ -612,6 +614,25 @@ class _HomePageState extends State<HomePage> {
                                             ]
                                           : [],
                                     ),
+                                  ),
+                                  Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: const Padding(
+                                        padding: EdgeInsets.all(5),
+                                        child: Text("🛡️ Ochrona",
+                                            style: TextStyle(
+                                                fontSize: 24,
+                                                color: Colors.white))),
+                                  ),
+                                  EmergencyDeviceStatus(
+                                    refreshEmergencyStatus: () async {
+                                      EmergencyStatus newEmergencyStatus =
+                                          await GlobalData.getEmergencyStatus();
+                                      setState(() {
+                                        emergencyStatus:
+                                        newEmergencyStatus;
+                                      });
+                                    },
                                   ),
                                   Align(
                                     alignment: Alignment.centerLeft,

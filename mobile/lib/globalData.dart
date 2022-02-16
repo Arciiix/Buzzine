@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:buzzine/types/API_exception.dart';
 import 'package:buzzine/types/Constants.dart';
+import 'package:buzzine/types/EmergencyStatus.dart';
 import 'package:buzzine/types/PingResult.dart';
 import 'package:buzzine/types/Repeat.dart';
 import 'package:buzzine/types/RingingAlarmEntity.dart';
@@ -32,7 +33,7 @@ class GlobalData {
   static int weatherHoursCount = 24;
 
   static late Constants constants;
-  static late bool isEmergencyActive;
+  static late EmergencyStatus emergencyStatus;
   static late String appVersion;
   static late String appBuildNumber;
 
@@ -638,7 +639,7 @@ class GlobalData {
     return GlobalData.constants;
   }
 
-  static Future<bool> getEmergencyStatus() async {
+  static Future<EmergencyStatus> getEmergencyStatus() async {
     var response = await http.get(
       Uri.parse("$serverIP/v1/getEmergencyStatus"),
     );
@@ -649,9 +650,50 @@ class GlobalData {
           "Błąd podczas pobierania statusu systemu przeciwawaryjnego. Status code: ${response.statusCode}, response: ${response.body}");
     }
 
-    GlobalData.isEmergencyActive =
-        decodedResponse['response']?['isActive'] ?? false;
-    return GlobalData.isEmergencyActive;
+    GlobalData.emergencyStatus = EmergencyStatus(
+        isEmergencyActive: decodedResponse['response']?['isActive'] ?? false,
+        isEmergencyEnabled:
+            decodedResponse['response']?['isProtectionTurnedOn'] ?? false,
+        isEmergencyDeviceOn:
+            decodedResponse['response']?['isRelayOn'] ?? false);
+
+    return GlobalData.emergencyStatus;
+  }
+
+  static Future<void> toogleEmergency(bool isOn) async {
+    Map requestData = {'isTurnedOn': isOn};
+
+    var response = await http.put(
+        Uri.parse("$serverIP/v1/emergency/toogleProtection"),
+        body: json.encode(requestData),
+        headers: {"Content-Type": "application/json"});
+    var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
+
+    if (response.statusCode != 200 || decodedResponse['error'] == true) {
+      throw APIException(
+          "Błąd podczas ${isOn ? "włączania" : "wyłączania"} ochrony. Status code: ${response.statusCode}, response: ${response.body}");
+    }
+
+    await GlobalData.getEmergencyStatus();
+    return;
+  }
+
+  static Future<void> toogleEmergencyDevice(bool isOn) async {
+    Map requestData = {'isTurnedOn': isOn};
+
+    var response = await http.put(
+        Uri.parse("$serverIP/v1/emergency/toogleEmergency"),
+        body: json.encode(requestData),
+        headers: {"Content-Type": "application/json"});
+    var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
+
+    if (response.statusCode != 200 || decodedResponse['error'] == true) {
+      throw APIException(
+          "Błąd podczas ${isOn ? "włączania" : "wyłączania"} urządzenia do ochrony. Status code: ${response.statusCode}, response: ${response.body}");
+    }
+
+    await GlobalData.getEmergencyStatus();
+    return;
   }
 
   static Future<String> getAppVersion() async {
@@ -671,7 +713,8 @@ class GlobalData {
       throw APIException(
           "Błąd podczas wyłączania systemu przeciwawaryjnego. Status code: ${response.statusCode}, response: ${response.body}");
     }
-    GlobalData.isEmergencyActive = false;
+    GlobalData.emergencyStatus.isEmergencyActive = false;
+    GlobalData.emergencyStatus.isEmergencyDeviceOn = false;
     return;
   }
 
