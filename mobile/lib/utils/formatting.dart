@@ -42,3 +42,10 @@ String dateToDateTimeString(DateTime date) {
 String dateToTimeString(DateTime date) {
   return "${addZero(date.hour)}:${addZero(date.minute)}:${addZero(date.second)}";
 }
+
+int getFirstDecimalPlaceOfNumber(double value) {
+  return ((double.parse(value.toStringAsFixed(1)) -
+              double.parse(value.toStringAsFixed(1)).floor()) *
+          10)
+      .floor();
+}

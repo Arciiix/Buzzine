@@ -7,8 +7,10 @@ import 'package:buzzine/types/PingResult.dart';
 import 'package:buzzine/types/Repeat.dart';
 import 'package:buzzine/types/RingingAlarmEntity.dart';
 import 'package:buzzine/types/Snooze.dart';
+import 'package:buzzine/types/TemperatureData.dart';
 import 'package:buzzine/types/Weather.dart';
 import 'package:buzzine/types/YouTubeVideoInfo.dart';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:buzzine/types/Alarm.dart';
 import 'package:buzzine/types/Audio.dart';
@@ -25,12 +27,14 @@ class GlobalData {
   static late String qrCodeHash;
   static bool isLoading = true;
   static WeatherData? weather;
+  static CurrentTemperatureData? currentTemperatureData;
   static PingResult? recentPing;
 
   static late String serverIP;
   static int audioPreviewDurationSeconds = 30;
   static LatLng? homeLocation;
   static int weatherHoursCount = 24;
+  static RangeValues temperatureRange = RangeValues(19, 24);
 
   static late Constants constants;
   static late EmergencyStatus emergencyStatus;
@@ -81,6 +85,9 @@ class GlobalData {
     double? longitude = _prefs.getDouble("HOME_LONGITUDE");
 
     weatherHoursCount = _prefs.getInt("WEATHER_HOURS_COUNT") ?? 24;
+    temperatureRange = RangeValues(
+        (_prefs.getDouble('TEMPERATURE_RANGE_START') ?? 19),
+        _prefs.getDouble('TEMPERATURE_RANGE_END') ?? 24);
 
     if (latitude != null && longitude != null) {
       homeLocation = LatLng(latitude, longitude);
@@ -515,6 +522,37 @@ class GlobalData {
     }
 
     return GlobalData.weather;
+  }
+
+  static Future<CurrentTemperatureData> getCurrentTemperatureData() async {
+    var response = await http
+        .get(Uri.parse("$serverIP/v1/temperature/getCurrentTemperatureData"));
+    var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
+
+    if (response.statusCode != 200 || decodedResponse['error'] == true) {
+      throw APIException(
+          "Błąd podczas pobierania aktualnej temperatury. Status code: ${response.statusCode}, response: ${response.body}");
+    } else {
+      var temperatureResponse = decodedResponse['response'];
+      CurrentTemperatureData fetchedCurrentTemperatureData =
+          CurrentTemperatureData(
+              temperature: double.parse(temperatureResponse['currentTemperature']
+                  .toStringAsFixed(2)),
+              average: double.parse(
+                  temperatureResponse['average'].toStringAsFixed(2)),
+              min: double.parse(temperatureResponse['min'].toStringAsFixed(2)),
+              max: double.parse(temperatureResponse['max'].toStringAsFixed(2)),
+              range:
+                  double.parse(temperatureResponse['range'].toStringAsFixed(2)),
+              averageOffsetPercent: double.parse(
+                  temperatureResponse['averageOffsetPercent']
+                      .toStringAsFixed(4)),
+              offsetPercent: double.parse(
+                  temperatureResponse['offsetPercent'].toStringAsFixed(4)));
+      GlobalData.currentTemperatureData = fetchedCurrentTemperatureData;
+    }
+
+    return GlobalData.currentTemperatureData!;
   }
 
   static Future<void> changeAudioName(String audioId, String newName) async {

@@ -82,6 +82,10 @@ async function calculateTemperatureDataForDay(
     max: data.dataValues.maxTemp,
     average: data.dataValues.averageTemp,
     range: Math.abs(data.dataValues.maxTemp - data.dataValues.minTemp),
+    averageOffsetPercent: await calculateTemperatureOffset(
+      data.dataValues.averageTemp,
+      day
+    ),
   };
   return temperatureData;
 }
@@ -119,6 +123,7 @@ interface ITemperatureData {
   min: number;
   max: number;
   range: number;
+  averageOffsetPercent: number;
 }
 
 type ICurrentTemperatureData = ITemperatureData & {

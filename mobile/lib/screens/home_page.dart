@@ -6,6 +6,7 @@ import 'package:buzzine/components/emergency_device_status.dart';
 import 'package:buzzine/components/logo.dart';
 import 'package:buzzine/components/ping_result_indicator.dart';
 import 'package:buzzine/components/snooze_card.dart';
+import 'package:buzzine/components/temperature_widget.dart';
 import 'package:buzzine/components/weather_widget.dart';
 import 'package:buzzine/globalData.dart';
 import 'package:buzzine/screens/alarm_list.dart';
@@ -243,6 +244,10 @@ class _HomePageState extends State<HomePage> {
           setState(() {});
         }
       });
+      GlobalData.getCurrentTemperatureData().then((_) {
+        //Re-render the screen
+        setState(() {});
+      });
     });
   }
 
@@ -284,6 +289,7 @@ class _HomePageState extends State<HomePage> {
                         //Clear the current cached weather data
                         GlobalData.weather = null;
                         await GlobalData.getWeatherData();
+                        await GlobalData.getCurrentTemperatureData();
                         //Re-render the screen
                         setState(() {});
                       },
@@ -607,6 +613,35 @@ class _HomePageState extends State<HomePage> {
                                                   child: Hero(
                                                       tag: "WEATHER_WIDGET",
                                                       child: WeatherWidget(
+                                                        backgroundColor:
+                                                            Theme.of(context)
+                                                                .cardColor,
+                                                      )))
+                                            ]
+                                          : [],
+                                    ),
+                                  ),
+                                  Container(
+                                    margin: const EdgeInsets.all(10),
+                                    child: Column(
+                                      children: GlobalData.weather != null
+                                          ? [
+                                              Align(
+                                                alignment: Alignment.centerLeft,
+                                                child: const Padding(
+                                                    padding: EdgeInsets.all(5),
+                                                    child: Text(
+                                                        "🌡️ Temperatura",
+                                                        style: TextStyle(
+                                                            fontSize: 24,
+                                                            color:
+                                                                Colors.white))),
+                                              ),
+                                              InkWell(
+                                                  onTap: null,
+                                                  child: Hero(
+                                                      tag: "TEMPERATURE_WIDGET",
+                                                      child: TemperatureWidget(
                                                         backgroundColor:
                                                             Theme.of(context)
                                                                 .cardColor,

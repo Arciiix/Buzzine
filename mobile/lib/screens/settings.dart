@@ -1,11 +1,12 @@
+import 'package:buzzine/components/number_vertical_picker.dart';
 import 'package:buzzine/globalData.dart';
 import 'package:buzzine/screens/select_on_map.dart';
+import 'package:buzzine/utils/formatting.dart';
 import 'package:buzzine/utils/show_snackbar.dart';
 import "package:flutter/material.dart";
 import 'package:flutter/services.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter/services.dart';
 
 class Settings extends StatefulWidget {
   const Settings({Key? key}) : super(key: key);
@@ -37,6 +38,57 @@ class _SettingsState extends State<Settings> {
   TextEditingController _homeLongitudeController = TextEditingController();
   TextEditingController _weatherHoursCountController = TextEditingController();
 
+  RangeValues _temperatureRange = RangeValues(19, 24);
+
+  Future<double?> selectNumberFromPicker(double min, double max, double init,
+      String quantityName, String unit) async {
+    int selectedValue = init.floor();
+    int selectedValueFracionalValue = getFirstDecimalPlaceOfNumber(init);
+    print(selectedValueFracionalValue);
+    bool? change = await showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text("Zmień ${quantityName.toLowerCase()}"),
+            content: Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                NumberVerticalPicker(
+                  onChanged: (int val) => selectedValue = val,
+                  initValue: selectedValue
+                  minValue: min.floor(),
+                  maxValue: max.floor(),
+                  propertyName: quantityName + " ($unit)",
+                ),
+                Text("."),
+                NumberVerticalPicker(
+                  onChanged: (int val) => selectedValueFracionalValue = val,
+                  initValue: selectedValueFracionalValue,
+                  minValue: 0,
+                  maxValue: 9,
+                  propertyName: quantityName + " ($unit)",
+                ),
+                Text(unit)
+              ],
+            ),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text("Anuluj"),
+              ),
+              TextButton(
+                  onPressed: () => Navigator.of(context).pop(true),
+                  child: const Text("Zmień")),
+            ],
+          );
+        });
+
+    return change == true
+        ? selectedValue + selectedValueFracionalValue / 10
+        : null;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -67,6 +119,9 @@ class _SettingsState extends State<Settings> {
           (_prefsInstance.getDouble('HOME_LONGITUDE') ?? '').toString();
       _weatherHoursCountController.text =
           (_prefsInstance.getInt('WEATHER_HOURS_COUNT') ?? 24).toString();
+      _temperatureRange = RangeValues(
+          (_prefsInstance.getDouble('TEMPERATURE_RANGE_START') ?? 19),
+          _prefsInstance.getDouble('TEMPERATURE_RANGE_END') ?? 24);
     });
   }
 
@@ -83,6 +138,11 @@ class _SettingsState extends State<Settings> {
           int.tryParse(_audioPreviewDurationSecondsController.text) ?? 30);
       _prefsInstance.setInt("WEATHER_HOURS_COUNT",
           int.tryParse(_weatherHoursCountController.text) ?? 24);
+
+      _prefsInstance.setDouble(
+          "TEMPERATURE_RANGE_START", _temperatureRange.start);
+      _prefsInstance.setDouble("TEMPERATURE_RANGE_END", _temperatureRange.end);
+
       if (double.tryParse(_homeLatitudeController.text.replaceAll(",", ".")) !=
               null &&
           double.tryParse(_homeLongitudeController.text.replaceAll(",", ".")) !=
@@ -505,6 +565,67 @@ class _SettingsState extends State<Settings> {
                                       .toString(),
                                 ),
                               ),
+                            ),
+                            SectionTitle("Temperatura"),
+                            RangeSlider(
+                                values: _temperatureRange,
+                                min: 15,
+                                max: 30,
+                                onChanged: (RangeValues newValues) {
+                                  setState(() {
+                                    _temperatureRange = RangeValues(double.parse(newValues.start.toStringAsFixed(1)), double.parse(newValues.end.toStringAsFixed(1)), );
+                                  });
+                                }),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                InkWell(
+                                    onTap: () async {
+                                      double? userSelection =
+                                          await selectNumberFromPicker(
+                                              15,
+                                              30,
+                                              _temperatureRange.start,
+                                              "Min. temperatura",
+                                              "°C");
+
+                                      if (userSelection != null) {
+                                        setState(() {
+                                          _temperatureRange = RangeValues(
+                                              userSelection,
+                                              _temperatureRange.end);
+                                        });
+                                      }
+                                    },
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(20),
+                                      child: Text(
+                                          _temperatureRange.start.toString()),
+                                    )),
+                                InkWell(
+                                    onTap: () async {
+                                      double? userSelection =
+                                          await selectNumberFromPicker(
+                                              15,
+                                              30,
+                                              _temperatureRange.end,
+                                              "Max. temperatura",
+                                              "°C");
+
+                                      if (userSelection != null) {
+                                        setState(() {
+                                          _temperatureRange = RangeValues(
+                                              _temperatureRange.start,
+                                              userSelection);
+                                        });
+                                      }
+                                    },
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(20),
+                                      child: Text(
+                                          _temperatureRange.end.toString()),
+                                    )),
+                              ],
                             ),
                           ],
                         ))),
