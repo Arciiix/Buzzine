@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:buzzine/components/alarm_card.dart';
 import 'package:buzzine/components/audio_widget.dart';
 import 'package:buzzine/components/carousel.dart';
+import 'package:buzzine/components/logo.dart';
 import 'package:buzzine/components/ping_result_indicator.dart';
 import 'package:buzzine/components/snooze_card.dart';
 import 'package:buzzine/components/weather_widget.dart';
@@ -306,12 +307,7 @@ class _HomePageState extends State<HomePage> {
                                       child: Column(
                                         mainAxisSize: MainAxisSize.max,
                                         children: [
-                                          const Padding(
-                                              padding: EdgeInsets.all(5),
-                                              child: Text("Buzzine",
-                                                  style: TextStyle(
-                                                      fontSize: 48,
-                                                      color: Colors.white))),
+                                          const Logo(),
                                           Icon(Icons.error, size: 72),
                                           Text("System przeciwawaryjny aktywny",
                                               textAlign: TextAlign.center,
@@ -342,12 +338,7 @@ class _HomePageState extends State<HomePage> {
                               : [
                                   Align(
                                     alignment: Alignment.centerLeft,
-                                    child: const Padding(
-                                        padding: EdgeInsets.all(5),
-                                        child: Text("Buzzine",
-                                            style: TextStyle(
-                                                fontSize: 48,
-                                                color: Colors.white))),
+                                    child: const Logo(),
                                   ),
                                   Column(
                                     crossAxisAlignment:
