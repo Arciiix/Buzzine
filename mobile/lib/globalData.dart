@@ -1,5 +1,5 @@
 import 'dart:convert';
-
+import 'package:buzzine/components/temperature_chart.dart';
 import 'package:buzzine/types/API_exception.dart';
 import 'package:buzzine/types/Constants.dart';
 import 'package:buzzine/types/EmergencyStatus.dart';
@@ -536,8 +536,8 @@ class GlobalData {
       var temperatureResponse = decodedResponse['response'];
       CurrentTemperatureData fetchedCurrentTemperatureData =
           CurrentTemperatureData(
-              temperature: double.parse(temperatureResponse['currentTemperature']
-                  .toStringAsFixed(2)),
+              temperature: double.parse(
+                  temperatureResponse['currentTemperature'].toStringAsFixed(2)),
               average: double.parse(
                   temperatureResponse['average'].toStringAsFixed(2)),
               min: double.parse(temperatureResponse['min'].toStringAsFixed(2)),
@@ -548,11 +548,57 @@ class GlobalData {
                   temperatureResponse['averageOffsetPercent']
                       .toStringAsFixed(4)),
               offsetPercent: double.parse(
-                  temperatureResponse['offsetPercent'].toStringAsFixed(4)));
+                  temperatureResponse['offsetPercent'].toStringAsFixed(4)),
+              temperatures:
+                  temperatureResponse['temperatures'].map<ChartData>((e) {
+                return ChartData(
+                    timestamp: DateTime.parse(e['timestamp']),
+                    value: e['value']);
+              }).toList());
       GlobalData.currentTemperatureData = fetchedCurrentTemperatureData;
     }
 
     return GlobalData.currentTemperatureData!;
+  }
+
+  static Future<TemperatureData?> getTemperatureDataForDate(
+      DateTime date) async {
+    Map<String, String> requestData = {
+      'date': date.toLocal().toString(),
+    };
+
+    var response = await http.get(
+      Uri.parse("$serverIP/v1/temperature/getHistoricalDailyTemperatureData")
+          .replace(queryParameters: requestData),
+    );
+
+    var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
+
+    if (response.statusCode != 200 || decodedResponse['error'] == true) {
+      throw APIException(
+          "Błąd podczas pobierania historycznej temperatury. Status code: ${response.statusCode}, response: ${response.body}");
+    } else {
+      var temperatureResponse = decodedResponse['response'];
+
+      //Check if the temperature exists, for example check for the averageTemp param
+      if (temperatureResponse['average'] == null) {
+        return null;
+      }
+
+      TemperatureData fetchedTemperatureData = TemperatureData(
+          average:
+              double.parse(temperatureResponse['average'].toStringAsFixed(2)),
+          min: double.parse(temperatureResponse['min'].toStringAsFixed(2)),
+          max: double.parse(temperatureResponse['max'].toStringAsFixed(2)),
+          range: double.parse(temperatureResponse['range'].toStringAsFixed(2)),
+          averageOffsetPercent: double.parse(
+              temperatureResponse['averageOffsetPercent'].toStringAsFixed(4)),
+          temperatures: temperatureResponse['temperatures'].map<ChartData>((e) {
+            return ChartData(
+                timestamp: DateTime.parse(e['timestamp']), value: e['value']);
+          }).toList());
+      return fetchedTemperatureData;
+    }
   }
 
   static Future<void> changeAudioName(String audioId, String newName) async {

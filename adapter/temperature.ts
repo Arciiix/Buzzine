@@ -77,6 +77,14 @@ async function calculateTemperatureDataForDay(
     },
   });
 
+  let allTempraturesThisDay: any = await TemperatureModel.findAll({
+    where: {
+      timestamp: {
+        [Op.between]: [day, endDate],
+      },
+    },
+  });
+
   let temperatureData: ITemperatureData = {
     min: data.dataValues.minTemp,
     max: data.dataValues.maxTemp,
@@ -86,6 +94,9 @@ async function calculateTemperatureDataForDay(
       data.dataValues.averageTemp,
       day
     ),
+    temperatures: allTempraturesThisDay.map((e): ITemperatureRecord => {
+      return { timestamp: e.timestamp, value: e.value };
+    }),
   };
   return temperatureData;
 }
@@ -118,12 +129,18 @@ async function calculateTemperatureOffset(temperature: number, month: Date) {
   );
 }
 
+interface ITemperatureRecord {
+  timestamp: Date;
+  value: number;
+}
+
 interface ITemperatureData {
   average: number;
   min: number;
   max: number;
   range: number;
   averageOffsetPercent: number;
+  temperatures: ITemperatureRecord;
 }
 
 type ICurrentTemperatureData = ITemperatureData & {

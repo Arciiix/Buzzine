@@ -1,12 +1,13 @@
-import 'package:buzzine/globalData.dart';
-import 'package:buzzine/types/Weather.dart';
 import 'package:buzzine/utils/formatting.dart';
 import 'package:flutter/material.dart';
 import 'package:charts_flutter/flutter.dart' as charts;
-import 'dart:math';
 
-class WeatherTemperatureChart extends StatelessWidget {
-  const WeatherTemperatureChart({Key? key}) : super(key: key);
+class TemperatureChart extends StatelessWidget {
+  final List<ChartData> chartData;
+  final String id;
+
+  const TemperatureChart({Key? key, required this.chartData, required this.id})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -17,17 +18,17 @@ class WeatherTemperatureChart extends StatelessWidget {
         width: MediaQuery.of(context).size.width,
         child: charts.TimeSeriesChart(
           [
-            charts.Series<Weather, DateTime>(
-              id: 'temperature',
+            charts.Series<ChartData, DateTime>(
+              id: id,
               colorFn: (_, __) => charts.MaterialPalette.white,
-              domainFn: (Weather weather, _) => weather.timestamp.toLocal(),
-              measureFn: (Weather weather, _) => weather.temperature,
-              data: GlobalData.weather!.hourly,
-            )..setAttribute(charts.rendererIdKey, "temperatureArea")
+              domainFn: (ChartData entity, _) => entity.timestamp,
+              measureFn: (ChartData entity, _) => entity.value,
+              data: chartData,
+            )..setAttribute(charts.rendererIdKey, "${id}Area")
           ],
           customSeriesRenderers: [
             charts.LineRendererConfig(
-                customRendererId: 'temperatureArea',
+                customRendererId: '${id}Area',
                 includeArea: true,
                 stacked: true),
           ],
@@ -52,4 +53,11 @@ class WeatherTemperatureChart extends StatelessWidget {
       ),
     );
   }
+}
+
+class ChartData {
+  DateTime timestamp;
+  num value;
+
+  ChartData({required this.timestamp, required this.value});
 }

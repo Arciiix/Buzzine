@@ -1,3 +1,4 @@
+import 'package:buzzine/components/temperature_chart.dart';
 import 'package:buzzine/globalData.dart';
 import 'package:flutter/material.dart';
 
@@ -7,14 +8,15 @@ class TemperatureData {
   double max;
   double range;
   double averageOffsetPercent;
+  List<ChartData> temperatures;
 
-  TemperatureData({
-    required this.average,
-    required this.min,
-    required this.max,
-    required this.range,
-    required this.averageOffsetPercent,
-  });
+  TemperatureData(
+      {required this.average,
+      required this.min,
+      required this.max,
+      required this.range,
+      required this.averageOffsetPercent,
+      required this.temperatures});
 }
 
 class CurrentTemperatureData extends TemperatureData {
@@ -39,11 +41,13 @@ class CurrentTemperatureData extends TemperatureData {
       required double min,
       required double max,
       required double range,
-      required double averageOffsetPercent})
+      required double averageOffsetPercent,
+      required List<ChartData> temperatures})
       : super(
             average: average,
             min: min,
             max: max,
             range: range,
-            averageOffsetPercent: averageOffsetPercent);
+            averageOffsetPercent: averageOffsetPercent,
+            temperatures: temperatures);
 }

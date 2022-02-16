@@ -1,4 +1,4 @@
-import 'package:buzzine/components/weather_temperature_chart.dart';
+import 'package:buzzine/components/temperature_chart.dart';
 import 'package:buzzine/components/weather_widget.dart';
 import 'package:buzzine/globalData.dart';
 import 'package:buzzine/utils/formatting.dart';
@@ -44,7 +44,13 @@ class _WeatherScreenState extends State<WeatherScreen> {
                                 dontGetData: true,
                                 backgroundColor:
                                     Theme.of(context).scaffoldBackgroundColor)),
-                        WeatherTemperatureChart(),
+                        TemperatureChart(
+                            chartData: GlobalData.weather!.hourly
+                                .map((e) => ChartData(
+                                    timestamp: e.timestamp.toLocal(),
+                                    value: e.temperature))
+                                .toList(),
+                            id: "weatherTemperature"),
                         DetailedWeatherData(
                           weather: GlobalData.weather!.current,
                         )

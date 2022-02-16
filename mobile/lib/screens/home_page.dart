@@ -16,6 +16,7 @@ import 'package:buzzine/screens/loading.dart';
 import 'package:buzzine/screens/ringing_alarm.dart';
 import 'package:buzzine/screens/scan_qr_code.dart';
 import 'package:buzzine/screens/settings.dart';
+import 'package:buzzine/screens/temperature_screen.dart';
 import 'package:buzzine/screens/unlock_alarm.dart';
 import 'package:buzzine/screens/weather_screen.dart';
 import 'package:buzzine/types/Alarm.dart';
@@ -161,6 +162,11 @@ class _HomePageState extends State<HomePage> {
   void navigateToWeather() {
     Navigator.of(context)
         .push(MaterialPageRoute(builder: (context) => WeatherScreen()));
+  }
+
+  void navigateToTemperature() {
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (context) => TemperatureScreen()));
   }
 
   Future<void> refresh() async {
@@ -638,14 +644,12 @@ class _HomePageState extends State<HomePage> {
                                                                 Colors.white))),
                                               ),
                                               InkWell(
-                                                  onTap: null,
-                                                  child: Hero(
-                                                      tag: "TEMPERATURE_WIDGET",
-                                                      child: TemperatureWidget(
-                                                        backgroundColor:
-                                                            Theme.of(context)
-                                                                .cardColor,
-                                                      )))
+                                                  onTap: navigateToTemperature,
+                                                  child: TemperatureWidget(
+                                                    backgroundColor:
+                                                        Theme.of(context)
+                                                            .cardColor,
+                                                  ))
                                             ]
                                           : [],
                                     ),

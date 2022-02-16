@@ -119,115 +119,124 @@ class TemperatureStatsWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: MediaQuery.of(context).size.width * 0.9,
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(5),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+    return Hero(
+        tag: "TEMPERATURE_STATS_WIDGET",
+        child: Material(
+          color: Colors.transparent,
+          child: Container(
+            width: MediaQuery.of(context).size.width * 0.9,
+            child: Column(
               children: [
-                Expanded(
-                  child: Column(
+                Padding(
+                  padding: const EdgeInsets.all(5),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text(
-                        "Średnia",
-                        textAlign: TextAlign.center,
-                        softWrap: false,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontSize: 24),
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                              "${temperatureData.average.toStringAsFixed(2)}°C",
+                      Expanded(
+                        child: Column(
+                          children: [
+                            Text(
+                              "Średnia",
                               textAlign: TextAlign.center,
-                              style: const TextStyle(fontSize: 18)),
-                          Icon(
-                              getIconByOffset(
-                                  temperatureData.averageOffsetPercent * 100),
-                              size: 14),
-                          Text(
-                              "${(temperatureData.averageOffsetPercent * 100).toStringAsFixed(2)}%",
-                              style: const TextStyle(fontSize: 14))
-                        ],
+                              softWrap: false,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(fontSize: 24),
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                    "${temperatureData.average.toStringAsFixed(2)}°C",
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(fontSize: 18)),
+                                Icon(
+                                    getIconByOffset(
+                                        temperatureData.averageOffsetPercent *
+                                            100),
+                                    size: 14),
+                                Text(
+                                    "${(temperatureData.averageOffsetPercent * 100).toStringAsFixed(2)}%",
+                                    style: const TextStyle(fontSize: 14))
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      Padding(
+                        padding: EdgeInsets.all(10),
+                        child: Container(
+                            height: 20, color: Colors.white, width: 2),
+                      ),
+                      Expanded(
+                        child: Column(
+                          children: [
+                            Text(
+                              "Amplituda",
+                              textAlign: TextAlign.center,
+                              softWrap: false,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(fontSize: 24),
+                            ),
+                            Text(
+                                "${temperatureData.range.toStringAsFixed(2)}°C",
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(fontSize: 18)),
+                          ],
+                        ),
                       ),
                     ],
                   ),
                 ),
                 Padding(
-                  padding: EdgeInsets.all(10),
-                  child: Container(height: 20, color: Colors.white, width: 2),
-                ),
-                Expanded(
-                  child: Column(
+                  padding: const EdgeInsets.all(5),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text(
-                        "Amplituda",
-                        textAlign: TextAlign.center,
-                        softWrap: false,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontSize: 24),
+                      Expanded(
+                        child: Column(
+                          children: [
+                            Text(
+                              "Min.",
+                              textAlign: TextAlign.center,
+                              softWrap: false,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(fontSize: 24),
+                            ),
+                            Text("${temperatureData.min.toStringAsFixed(2)}°C",
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(fontSize: 18)),
+                          ],
+                        ),
                       ),
-                      Text("${temperatureData.range.toStringAsFixed(2)}°C",
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(fontSize: 18)),
+                      Padding(
+                        padding: EdgeInsets.all(10),
+                        child: Container(
+                            height: 20, color: Colors.white, width: 2),
+                      ),
+                      Expanded(
+                        child: Column(
+                          children: [
+                            Text(
+                              "Max.",
+                              textAlign: TextAlign.center,
+                              softWrap: false,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(fontSize: 24),
+                            ),
+                            Text("${temperatureData.max.toStringAsFixed(2)}°C",
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(fontSize: 18)),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
                 ),
               ],
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.all(5),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Expanded(
-                  child: Column(
-                    children: [
-                      Text(
-                        "Min.",
-                        textAlign: TextAlign.center,
-                        softWrap: false,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontSize: 24),
-                      ),
-                      Text("${temperatureData.min.toStringAsFixed(2)} °C",
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(fontSize: 18)),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.all(10),
-                  child: Container(height: 20, color: Colors.white, width: 2),
-                ),
-                Expanded(
-                  child: Column(
-                    children: [
-                      Text(
-                        "Max.",
-                        textAlign: TextAlign.center,
-                        softWrap: false,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontSize: 24),
-                      ),
-                      Text("${temperatureData.max.toStringAsFixed(2)} °C",
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(fontSize: 18)),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
+        ));
   }
 }
 
