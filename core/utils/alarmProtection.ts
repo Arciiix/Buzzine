@@ -5,6 +5,9 @@ import UpcomingAlarmModel from "../models/UpcomingAlarm.model";
 import logger from "./logger";
 
 import dotenv from "dotenv";
+import Nap from "../nap";
+import UpcomingNapModel from "../models/UpcomingNapModel";
+import NapModel from "../models/Nap.model";
 dotenv.config();
 
 let emergency: IEmergency = {
@@ -19,19 +22,25 @@ async function checkForAlarmProtection() {
   let fetchedUpcomingAlarms = await UpcomingAlarmModel.findAll({
     include: AlarmModel,
   });
+  let fetchedUpcomingNaps = await UpcomingNapModel.findAll({
+    include: NapModel,
+  });
   let missedAlarms = fetchedUpcomingAlarms.filter(
     (e: any) => e.invocationDate < new Date()
   );
+  let missedNaps = fetchedUpcomingNaps.filter(
+    (e: any) => e.invocationDate < new Date()
+  );
 
-  if (missedAlarms.length > 0) {
+  if (missedAlarms.length > 0 || missedNaps.length > 0) {
     io.emit("EMERGENCY_ALARM", {
-      missedAlarms: missedAlarms,
+      missedAlarms: [...missedAlarms, ...missedNaps],
     });
     sendEmergency(missedAlarms);
     logger.warn(
       `Missed alarms. Count: ${
-        missedAlarms.length
-      }, the first: ${JSON.stringify(missedAlarms[0])}`
+        missedAlarms.length + missedNaps.length
+      }, the first: ${JSON.stringify(missedAlarms[0] ?? missedNaps[0])}`
     );
   } else {
     logger.info("No missed alarms found");
@@ -118,6 +127,44 @@ function getUpcomingAlarms() {
   return upcomingAlarms;
 }
 
+function getUpcomingNaps(): IUpcomingNap[] {
+  let upcomingNaps;
+
+  let naps = Buzzine.naps;
+  //Only active naps
+  naps = naps.filter((e) => e.getNextInvocation());
+
+  upcomingNaps = naps.map((nap: Nap): IUpcomingNap => {
+    let nextInvocation: Date = nap.getNextInvocation();
+    return {
+      napId: nap.id,
+      invocationDate: nextInvocation,
+    };
+  });
+
+  let napSnoozes = naps
+    .filter((elem) => elem.snoozes.length !== 0)
+    .map((element) => {
+      return {
+        napId: element.id,
+        invocationDate:
+          element.snoozes[element.snoozes.length - 1].invocationDate,
+      };
+    });
+
+  //All ringing naps
+  let ringingNaps = Buzzine.currentlyRingingNaps.map((e) => {
+    return {
+      napId: e.id,
+      invocationDate: new Date(),
+    };
+  });
+
+  upcomingNaps = [...upcomingNaps, ...napSnoozes, ...ringingNaps];
+
+  return upcomingNaps;
+}
+
 async function saveUpcomingAlarms() {
   if (isSavingUpcomingAlarms) {
     //It means that the method is invocated somewhere else in the app
@@ -127,6 +174,7 @@ async function saveUpcomingAlarms() {
 
   isSavingUpcomingAlarms = true;
   let upcomingAlarms: IUpcomingAlarm[] = await getUpcomingAlarms();
+  let upcomingNaps: IUpcomingNap[] = await getUpcomingNaps();
 
   await UpcomingAlarmModel.destroy({ where: {} });
 
@@ -134,6 +182,14 @@ async function saveUpcomingAlarms() {
     await UpcomingAlarmModel.create({
       invocationDate: upcomingAlarm.invocationDate,
       AlarmId: upcomingAlarm.alarmId,
+    });
+  }
+
+  await UpcomingNapModel.destroy({ where: {} });
+  for await (const upcomingNap of upcomingNaps) {
+    await UpcomingNapModel.create({
+      invocationDate: upcomingNap.invocationDate,
+      NapId: upcomingNap.napId,
     });
   }
 
@@ -174,6 +230,10 @@ interface IUpcomingAlarm {
   alarmId: string;
   invocationDate: Date;
 }
+interface IUpcomingNap {
+  napId: string;
+  invocationDate: Date;
+}
 interface IEmergency {
   interval: ReturnType<typeof setInterval>;
   startDate: Date;
@@ -184,6 +244,7 @@ export {
   checkForAlarmProtection,
   sendEmergency,
   getUpcomingAlarms,
+  getUpcomingNaps,
   saveUpcomingAlarms,
   cancelEmergencyAlarm,
   getEmergencyStatus,

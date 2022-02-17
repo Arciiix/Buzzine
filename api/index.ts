@@ -184,6 +184,49 @@ async function getServicesConstants(): Promise<IServicesConstants> {
   servicesConstants = newServicesConstants;
   return newServicesConstants;
 }
+async function fetchAlarmsAudio(response): Promise<any> {
+  //Fetch the assigned audio to each nap
+  //Set the default one by default
+  response = response.map((elem) => {
+    return {
+      ...elem,
+      ...{
+        sound: {
+          audioId: "default",
+          filename: "default.mp3",
+          friendlyName: "Domyślna",
+        },
+      },
+    };
+  });
+
+  //Fetch the naps audios
+  try {
+    let audiosReq = await axios.get(`${AUDIO_URL}/v1/getAlarmSoundList`);
+    let audiosRes = audiosReq.data.data;
+    response.forEach((element) => {
+      //Match the audios with the naps
+      let audioIndex = audiosRes.findIndex((e) => e.alarmId === element.id);
+      if (audioIndex > -1) {
+        response[response.indexOf(element)].sound = {
+          audioId: audiosRes[audioIndex].audioId,
+          filename: audiosRes[audioIndex].filename,
+          friendlyName:
+            audiosRes[audioIndex]?.AudioNameMapping?.friendlyName ??
+            element.filename,
+        };
+      }
+    });
+  } catch (err) {
+    logger.error(
+      `Error while getting alarm audios: ${err.toString()} - ${JSON.stringify(
+        err?.response?.data
+      )} with status ${err?.response?.status}`
+    );
+  }
+
+  return response;
+}
 
 api.get("/getEmergencyStatus", async (req, res) => {
   logger.http(`GET /getEmergencyStatus`);
@@ -298,6 +341,56 @@ api.post("/addAlarm", async (req, res) => {
       res.status(201).send({ error: false, response });
       logger.info(
         `Created alarm successfully. Response: ${JSON.stringify(response)}`
+      );
+    }
+  });
+});
+
+api.post("/addNap", async (req, res) => {
+  logger.http(`POST /addNap with data: ${JSON.stringify(req.body)}`);
+
+  if (!req.body)
+    return res.status(400).send({ error: true, errorCode: "EMPTY_PAYLOAD" });
+
+  //Validate the payload
+  if (
+    req.body.hour === null ||
+    req.body.minute === null ||
+    req.body.second === null ||
+    isNaN(req.body.hour) ||
+    isNaN(req.body.minute) ||
+    isNaN(req.body.second)
+  ) {
+    return res.status(400).send({ error: true, errorCode: "WRONG_TIME" });
+  }
+
+  socket.emit("CMD/CREATE_NAP", req.body, async (response) => {
+    if (response.error) {
+      res.status(400).send(response);
+      logger.warn(
+        `Response error when creating a nap: ${JSON.stringify(response)}`
+      );
+    } else {
+      if (req.body?.sound?.audioId && req.body.sound.audioId !== "default") {
+        try {
+          //Associate the alarm with given sound
+          await axios.put(`${AUDIO_URL}/v1/changeAlarmSound`, {
+            alarmId: response?.id,
+            audioId: req.body.sound.audioId,
+          });
+        } catch (err) {
+          res.status(err?.response?.status ?? 500).send(err?.response?.data);
+          logger.error(
+            `Error when trying to associate an audio with a nap. ${JSON.stringify(
+              err?.response?.data ?? ""
+            )} with status ${err?.response?.status}`
+          );
+          return;
+        }
+      }
+      res.status(201).send({ error: false, response });
+      logger.info(
+        `Created nap successfully. Response: ${JSON.stringify(response)}`
       );
     }
   });
@@ -543,6 +636,62 @@ api.post("/updateAlarm", async (req, res) => {
   });
 });
 
+api.post("/updateNap", async (req, res) => {
+  logger.http(`POST /updateNap with data: ${JSON.stringify(req.body)}`);
+
+  if (!req.body)
+    return res.status(400).send({ error: true, errorCode: "EMPTY_PAYLOAD" });
+
+  //Validate the payload
+  if (!req.body.id) {
+    return res.status(400).send({ error: true, errorCode: "MISSING_ID" });
+  }
+
+  if (
+    req.body.hour === null ||
+    req.body.minute === null ||
+    req.body.second === null ||
+    isNaN(req.body.hour) ||
+    isNaN(req.body.minute) ||
+    isNaN(req.body.second)
+  ) {
+    return res.status(400).send({ error: true, errorCode: "WRONG_TIME" });
+  }
+
+  socket.emit("CMD/UPDATE_NAP", req.body, async (response) => {
+    if (response.error) {
+      res.status(400).send(response);
+      logger.warn(
+        `Response error when updating a nap ${req.body.id}: ${JSON.stringify(
+          response
+        )}`
+      );
+    } else {
+      if (req.body?.sound?.audioId && req.body.sound.audioId !== "default") {
+        try {
+          //Associate the alarm with given sound
+          await axios.put(`${AUDIO_URL}/v1/changeAlarmSound`, {
+            alarmId: response?.id,
+            audioId: req.body.sound.audioId,
+          });
+        } catch (err) {
+          res.status(err?.response?.status ?? 500).send(err?.response?.data);
+          logger.error(
+            `Error when trying to associate an audio with a nap. ${err.toString()}; response: ${JSON.stringify(
+              err?.response?.data ?? ""
+            )}`
+          );
+          return;
+        }
+      }
+      res.status(200).send({ error: false, response });
+      logger.info(
+        `Updated nap successfully. Response: ${JSON.stringify(response)}`
+      );
+    }
+  });
+});
+
 api.get("/getUpcomingAlarms", (req, res) => {
   logger.http(`GET /getUpcomingAlarms`);
 
@@ -575,48 +724,9 @@ api.get("/getAllAlarms", (req, res) => {
         `Response error when getting all alarms: ${JSON.stringify(response)}`
       );
     } else {
-      //Fetch the assigned audio to each alarm
-      //Set the default one by default
-      response = response.map((elem) => {
-        return {
-          ...elem,
-          ...{
-            sound: {
-              audioId: "default",
-              filename: "default.mp3",
-              friendlyName: "Domyślna",
-            },
-          },
-        };
-      });
-
-      //Fetch the alarms audios
-      try {
-        let audiosReq = await axios.get(`${AUDIO_URL}/v1/getAlarmSoundList`);
-        if (!audiosReq.data.error) {
-          let audiosRes = audiosReq.data.data;
-          audiosRes.forEach((element) => {
-            //Match the audios with the alarms
-            let alarmIndex = response.findIndex(
-              (e) => e.id === element.alarmId
-            );
-            if (alarmIndex > -1) {
-              response[alarmIndex].sound = {
-                audioId: element.audioId,
-                filename: element.filename,
-                friendlyName:
-                  element?.AudioNameMapping?.friendlyName ?? element.filename,
-              };
-            }
-          });
-        }
-      } catch (err) {
-        logger.error(
-          `Error while getting alarms audios, when getting all alarms: ${err.toString()} - ${JSON.stringify(
-            err?.response?.data
-          )} with status ${err?.response?.status}`
-        );
-      }
+      let alarmsAudios = await fetchAlarmsAudio(response.alarms);
+      let napsAudios = await fetchAlarmsAudio(response.naps);
+      response = { alarms: alarmsAudios, naps: napsAudios };
 
       res.status(200).send({ error: false, response });
       logger.info(
@@ -638,48 +748,9 @@ api.get("/getRingingAlarms", (req, res) => {
         )}`
       );
     } else {
-      //Fetch the assigned audio to each alarm
-      //Set the default one by default
-      response = response.map((elem) => {
-        return {
-          ...elem,
-          ...{
-            sound: {
-              audioId: "default",
-              filename: "default.mp3",
-              friendlyName: "Domyślna",
-            },
-          },
-        };
-      });
-
-      //Fetch the alarms audios
-      try {
-        let audiosReq = await axios.get(`${AUDIO_URL}/v1/getAlarmSoundList`);
-        if (!audiosReq.data.error) {
-          let audiosRes = audiosReq.data.data;
-          audiosRes.forEach((element) => {
-            //Match the audios with the alarms
-            let alarmIndex = response.findIndex(
-              (e) => e.id === element.alarmId
-            );
-            if (alarmIndex > -1) {
-              response[alarmIndex].sound = {
-                audioId: element.audioId,
-                filename: element.filename,
-                friendlyName:
-                  element?.AudioNameMapping?.friendlyName ?? element.filename,
-              };
-            }
-          });
-        }
-      } catch (err) {
-        logger.error(
-          `Error while getting alarms audios, when getting ringing alarms: ${JSON.stringify(
-            err?.response?.data
-          )} with status ${err?.response?.status}`
-        );
-      }
+      let alarmsAudios = await fetchAlarmsAudio(response.alarms);
+      let napsAudios = await fetchAlarmsAudio(response.naps);
+      response = { alarms: alarmsAudios, naps: napsAudios };
 
       res.status(200).send({ error: false, response });
       logger.info(

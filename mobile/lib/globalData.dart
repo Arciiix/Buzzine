@@ -104,7 +104,7 @@ class GlobalData {
       throw APIException(
           "Błąd podczas pobierania alarmów. Status code: ${response.statusCode}, response: ${response.body}");
     } else {
-      List alarmsResponse = decodedResponse['response'];
+      List alarmsResponse = decodedResponse['response']['alarms'];
       GlobalData.alarms = alarmsResponse
           .map((e) => Alarm(
               id: e['id'],
@@ -158,7 +158,7 @@ class GlobalData {
       throw APIException(
           "Błąd podczas pobierania nadchodzących alarmów. Status code: ${response.statusCode}, response: ${response.body}");
     } else {
-      List alarmsResponse = decodedResponse['response'];
+      List alarmsResponse = decodedResponse['response']['alarms'];
 
       GlobalData.upcomingAlarms = alarmsResponse.map((e) {
         Alarm alarmObj = GlobalData.alarms
@@ -184,7 +184,7 @@ class GlobalData {
       throw APIException(
           "Błąd podczas pobierania aktywnych alarmów. Status code: ${response.statusCode}, response: ${response.body}");
     } else {
-      List alarmsResponse = decodedResponse['response'];
+      List alarmsResponse = decodedResponse['response']['alarms'];
       GlobalData.ringingAlarms = alarmsResponse.map((e) {
         Alarm? alarmEntity =
             GlobalData.alarms.firstWhere((element) => element.id == e['id']);
@@ -215,7 +215,7 @@ class GlobalData {
       throw APIException(
           "Błąd podczas pobierania aktywnych drzemek. Status code: ${response.statusCode}, response: ${response.body}");
     } else {
-      List snoozesResponse = decodedResponse['response'];
+      List snoozesResponse = decodedResponse['response']['alarms'];
       GlobalData.activeSnoozes = snoozesResponse.map((e) {
         Alarm? alarmEntity = GlobalData.alarms
             .firstWhere((element) => element.id == e['alarm']['id']);

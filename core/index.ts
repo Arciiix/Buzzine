@@ -2,7 +2,7 @@ import express from "express";
 import { Server as SocketServer, Socket } from "socket.io";
 import dotenv from "dotenv";
 import logger from "./utils/logger";
-import Alarm from "./alarm";
+import Alarm, { IAlarm } from "./alarm";
 import { initDatabase } from "./utils/db";
 import GetDatabaseData from "./utils/loadFromDb";
 import {
@@ -10,9 +10,12 @@ import {
   checkForAlarmProtection,
   getEmergencyStatus,
   getUpcomingAlarms,
+  getUpcomingNaps,
   saveUpcomingAlarms,
 } from "./utils/alarmProtection";
 import AlarmModel from "./models/Alarm.model";
+import Nap, { INap } from "./nap";
+import NapModel from "./models/Nap.model";
 
 //Load environment variables from file
 dotenv.config();
@@ -136,8 +139,55 @@ io.on("connection", (socket: Socket) => {
     }
   });
 
+  socket.on("CMD/CREATE_NAP", async (payload: any, cb?: any) => {
+    try {
+      let newNap: any = await NapModel.create({
+        isActive: false,
+        isGuardEnabled: payload?.isGuardEnabled,
+        isSnoozeEnabled: payload?.isSnoozeEnabled,
+        name: payload?.name,
+        notes: payload?.notes,
+        hour: payload.hour,
+        minute: payload.minute,
+        second: payload.second,
+        maxTotalSnoozeDuration: payload?.maxTotalSnoozeDuration,
+        deleteAfterRinging: payload?.deleteAfterRinging ?? false,
+        emergencyAlarmTimeoutSeconds: payload?.emergencyAlarmTimeoutSeconds,
+      });
+      if (cb) {
+        cb(newNap);
+      }
+      logger.info(`Added new nap ${newNap.id}`);
+      //I can't just refetch the naps - e.g. it would cancel all snoozes
+      Buzzine.naps.push(
+        new Nap({
+          id: newNap?.id,
+          hour: newNap?.hour,
+          minute: newNap?.minute,
+          second: newNap?.second,
+          deleteAfterRinging: newNap?.deleteAfterRinging,
+          isGuardEnabled: newNap?.isGuardEnabled,
+          isSnoozeEnabled: newNap?.isSnoozeEnabled,
+          maxTotalSnoozeDuration: newNap?.maxTotalSnoozeDuration,
+          name: newNap?.name,
+          notes: newNap?.notes,
+          emergencyAlarmTimeoutSeconds: newNap?.emergencyAlarmTimeoutSeconds,
+        })
+      );
+    } catch (err) {
+      logger.warn(
+        `Tried to create a nap with a probably wrong payload! ${JSON.stringify(
+          payload
+        )}; err: ${err.toString()}`
+      );
+      if (cb) {
+        cb({ error: true });
+      }
+    }
+  });
+
   socket.on("CMD/TOOGLE_ALARM", async (payload: any, cb?: any) => {
-    let alarm: Alarm = Buzzine.alarms.find((e) => e.id === payload.id);
+    let alarm: Alarm = await getAlarm(payload.id);
     if (!alarm) {
       if (cb) {
         cb({ error: true, errorMessage: "WRONG_ID" });
@@ -160,7 +210,7 @@ io.on("connection", (socket: Socket) => {
   });
 
   socket.on("CMD/CANCEL_NEXT_INVOCATION", async (payload: any, cb?: any) => {
-    let alarm: Alarm = Buzzine.alarms.find((e) => e.id === payload.id);
+    let alarm: Alarm = await getAlarm(payload.id);
     if (!alarm) {
       if (cb) {
         cb({ error: true, errorMessage: "WRONG_ID" });
@@ -188,7 +238,7 @@ io.on("connection", (socket: Socket) => {
   });
 
   socket.on("CMD/TURN_ALARM_OFF", async (payload: any, cb?: any) => {
-    let alarm: Alarm = Buzzine.alarms.find((e) => e.id === payload.id);
+    let alarm: Alarm = await getAlarm(payload.id);
     if (!alarm) {
       if (cb) {
         cb({ error: true, errorMessage: "WRONG_ID" });
@@ -196,7 +246,7 @@ io.on("connection", (socket: Socket) => {
       logger.warn("Trying to turn off an alarm with a wrong id!");
       return;
     }
-    alarm.turnOff();
+    await alarm.turnOff();
 
     logger.info(`Successfully turned alarm ${payload.id} off`);
     if (cb) {
@@ -205,7 +255,7 @@ io.on("connection", (socket: Socket) => {
   });
 
   socket.on("CMD/SNOOZE_ALARM", async (payload: any, cb?: any) => {
-    let alarm: Alarm = Buzzine.alarms.find((e) => e.id === payload.id);
+    let alarm: Alarm = await getAlarm(payload.id);
     if (!alarm) {
       if (cb) {
         cb({ error: true, errorMessage: "WRONG_ID" });
@@ -239,12 +289,24 @@ io.on("connection", (socket: Socket) => {
   });
 
   socket.on("CMD/DELETE_ALARM", async (payload: any, cb?: any) => {
-    let alarm: Alarm = Buzzine.alarms.find((e) => e.id === payload.id);
+    let alarm: Alarm = await getAlarm(payload.id);
     if (!alarm) {
       if (cb) {
         cb({ error: true, errorMessage: "WRONG_ID" });
       }
       logger.warn("Trying to delete an alarm with a wrong id!");
+      return;
+    }
+    if (
+      Buzzine.currentlyRingingAlarms.indexOf(alarm) > -1 ||
+      Buzzine.currentlyRingingNaps.indexOf(alarm as Nap) > -1
+    ) {
+      if (cb) {
+        cb({ error: true, errorMessage: "ALARM_BUSY" });
+      }
+      logger.warn(
+        `Trying to delete an alarm which is currently ringing! (${payload.id})`
+      );
       return;
     }
     await alarm.deleteSelf();
@@ -317,11 +379,64 @@ io.on("connection", (socket: Socket) => {
     }
   });
 
+  socket.on("CMD/UPDATE_NAP", async (payload: any, cb?: any) => {
+    try {
+      let nap: any = await NapModel.findOne({ where: { id: payload.id } });
+      await nap.set({
+        isActive: false,
+        isGuardEnabled: payload?.isGuardEnabled,
+        isSnoozeEnabled: payload?.isSnoozeEnabled,
+        name: payload?.name,
+        notes: payload?.notes,
+        hour: payload.hour,
+        minute: payload.minute,
+        second: payload.second,
+        maxTotalSnoozeDuration: payload?.maxTotalSnoozeDuration,
+        deleteAfterRinging: payload?.deleteAfterRinging ?? false,
+        emergencyAlarmTimeoutSeconds: payload?.emergencyAlarmTimeoutSeconds,
+      });
+      await nap.save();
+
+      //I can't just refetch the naps - e.g. it would cancel all snoozes
+      let oldNapIndex = Buzzine.naps.findIndex((e) => e.id === payload.id);
+      await Buzzine.naps[oldNapIndex].turnOff();
+      await Buzzine.naps[oldNapIndex].disableAlarm();
+      Buzzine.naps[oldNapIndex] = new Nap({
+        id: nap.id,
+        isGuardEnabled: payload?.isGuardEnabled,
+        isSnoozeEnabled: payload?.isSnoozeEnabled,
+        name: payload?.name,
+        notes: payload?.notes,
+        hour: payload.hour,
+        minute: payload.minute,
+        second: payload.second,
+        maxTotalSnoozeDuration: payload?.maxTotalSnoozeDuration,
+        deleteAfterRinging: payload?.deleteAfterRinging ?? false,
+        emergencyAlarmTimeoutSeconds: payload?.emergencyAlarmTimeoutSeconds,
+      });
+
+      if (cb) {
+        cb(nap);
+      }
+      logger.info(`Updated nap ${nap.id}`);
+    } catch (err) {
+      logger.warn(
+        `Tried to update a nap with a probably wrong payload! ${JSON.stringify(
+          payload
+        )}; err: ${err.toString()}`
+      );
+      if (cb) {
+        cb({ error: true });
+      }
+    }
+  });
+
   socket.on("CMD/GET_UPCOMING_ALARMS", async (cb) => {
     let upcomingAlarms = await getUpcomingAlarms();
+    let upcomingNaps = await getUpcomingNaps();
     saveUpcomingAlarms();
     if (cb) {
-      cb(upcomingAlarms);
+      cb({ alarms: upcomingAlarms, naps: upcomingNaps });
     } else {
       logger.warn("Missing callback on GET request - GET_UPCOMING_ALARMS");
     }
@@ -329,14 +444,20 @@ io.on("connection", (socket: Socket) => {
 
   socket.on("CMD/GET_ALL_ALARMS", async (cb) => {
     if (cb) {
-      cb(Buzzine.alarms.map((e) => e.toObject()));
+      cb({
+        alarms: Buzzine.alarms.map((e) => e.toObject()),
+        naps: Buzzine.naps.map((e) => e.toObject()),
+      });
     } else {
       logger.warn("Missing callback on GET request - GET_ALL_ALARMS");
     }
   });
   socket.on("CMD/GET_RINGING_ALARMS", async (cb) => {
     if (cb) {
-      cb(Buzzine.currentlyRingingAlarms.map((e) => e.toRingingObject()));
+      cb({
+        alarms: Buzzine.currentlyRingingAlarms.map((e) => e.toRingingObject()),
+        naps: Buzzine.currentlyRingingNaps.map((e) => e.toRingingObject()),
+      });
     } else {
       logger.warn("Missing callback on GET request - GET_RINGING_ALARMS");
     }
@@ -346,15 +467,22 @@ io.on("connection", (socket: Socket) => {
       let alarmsWithSnoozes = Buzzine.alarms.filter(
         (e) => e.snoozes.length > 0
       );
+      let napsWithSnoozes = Buzzine.naps.filter((e) => e.snoozes.length > 0);
 
-      cb(
-        alarmsWithSnoozes.map((elem: Alarm) => {
+      cb({
+        alarms: alarmsWithSnoozes.map((elem: Alarm) => {
           return {
             snooze: elem.snoozes[elem.snoozes.length - 1].toObject(),
             alarm: elem.toRingingObject(),
           };
-        })
-      );
+        }),
+        naps: napsWithSnoozes.map((elem: Nap) => {
+          return {
+            snooze: elem.snoozes[elem.snoozes.length - 1].toObject(),
+            alarm: elem.toRingingObject(),
+          };
+        }),
+      });
     } else {
       logger.warn("Missing callback on GET request - GET_ACTIVE_SNOOZES");
     }
@@ -377,14 +505,39 @@ io.on("connection", (socket: Socket) => {
       await elem.turnOff();
     }
 
+    //The same for naps
+    for await (const element of Buzzine.currentlyRingingNaps) {
+      await element.turnOff();
+    }
+
+    //Cancel all naps with snoozes as well
+    let napsWithSnooze = Buzzine.naps.filter((e) => e.snoozes.length !== 0);
+    for await (const elem of napsWithSnooze) {
+      await elem.turnOff();
+    }
+
     if (cb) {
       cb({ error: false });
     }
   });
 });
+
+async function getAlarm(id: string): Promise<Alarm> {
+  let alarm: Alarm;
+  if (id.includes("NAP/")) {
+    alarm = Buzzine.naps.find((e) => e.id === id) as Alarm;
+  } else {
+    alarm = Buzzine.alarms.find((e) => e.id === id);
+  }
+
+  return alarm;
+}
 class Buzzine {
   static alarms: Alarm[] = [];
   static currentlyRingingAlarms: Alarm[] = [];
+
+  static naps: Nap[] = [];
+  static currentlyRingingNaps: Nap[] = [];
 }
 
 async function init() {
@@ -394,11 +547,12 @@ async function init() {
   } else {
     logger.warn("Emergency alerts are disabled!");
   }
-  const { alarms } = await GetDatabaseData.getAll();
+  const { alarms, naps } = await GetDatabaseData.getAll();
 
   Buzzine.alarms = alarms.map((e) => {
     return new Alarm(e);
   });
+  Buzzine.naps = naps.map((elem) => new Nap(elem));
 
   //Delay it because it's ran every time the alarm turns on - the alarms are being created now
   setTimeout(() => {

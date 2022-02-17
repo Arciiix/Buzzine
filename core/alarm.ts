@@ -35,14 +35,18 @@ class Alarm {
 
   maxTotalSnoozeDuration: number; //In seconds
 
-  private isNextInvocationCancelled: { isCancelled: boolean; clearJob: Job }; //clearJob is a Job which removes the isNextInvocationCancelled object
-  private jobObject: Job;
+  protected isNextInvocationCancelled: { isCancelled: boolean; clearJob: Job }; //clearJob is a Job which removes the isNextInvocationCancelled object
+  protected jobObject: Job;
 
-  private dbObject;
+  //Used for naps
+  protected second: number;
+
+  protected dbObject;
 
   constructor({
     hour,
     minute,
+    second,
     id,
     isActive,
     maxTotalSnoozeDuration,
@@ -56,6 +60,7 @@ class Alarm {
   }: {
     hour: number;
     minute: number;
+    second?: number;
     id: string;
     isActive: boolean;
     maxTotalSnoozeDuration?: number;
@@ -79,6 +84,7 @@ class Alarm {
     this.id = id;
     this.hour = hour;
     this.minute = minute;
+    this.second = second;
     this.maxTotalSnoozeDuration =
       maxTotalSnoozeDuration ||
       parseInt(process.env.MAX_TOTAL_SNOOZE_DURATION) ||
@@ -159,15 +165,10 @@ class Alarm {
     this.isNextInvocationCancelled?.clearJob.cancel();
     this.isNextInvocationCancelled = null;
     if (!this.repeat) {
-      let alarmDate: Date = new Date();
-      alarmDate.setHours(this.hour);
-      alarmDate.setMinutes(this.minute);
-      alarmDate.setSeconds(0);
-
-      if (alarmDate < new Date()) {
-        //If the alarm occurs earlier than now, add a whole day (24 hours) to it
-        alarmDate.setTime(alarmDate.getTime() + 1000 * 60 * 60 * 24);
-      }
+      let alarmDate: Date = this.getInvocationDateFromTime(
+        this.hour,
+        this.minute
+      );
 
       this.jobObject = scheduleJob(alarmDate, this.onAlarmRinging.bind(this));
       logger.info(
@@ -197,6 +198,19 @@ class Alarm {
         )}. Next invocation: ${formatDate(this.jobObject.nextInvocation())}`
       );
     }
+  }
+
+  getInvocationDateFromTime(hour: number, minute: number): Date {
+    let alarmDate: Date = new Date();
+    alarmDate.setHours(this.hour);
+    alarmDate.setMinutes(this.minute);
+    alarmDate.setSeconds(0);
+
+    if (alarmDate < new Date()) {
+      //If the alarm occurs earlier than now, add a whole day (24 hours) to it
+      alarmDate.setTime(alarmDate.getTime() + 1000 * 60 * 60 * 24);
+    }
+    return alarmDate;
   }
 
   async turnOn(): Promise<void> {
@@ -434,10 +448,13 @@ class Alarm {
           this.emergencyAlarmTimeoutSeconds * 1000
         ),
     };
-
-    Buzzine.currentlyRingingAlarms.push(this);
+    this.pushToCurrentlyRinging();
     io.emit("ALARM_RINGING", { ...this.toObject(), ...{ timeElapsed: 0 } });
     logger.info(`Alarm "${this.id}" is ringing!`);
+  }
+
+  pushToCurrentlyRinging() {
+    Buzzine.currentlyRingingAlarms.push(this);
   }
 
   async deleteSelf() {
@@ -509,4 +526,4 @@ interface IRingingStats {
 type RingingAlarm = IAlarm & { maxAlarmDate?: Date };
 
 export default Alarm;
-export { IAlarm };
+export { IAlarm, RecurrenceObject, RingingAlarm };
