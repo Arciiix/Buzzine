@@ -85,6 +85,7 @@ class _AudioManagerState extends State<AudioManager> {
           title: const Text("Zmień nazwę audio"),
           content: TextField(
             controller: _audioNameTextFieldController,
+            textCapitalization: TextCapitalization.sentences,
             decoration: const InputDecoration(hintText: "Nazwa audio"),
           ),
           actions: <Widget>[

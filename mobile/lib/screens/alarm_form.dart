@@ -277,6 +277,7 @@ class _AlarmFormState extends State<AlarmForm> {
                     children: [
                       TextFormField(
                         controller: _nameController,
+                        textCapitalization: TextCapitalization.sentences,
                         decoration: InputDecoration(hintText: "Nazwa"),
                       ),
                       if (widget.alarmType == AlarmType.nap)
@@ -745,6 +746,7 @@ class _AlarmFormState extends State<AlarmForm> {
                       TextFormField(
                         controller: _notesController,
                         maxLines: 2,
+                        textCapitalization: TextCapitalization.sentences,
                         decoration: const InputDecoration(hintText: "Notatki"),
                       ),
                     ],
