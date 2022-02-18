@@ -44,7 +44,6 @@ class _SettingsState extends State<Settings> {
       String quantityName, String unit) async {
     int selectedValue = init.floor();
     int selectedValueFracionalValue = getFirstDecimalPlaceOfNumber(init);
-    print(selectedValueFracionalValue);
     bool? change = await showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -56,7 +55,7 @@ class _SettingsState extends State<Settings> {
               children: [
                 NumberVerticalPicker(
                   onChanged: (int val) => selectedValue = val,
-                  initValue: selectedValue
+                  initValue: selectedValue,
                   minValue: min.floor(),
                   maxValue: max.floor(),
                   propertyName: quantityName + " ($unit)",
@@ -84,9 +83,11 @@ class _SettingsState extends State<Settings> {
           );
         });
 
-    return change == true
-        ? selectedValue + selectedValueFracionalValue / 10
-        : null;
+    if (change == true &&
+        selectedValue + selectedValueFracionalValue / 10 > min &&
+        selectedValue + selectedValueFracionalValue / 10 < max) {
+      return selectedValue + selectedValueFracionalValue / 10;
+    }
   }
 
   @override
@@ -567,13 +568,25 @@ class _SettingsState extends State<Settings> {
                               ),
                             ),
                             SectionTitle("Temperatura"),
+                            Padding(
+                              padding: const EdgeInsets.only(top: 8),
+                              child: Text("Idealny zakres",
+                                  style: TextStyle(
+                                      color: Theme.of(context).hintColor,
+                                      fontSize: 12)),
+                            ),
                             RangeSlider(
                                 values: _temperatureRange,
                                 min: 15,
                                 max: 30,
                                 onChanged: (RangeValues newValues) {
                                   setState(() {
-                                    _temperatureRange = RangeValues(double.parse(newValues.start.toStringAsFixed(1)), double.parse(newValues.end.toStringAsFixed(1)), );
+                                    _temperatureRange = RangeValues(
+                                      double.parse(
+                                          newValues.start.toStringAsFixed(1)),
+                                      double.parse(
+                                          newValues.end.toStringAsFixed(1)),
+                                    );
                                   });
                                 }),
                             Row(
@@ -584,7 +597,7 @@ class _SettingsState extends State<Settings> {
                                       double? userSelection =
                                           await selectNumberFromPicker(
                                               15,
-                                              30,
+                                              _temperatureRange.end,
                                               _temperatureRange.start,
                                               "Min. temperatura",
                                               "°C");
@@ -606,7 +619,7 @@ class _SettingsState extends State<Settings> {
                                     onTap: () async {
                                       double? userSelection =
                                           await selectNumberFromPicker(
-                                              15,
+                                              _temperatureRange.start,
                                               30,
                                               _temperatureRange.end,
                                               "Max. temperatura",
