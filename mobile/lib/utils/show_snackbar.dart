@@ -5,7 +5,10 @@ void showSnackbar(
   String content,
 ) {
   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(content),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      content: Text(content,
+          style:
+              TextStyle(color: Theme.of(context).textTheme.bodyText1!.color)),
       action: SnackBarAction(
           label: "Rozumiem",
           onPressed: () =>

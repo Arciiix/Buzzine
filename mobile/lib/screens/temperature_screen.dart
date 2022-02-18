@@ -4,6 +4,7 @@ import 'package:buzzine/globalData.dart';
 import 'package:buzzine/screens/loading.dart';
 import 'package:buzzine/types/TemperatureData.dart';
 import 'package:buzzine/utils/formatting.dart';
+import 'package:buzzine/utils/show_snackbar.dart';
 import 'package:flutter/material.dart';
 
 class TemperatureScreen extends StatefulWidget {
@@ -72,6 +73,23 @@ class _TemperatureScreenState extends State<TemperatureScreen> {
     }
   }
 
+  void dateForward() async {
+    if (_currentSelectedDate
+            .add(const Duration(days: 1))
+            .compareTo(DateTime.now()) <=
+        0) {
+      getTemperatureDataForDate(
+          _currentSelectedDate.add(const Duration(days: 1)));
+    } else {
+      showSnackbar(context, "Wybierz wcześniejszą datę");
+    }
+  }
+
+  void dateBackwards() async {
+    getTemperatureDataForDate(
+        _currentSelectedDate.subtract(const Duration(days: 1)));
+  }
+
   @override
   void initState() {
     _currentSelectedDate = DateTime.now();
@@ -98,9 +116,36 @@ class _TemperatureScreenState extends State<TemperatureScreen> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          TextButton(
-                            onPressed: selectDate,
-                            child: Text(dateToDateString(_currentSelectedDate)),
+                          Row(
+                            children: [
+                              Material(
+                                child: IconButton(
+                                  icon: Icon(Icons.arrow_back,
+                                      color: Theme.of(context)
+                                          .buttonTheme
+                                          .colorScheme!
+                                          .primary),
+                                  onPressed: dateBackwards,
+                                ),
+                              ),
+                              Expanded(
+                                child: TextButton(
+                                  onPressed: selectDate,
+                                  child: Text(
+                                      dateToDateString(_currentSelectedDate)),
+                                ),
+                              ),
+                              Material(
+                                child: IconButton(
+                                  icon: Icon(Icons.arrow_forward,
+                                      color: Theme.of(context)
+                                          .buttonTheme
+                                          .colorScheme!
+                                          .primary),
+                                  onPressed: dateForward,
+                                ),
+                              ),
+                            ],
                           ),
                           TemperatureChart(
                               chartData: temperatureData.temperatures
