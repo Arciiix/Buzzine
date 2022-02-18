@@ -179,6 +179,21 @@ class _AlarmCardState extends State<AlarmCard> {
     }
   }
 
+  void showInvocationDateAlertDialog() {
+    showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+              title: const Text("Drzemka"),
+              content: Text(
+                  "Ta drzemka zadzwoni: ${dateToDateTimeString(widget.nextInvocation!.toLocal())}"),
+              actions: [
+                TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: const Text("OK"))
+              ],
+            ));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -218,13 +233,19 @@ class _AlarmCardState extends State<AlarmCard> {
                     },
                     child: Switch(onChanged: setIsActive, value: isActive)),
             ]),
-            Row(
-              children: [
-                const Icon(Icons.schedule),
-                Padding(
-                    padding: const EdgeInsets.all(5),
-                    child: Text(timeDetailsTextContent))
-              ],
+            InkWell(
+              onTap: widget.alarmType == AlarmType.nap &&
+                      widget.nextInvocation != null
+                  ? showInvocationDateAlertDialog
+                  : null,
+              child: Row(
+                children: [
+                  const Icon(Icons.schedule),
+                  Padding(
+                      padding: const EdgeInsets.all(5),
+                      child: Text(timeDetailsTextContent))
+                ],
+              ),
             ),
             Row(
               children: [

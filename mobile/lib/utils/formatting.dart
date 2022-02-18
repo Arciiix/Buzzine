@@ -36,14 +36,17 @@ String secondsToNamedString(num? seconds) {
 }
 
 String dateToDateString(DateTime date) {
+  date = date.toLocal();
   return "${addZero(date.day)}.${addZero(date.month)}.${date.year}";
 }
 
 String dateToDateTimeString(DateTime date) {
+  date = date.toLocal();
   return "${addZero(date.hour)}:${addZero(date.minute)} ${addZero(date.day)}.${addZero(date.month)}.${date.year}";
 }
 
 String dateToTimeString(DateTime date) {
+  date = date.toLocal();
   return "${addZero(date.hour)}:${addZero(date.minute)}:${addZero(date.second)}";
 }
 
