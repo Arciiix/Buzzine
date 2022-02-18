@@ -260,6 +260,7 @@ class _RingingAlarmState extends State<RingingAlarm>
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
                     Container(
+                        padding: EdgeInsets.only(left: 20),
                         color: isSnoozeAvailable ? Colors.blue : Colors.grey,
                         height: MediaQuery.of(context).size.height,
                         width: MediaQuery.of(context).size.width * 0.5,
@@ -268,6 +269,7 @@ class _RingingAlarmState extends State<RingingAlarm>
                           Text("Drzemka", style: TextStyle(color: Colors.white))
                         ])),
                     Container(
+                        padding: EdgeInsets.only(right: 20),
                         color: Colors.red,
                         height: MediaQuery.of(context).size.height,
                         width: MediaQuery.of(context).size.width * 0.5,
@@ -283,106 +285,128 @@ class _RingingAlarmState extends State<RingingAlarm>
                 child: Scaffold(
                   backgroundColor: Colors.black,
                   body: SingleChildScrollView(
-                    child: Row(children: [
-                      SizedBox(
-                          height: MediaQuery.of(context).size.height,
-                          width: 30,
-                          child: DecoratedBox(
-                              decoration: BoxDecoration(
-                                  color: isSnoozeAvailable
-                                      ? Colors.blue
-                                      : Colors.grey,
-                                  borderRadius: BorderRadius.only(
-                                      topRight: Radius.circular(5),
-                                      bottomRight: Radius.circular(5))))),
-                      Expanded(
-                          child: SafeArea(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            AnimatedOpacity(
-                              opacity: _isBlinkVisible ? 1.0 : 0.0,
-                              duration: const Duration(milliseconds: 100),
-                              child: Column(
-                                children: [
-                                  Text(
-                                      "${addZero(now.hour)}:${addZero(now.minute)}",
-                                      style: const TextStyle(
-                                          color: Colors.white, fontSize: 72)),
-                                  Text(
-                                      "${addZero(now.day)}.${addZero(now.month)}.${now.year}",
-                                      style: const TextStyle(
-                                          color: Colors.white, fontSize: 24)),
-                                ],
-                              ),
-                            ),
-                            Padding(
-                                padding: const EdgeInsets.all(10),
+                    child: Container(
+                      margin: EdgeInsets.symmetric(horizontal: 15),
+                      padding: EdgeInsets.all(8),
+                      child: Row(children: [
+                        Expanded(
+                            child: SafeArea(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              AnimatedOpacity(
+                                opacity: _isBlinkVisible ? 1.0 : 0.0,
+                                duration: const Duration(milliseconds: 100),
                                 child: Column(
-                                  children: isSnoozeAvailable
-                                      ? [
-                                          const Text("Zużyty czas drzemek",
-                                              style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 18)),
-                                          Padding(
-                                            padding: const EdgeInsets.symmetric(
-                                                vertical: 5),
-                                            child: LinearProgressIndicator(
-                                              value: 1 -
-                                                  (remainingTime.inSeconds /
-                                                      (widget.ringingAlarm.alarm
-                                                              .maxTotalSnoozeDuration ??
-                                                          300)),
-                                              minHeight: 20,
+                                  children: [
+                                    Text(
+                                        "${addZero(now.hour)}:${addZero(now.minute)}",
+                                        style: const TextStyle(
+                                            color: Colors.white, fontSize: 72)),
+                                    Text(
+                                        "${addZero(now.day)}.${addZero(now.month)}.${now.year}",
+                                        style: const TextStyle(
+                                            color: Colors.white, fontSize: 24)),
+                                  ],
+                                ),
+                              ),
+                              Text(
+                                widget.ringingAlarm.alarm.name ?? "Alarm",
+                                style: const TextStyle(fontSize: 32),
+                                textAlign: TextAlign.center,
+                              ),
+                              Text(
+                                widget.ringingAlarm.alarm.notes ?? "",
+                                style: const TextStyle(fontSize: 16),
+                                textAlign: TextAlign.center,
+                              ),
+                              Padding(
+                                  padding: const EdgeInsets.all(10),
+                                  child: Column(
+                                    children: isSnoozeAvailable
+                                        ? [
+                                            const Text("Zużyty czas drzemek",
+                                                style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 18)),
+                                            Padding(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      vertical: 5),
+                                              child: LinearProgressIndicator(
+                                                value: 1 -
+                                                    (remainingTime.inSeconds /
+                                                        (widget
+                                                                .ringingAlarm
+                                                                .alarm
+                                                                .maxTotalSnoozeDuration ??
+                                                            300)),
+                                                minHeight: 20,
+                                              ),
+                                            ),
+                                            Text(
+                                                remainingTime.inSeconds > 0
+                                                    ? "${addZero(remainingTime.inMinutes)}:${addZero(remainingTime.inSeconds.remainder(60))}"
+                                                    : "Brak",
+                                                style: const TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 18))
+                                          ]
+                                        : [],
+                                  )),
+                              Column(
+                                children: GlobalData.weather != null
+                                    ? [
+                                        InkWell(
+                                          onTap: navigateToWeather,
+                                          child: Hero(
+                                            tag: "WEATHER_WIDGET",
+                                            child: WeatherWidget(
+                                              backgroundColor: Colors.black,
                                             ),
                                           ),
-                                          Text(
-                                              remainingTime.inSeconds > 0
-                                                  ? "${addZero(remainingTime.inMinutes)}:${addZero(remainingTime.inSeconds.remainder(60))}"
-                                                  : "Brak",
-                                              style: const TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 18))
-                                        ]
-                                      : [],
-                                )),
-                            Column(
-                              children: GlobalData.weather != null
-                                  ? [
-                                      InkWell(
-                                        onTap: navigateToWeather,
-                                        child: Hero(
-                                          tag: "WEATHER_WIDGET",
-                                          child: WeatherWidget(
-                                            backgroundColor: Colors.black,
-                                          ),
                                         ),
-                                      ),
-                                    ]
-                                  : [],
-                            ),
-                            InkWell(
-                                onTap: navigateToTemperature,
-                                child: TemperatureWidget(
-                                  backgroundColor: Colors.black,
-                                )),
-                          ],
-                        ),
-                      )),
-                      SizedBox(
-                          height: MediaQuery.of(context).size.height,
-                          width: 30,
-                          child: const DecoratedBox(
-                            decoration: BoxDecoration(
-                                color: Colors.red,
-                                borderRadius: BorderRadius.only(
-                                    topLeft: Radius.circular(5),
-                                    bottomLeft: Radius.circular(5))),
-                          )),
-                    ]),
+                                      ]
+                                    : [],
+                              ),
+                              InkWell(
+                                  onTap: navigateToTemperature,
+                                  child: TemperatureWidget(
+                                    backgroundColor: Colors.black,
+                                  )),
+                            ],
+                          ),
+                        )),
+                      ]),
+                    ),
                   ),
                 ),
+              ),
+              Positioned(
+                left: 0,
+                child: SizedBox(
+                    height: MediaQuery.of(context).size.height,
+                    width: 15,
+                    child: DecoratedBox(
+                        decoration: BoxDecoration(
+                            color:
+                                isSnoozeAvailable ? Colors.blue : Colors.grey,
+                            borderRadius: BorderRadius.only(
+                                topRight: Radius.circular(5),
+                                bottomRight: Radius.circular(5))))),
+              ),
+              Positioned(
+                right: 0,
+                child: SizedBox(
+                    height: MediaQuery.of(context).size.height,
+                    width: 15,
+                    child: const DecoratedBox(
+                      decoration: BoxDecoration(
+                          color: Colors.red,
+                          borderRadius: BorderRadius.only(
+                              topLeft: Radius.circular(5),
+                              bottomLeft: Radius.circular(5))),
+                    )),
               ),
               Positioned(
                   width: MediaQuery.of(context).size.width, //100% width
@@ -392,6 +416,7 @@ class _RingingAlarmState extends State<RingingAlarm>
                           (1 - _animation.value)) +
                       10,
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children:
                         didMuteAudio || widget.isItActuallyRinging == false
                             ? []
