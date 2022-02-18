@@ -41,4 +41,14 @@ const logger = winston.createLogger({
   ],
 });
 
+function logHTTPEndpoints(req, res, next): void {
+  logger.http(
+    `${req.method.toUpperCase()} ${req.path} with query ${JSON.stringify(
+      req.query
+    )} and data ${JSON.stringify(req.body)}`
+  );
+  next();
+}
+
 export default logger;
+export { logHTTPEndpoints };

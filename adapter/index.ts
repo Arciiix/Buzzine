@@ -1,7 +1,7 @@
 import bodyParser from "body-parser";
 import express from "express";
 import socketio from "socket.io-client";
-import logger from "./logger";
+import logger, { logHTTPEndpoints } from "./logger";
 import axios from "axios";
 import schedule from "node-schedule";
 import { initDatabase } from "./db";
@@ -31,6 +31,7 @@ const app = express();
 app.use(bodyParser.json());
 const api = express.Router();
 app.use("/v1", api);
+api.use(logHTTPEndpoints);
 const socket = socketio(CORE_URL);
 
 app.get("/", async (req, res) => {
@@ -56,7 +57,6 @@ app.get("/", async (req, res) => {
 });
 
 api.get("/ping", (req, res) => {
-  logger.http("GET /ping");
   res.send({ error: false, timestamp: new Date() });
 });
 

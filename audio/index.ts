@@ -2,7 +2,7 @@ import socketioClient from "socket.io-client";
 import express from "express";
 import bodyParser from "body-parser";
 import dotenv from "dotenv";
-import logger from "./utils/logger";
+import logger, { logHTTPEndpoints } from "./utils/logger";
 import { initDatabase } from "./utils/db";
 import PlaySound, {
   changeAlarmSound,
@@ -103,22 +103,18 @@ app.get("/", async (req, res) => {
 //API endpoints
 const api = express.Router();
 app.use("/v1", api);
+api.use(logHTTPEndpoints);
 
 api.get("/ping", (req, res) => {
-  logger.http("GET /ping");
   res.send({ error: false, timestamp: new Date() });
 });
 
 api.get("/getSoundList", async (req, res) => {
-  logger.http("GET /getSoundList");
-
   let soundList = await AudioNameMappingModel.findAll();
   res.send({ error: false, data: soundList });
 });
 
 api.get("/getAlarmSoundList", async (req, res) => {
-  logger.http("GET /getAlarmSoundList");
-
   let soundList: any[] = await AlarmsAudioModel.findAll({
     include: AudioNameMappingModel,
   });
@@ -134,8 +130,6 @@ api.get("/getAlarmSoundList", async (req, res) => {
 });
 
 api.post("/addYouTubeSound", async (req, res) => {
-  logger.http(`POST /addYouTubeSound with data ${JSON.stringify(req.body)}`);
-
   if (!req.body.url) {
     return res.status(400).send({ error: true, errorCode: "MISSING_URL" });
   }
@@ -147,8 +141,6 @@ api.post("/addYouTubeSound", async (req, res) => {
   res.status(statusCode).send({ error: error, errorCode: errorCode });
 });
 api.put("/updateAudio", async (req, res) => {
-  logger.http(`PUT /updateAudio with data ${JSON.stringify(req.body)}`);
-
   if (!req.body.audioId) {
     res.status(400).send({ error: true, errorCode: "MISSING_AUDIO_ID" });
     return;
@@ -186,8 +178,6 @@ api.put("/updateAudio", async (req, res) => {
 });
 
 api.put("/changeAlarmSound", async (req, res) => {
-  logger.http(`PUT /changeAlarmSound with data ${JSON.stringify(req.body)}`);
-
   if (!req.body.alarmId) {
     res.send({ error: true, errorCode: "MISSING_ALARMID" });
     return;
@@ -209,10 +199,6 @@ api.put("/changeAlarmSound", async (req, res) => {
 });
 
 api.delete("/clearAlarmCustomSound", async (req, res) => {
-  logger.http(
-    `DELETE /clearAlarmCustomSound with data ${JSON.stringify(req.body)}`
-  );
-
   if (!req.body.alarmId) {
     res.send({ error: true, errorCode: "MISSING_ALARMID" });
     return;
@@ -227,8 +213,6 @@ api.delete("/clearAlarmCustomSound", async (req, res) => {
 });
 
 api.delete("/deleteSound", async (req, res) => {
-  logger.http(`DELETE /deleteSound with data ${JSON.stringify(req.body)}`);
-
   if (!req.body.audioId) {
     res.status(400).send({ error: true, errorCode: "MISSING_AUDIO_ID" });
     return;
@@ -262,8 +246,6 @@ api.delete("/deleteSound", async (req, res) => {
 });
 
 api.put("/tempMuteAudio", async (req, res) => {
-  logger.http(`PUT /tempMuteAudio with data ${JSON.stringify(req.body)}`);
-
   if (!req.body.duration) {
     res.status(400).send({ error: true, errorCode: "MISSING_DURATION" });
     logger.warn(`Tried to temp-mute audio but duration is missing`);
@@ -294,8 +276,6 @@ api.put("/tempMuteAudio", async (req, res) => {
 });
 
 api.get("/previewAudio", async (req, res) => {
-  logger.http(`GET /previewAudio with data ${JSON.stringify(req.query)}`);
-
   if (!req.query.audioId) {
     res.status(400).send({ error: true, errorCode: "MISSING_AUDIO_ID" });
     logger.warn("Tried to preview an audio but didn't specify the audio id");
@@ -349,8 +329,6 @@ api.get("/previewAudio", async (req, res) => {
 });
 
 api.put("/stopAudioPreview", (req, res) => {
-  logger.http(`PUT /stopAudioPreview with data ${JSON.stringify(req.body)}`);
-
   if (audioPreviewTimeout) {
     clearTimeout(audioPreviewTimeout);
     audioPreviewTimeout = null;
@@ -372,10 +350,6 @@ api.put("/stopAudioPreview", (req, res) => {
 });
 
 api.get("/getYouTubeVideoInfo", async (req, res) => {
-  logger.http(
-    `GET /getYouTubeVideoInfo with data ${JSON.stringify(req.query)}`
-  );
-
   if (!req.query.videoURL) {
     res.status(400).send({ error: true, errorCode: "MISSING_VIDEO_URL" });
     return;
@@ -396,8 +370,6 @@ api.get("/getYouTubeVideoInfo", async (req, res) => {
 });
 
 api.put("/cutAudio", async (req, res) => {
-  logger.http(`PUT /cutAudio with data ${JSON.stringify(req.body)}`);
-
   if (!req.body.audioId) {
     res.status(400).send({ error: true, errorCode: "MISSING_AUDIO_ID" });
     logger.warn(`Tried to cut audio but audioId is missing`);
@@ -437,8 +409,6 @@ api.put("/cutAudio", async (req, res) => {
 });
 
 api.get("/previewCut", async (req, res) => {
-  logger.http(`GET /previewCut with data ${JSON.stringify(req.query)}`);
-
   if (!req.query.audioId) {
     res.status(400).send({ error: true, errorCode: "MISSING_AUDIO_ID" });
     logger.warn(`Tried to preview-cut audio but audioId is missing`);

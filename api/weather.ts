@@ -29,8 +29,6 @@ weatherRouter.use((req, res, next) => {
 });
 
 weatherRouter.get("/", async (req, res) => {
-  logger.http("[WEATHER] GET /");
-
   res.send({
     error: false,
     provider: "https://openweathermap.org/",
@@ -38,10 +36,6 @@ weatherRouter.get("/", async (req, res) => {
 });
 
 weatherRouter.get("/getFullWeather", async (req, res) => {
-  logger.http(
-    `[WEATHER] GET /getFullWeather with data ${JSON.stringify(req.query)}`
-  );
-
   if (!req.query.latitude || isNaN(parseInt(req.query.latitude as string))) {
     res.status(400).send({ error: true, errorCode: "MISSING_LATITUDE" });
     return;
@@ -78,12 +72,6 @@ weatherRouter.get("/getFullWeather", async (req, res) => {
 });
 
 weatherRouter.get("/getCityNameByCoordinates", async (req, res) => {
-  logger.http(
-    `[WEATHER] GET /getCityNameByCoordinates with data ${JSON.stringify(
-      req.query
-    )}`
-  );
-
   if (!req.query.latitude || isNaN(parseInt(req.query.latitude as string))) {
     res.status(400).send({ error: true, errorCode: "MISSING_LATITUDE" });
     return;

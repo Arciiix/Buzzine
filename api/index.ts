@@ -1,7 +1,7 @@
 import express from "express";
 import { io } from "socket.io-client";
 import dotenv from "dotenv";
-import logger from "./utils/logger";
+import logger, { logHTTPEndpoints } from "./utils/logger";
 import bodyParser from "body-parser";
 import axios, { Method } from "axios";
 import guardRouter, { checkQRCode } from "./guard";
@@ -33,6 +33,8 @@ let servicesConstants: IServicesConstants;
 
 //REST API
 const api = express.Router();
+api.use(logHTTPEndpoints);
+
 app.use("/v1", api);
 api.use("/guard", guardRouter);
 app.use("/cdn", cdn);
@@ -42,8 +44,6 @@ api.use("/emergency", emergencyRouter);
 api.use("/temperature", emergencyRouter);
 
 api.get("/ping", async (req, res) => {
-  logger.http(`GET /ping with data ${JSON.stringify(req.query)}`);
-
   let now = new Date();
   let services = {
     api: {
@@ -149,8 +149,6 @@ api.get("/ping", async (req, res) => {
 });
 
 api.get("/getConstants", async (req, res) => {
-  logger.http(`GET /getConstants`);
-
   res.send({ error: false, response: await getServicesConstants() });
 });
 
@@ -229,8 +227,6 @@ async function fetchAlarmsAudio(response): Promise<any> {
 }
 
 api.get("/getEmergencyStatus", async (req, res) => {
-  logger.http(`GET /getEmergencyStatus`);
-
   let emergencyStatus: object = await new Promise((resolve, reject) => {
     socket.emit("CMD/GET_EMERGENCY_STATUS", (response) => {
       if (response.error) {
@@ -276,10 +272,6 @@ api.get("/getEmergencyStatus", async (req, res) => {
 });
 
 api.put("/cancelEmergencyAlarm", async (req, res) => {
-  logger.http(
-    `PUT /cancelEmergencyAlarm with data: ${JSON.stringify(req.body)}`
-  );
-
   socket.emit("CMD/CANCEL_EMERGENCY_ALARM", (response) => {
     if (response.error) {
       res.status(500).send(response);
@@ -300,8 +292,6 @@ api.put("/cancelEmergencyAlarm", async (req, res) => {
 });
 
 api.post("/addAlarm", async (req, res) => {
-  logger.http(`POST /addAlarm with data: ${JSON.stringify(req.body)}`);
-
   if (!req.body)
     return res.status(400).send({ error: true, errorCode: "EMPTY_PAYLOAD" });
 
@@ -348,8 +338,6 @@ api.post("/addAlarm", async (req, res) => {
 });
 
 api.post("/addNap", async (req, res) => {
-  logger.http(`POST /addNap with data: ${JSON.stringify(req.body)}`);
-
   if (!req.body)
     return res.status(400).send({ error: true, errorCode: "EMPTY_PAYLOAD" });
 
@@ -398,14 +386,10 @@ api.post("/addNap", async (req, res) => {
 });
 
 api.put("/cancelAlarm", async (req, res) => {
-  logger.http(`PUT /cancelAlarm with data: ${JSON.stringify(req.body)}`);
-
   await cancelAlarm(req, res);
 });
 
 api.put("/cancelAlarmSecured", async (req, res, next) => {
-  logger.http("PUT /cancelAlarmSecured");
-
   if (!req.body.data) {
     res.status(400).send({ error: true, errorCode: "MISSING_QR_DATA" });
     return;
@@ -446,8 +430,6 @@ async function cancelAlarm(req, res) {
 }
 
 api.put("/toogleAlarm", async (req, res) => {
-  logger.http(`PUT /toogleAlarm with data: ${JSON.stringify(req.body)}`);
-
   if (!req.body)
     return res.status(400).send({ error: true, errorCode: "EMPTY_PAYLOAD" });
 
@@ -478,10 +460,6 @@ api.put("/toogleAlarm", async (req, res) => {
   });
 });
 api.put("/cancelNextInvocation", (req, res) => {
-  logger.http(
-    `PUT /cancelNextInvocation with data: ${JSON.stringify(req.body)}`
-  );
-
   if (!req.body)
     return res.status(400).send({ error: true, errorCode: "EMPTY_PAYLOAD" });
 
@@ -510,8 +488,6 @@ api.put("/cancelNextInvocation", (req, res) => {
 });
 
 api.put("/snoozeAlarm", (req, res) => {
-  logger.http(`PUT /snoozeAlarm with data: ${JSON.stringify(req.body)}`);
-
   if (!req.body)
     return res.status(400).send({ error: true, errorCode: "EMPTY_PAYLOAD" });
 
@@ -547,8 +523,6 @@ api.put("/snoozeAlarm", (req, res) => {
 });
 
 api.delete("/deleteAlarm", (req, res) => {
-  logger.http(`DELETE /deleteAlarm with data: ${JSON.stringify(req.body)}`);
-
   if (!req.body)
     return res.status(400).send({ error: true, errorCode: "EMPTY_PAYLOAD" });
 
@@ -580,8 +554,6 @@ api.delete("/deleteAlarm", (req, res) => {
 });
 
 api.post("/updateAlarm", async (req, res) => {
-  logger.http(`POST /updateAlarm with data: ${JSON.stringify(req.body)}`);
-
   if (!req.body)
     return res.status(400).send({ error: true, errorCode: "EMPTY_PAYLOAD" });
 
@@ -638,8 +610,6 @@ api.post("/updateAlarm", async (req, res) => {
 });
 
 api.post("/updateNap", async (req, res) => {
-  logger.http(`POST /updateNap with data: ${JSON.stringify(req.body)}`);
-
   if (!req.body)
     return res.status(400).send({ error: true, errorCode: "EMPTY_PAYLOAD" });
 
@@ -694,8 +664,6 @@ api.post("/updateNap", async (req, res) => {
 });
 
 api.get("/getUpcomingAlarms", (req, res) => {
-  logger.http(`GET /getUpcomingAlarms`);
-
   socket.emit("CMD/GET_UPCOMING_ALARMS", (response) => {
     if (response.error) {
       res.status(500).send(response);
@@ -716,8 +684,6 @@ api.get("/getUpcomingAlarms", (req, res) => {
 });
 
 api.get("/getAllAlarms", (req, res) => {
-  logger.http(`GET /getAllAlarms`);
-
   socket.emit("CMD/GET_ALL_ALARMS", async (response) => {
     if (response.error) {
       res.status(500).send(response);
@@ -738,8 +704,6 @@ api.get("/getAllAlarms", (req, res) => {
 });
 
 api.get("/getRingingAlarms", (req, res) => {
-  logger.http(`GET /getRingingAlarms`);
-
   socket.emit("CMD/GET_RINGING_ALARMS", async (response) => {
     if (response.error) {
       res.status(500).send(response);
@@ -762,8 +726,6 @@ api.get("/getRingingAlarms", (req, res) => {
 });
 
 api.get("/getActiveSnoozes", (req, res) => {
-  logger.http(`GET /getActiveSnoozes`);
-
   socket.emit("CMD/GET_ACTIVE_SNOOZES", async (response) => {
     if (response.error) {
       res.status(500).send(response);
@@ -782,8 +744,6 @@ api.get("/getActiveSnoozes", (req, res) => {
 });
 
 api.put("/cancelAllAlarms", async (req, res) => {
-  logger.http(`PUT /cancelAllAlarms`);
-
   socket.emit("CMD/CANCEL_ALL_ALARMS", (response) => {
     if (response.error) {
       res.status(500).send(response);
@@ -804,8 +764,6 @@ api.put("/cancelAllAlarms", async (req, res) => {
 });
 
 audioRouter.put("/tempMuteAudio", async (req, res) => {
-  logger.http(`[AUDIO] PUT /tempMuteAudio`);
-
   //It's just the same request sent to the audio microservice
   try {
     let audiosReq = await axios.put(`${AUDIO_URL}/v1/tempMuteAudio`, {
@@ -839,8 +797,6 @@ audioRouter.put("/tempMuteAudio", async (req, res) => {
 });
 
 audioRouter.all("*", async (req, res) => {
-  logger.http(`[AUDIO] ${req.method.toUpperCase()} ${req.path}`);
-
   //It's just the same request sent to the audio microservice
   try {
     let audiosReq = await axios({
@@ -866,8 +822,6 @@ audioRouter.all("*", async (req, res) => {
 });
 
 emergencyRouter.all("*", async (req, res) => {
-  logger.http(`[EMERGENCY] ${req.method.toUpperCase()} ${req.path}`);
-
   //It's just the same request sent to the adapter
   try {
     let emergencyReq = await axios({
