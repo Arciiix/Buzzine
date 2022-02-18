@@ -122,8 +122,8 @@ class Nap extends Alarm {
     this.snoozes.forEach((e) => {
       e.cancelJob();
     });
-    await this.dbObject.destroy();
     await UpcomingNapModel.destroy({ where: {} });
+    await this.dbObject.destroy();
     Buzzine.naps = Buzzine.naps.filter((e) => e !== this);
     Buzzine.currentlyRingingNaps = Buzzine.currentlyRingingNaps.filter(
       (e) => e.id !== this.id
