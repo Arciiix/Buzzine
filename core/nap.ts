@@ -4,6 +4,7 @@ import NapModel from "./models/Nap.model";
 import UpcomingAlarmModel from "./models/UpcomingAlarm.model";
 import UpcomingNapModel from "./models/UpcomingNapModel";
 import { saveUpcomingAlarms } from "./utils/alarmProtection";
+import logger from "./utils/logger";
 
 class Nap extends Alarm {
   constructor({
@@ -102,13 +103,22 @@ class Nap extends Alarm {
     Buzzine.currentlyRingingNaps.push(this);
   }
   override async deleteSelf(): Promise<void> {
-    await super.deleteSelf();
-    await UpcomingAlarmModel.destroy({ where: {} });
+    this.cancelJob();
+    if (this.ringingStats) {
+      this.mute();
+    }
+    this.toogleEmergencyDevice(false);
+    this.snoozes.forEach((e) => {
+      e.cancelJob();
+    });
+    await this.dbObject.destroy();
+    await UpcomingNapModel.destroy({ where: {} });
     Buzzine.naps = Buzzine.naps.filter((e) => e !== this);
     Buzzine.currentlyRingingNaps = Buzzine.currentlyRingingNaps.filter(
       (e) => e.id !== this.id
     );
     saveUpcomingAlarms();
+    logger.info(`Deleted nap ${this.id}`);
   }
 
   override toObject(): INap {

@@ -147,16 +147,18 @@ class TemperatureStatsWidget extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                    "${temperatureData.average.toStringAsFixed(2)}°C",
+                                    "${temperatureData.average?.toStringAsFixed(2) ?? "-"}°C",
                                     textAlign: TextAlign.center,
                                     style: const TextStyle(fontSize: 18)),
                                 Icon(
-                                    getIconByOffset(
-                                        temperatureData.averageOffsetPercent *
-                                            100),
+                                    temperatureData.averageOffsetPercent != null
+                                        ? getIconByOffset(temperatureData
+                                                .averageOffsetPercent! *
+                                            100)
+                                        : Icons.help_outline,
                                     size: 14),
                                 Text(
-                                    "${(temperatureData.averageOffsetPercent * 100).toStringAsFixed(2)}%",
+                                    "${temperatureData.averageOffsetPercent != null ? (temperatureData.averageOffsetPercent! * 100).toStringAsFixed(2) : "-"}%",
                                     style: const TextStyle(fontSize: 14))
                               ],
                             ),
@@ -179,7 +181,7 @@ class TemperatureStatsWidget extends StatelessWidget {
                               style: const TextStyle(fontSize: 24),
                             ),
                             Text(
-                                "${temperatureData.range.toStringAsFixed(2)}°C",
+                                "${temperatureData.range?.toStringAsFixed(2) ?? "-"}°C",
                                 textAlign: TextAlign.center,
                                 style: const TextStyle(fontSize: 18)),
                           ],
@@ -203,7 +205,8 @@ class TemperatureStatsWidget extends StatelessWidget {
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(fontSize: 24),
                             ),
-                            Text("${temperatureData.min.toStringAsFixed(2)}°C",
+                            Text(
+                                "${temperatureData.min?.toStringAsFixed(2) ?? "-"}°C",
                                 textAlign: TextAlign.center,
                                 style: const TextStyle(fontSize: 18)),
                           ],
@@ -224,7 +227,8 @@ class TemperatureStatsWidget extends StatelessWidget {
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(fontSize: 24),
                             ),
-                            Text("${temperatureData.max.toStringAsFixed(2)}°C",
+                            Text(
+                                "${temperatureData.max?.toStringAsFixed(2) ?? "-"}°C",
                                 textAlign: TextAlign.center,
                                 style: const TextStyle(fontSize: 18)),
                           ],

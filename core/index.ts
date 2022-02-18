@@ -16,6 +16,8 @@ import {
 import AlarmModel from "./models/Alarm.model";
 import Nap, { INap } from "./nap";
 import NapModel from "./models/Nap.model";
+import UpcomingAlarmModel from "./models/UpcomingAlarm.model";
+import UpcomingNapModel from "./models/UpcomingNapModel";
 
 //Load environment variables from file
 dotenv.config();
@@ -331,6 +333,7 @@ io.on("connection", (socket: Socket) => {
     }
     try {
       let alarm: any = await AlarmModel.findOne({ where: { id: payload.id } });
+      await UpcomingAlarmModel.destroy({ where: { id: payload.id } });
       await alarm.set({
         isActive: payload.isActive,
         isGuardEnabled: payload?.isGuardEnabled,
@@ -362,6 +365,7 @@ io.on("connection", (socket: Socket) => {
         repeat: alarm?.repeat,
         emergencyAlarmTimeoutSeconds: alarm?.emergencyAlarmTimeoutSeconds,
       });
+      saveUpcomingAlarms();
 
       if (cb) {
         cb(alarm);
@@ -382,6 +386,7 @@ io.on("connection", (socket: Socket) => {
   socket.on("CMD/UPDATE_NAP", async (payload: any, cb?: any) => {
     try {
       let nap: any = await NapModel.findOne({ where: { id: payload.id } });
+      await UpcomingNapModel.destroy({ where: { id: payload.id } });
       await nap.set({
         isActive: false,
         isGuardEnabled: payload?.isGuardEnabled,
@@ -414,6 +419,7 @@ io.on("connection", (socket: Socket) => {
         deleteAfterRinging: payload?.deleteAfterRinging ?? false,
         emergencyAlarmTimeoutSeconds: payload?.emergencyAlarmTimeoutSeconds,
       });
+      saveUpcomingAlarms();
 
       if (cb) {
         cb(nap);

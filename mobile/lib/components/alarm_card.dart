@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'package:buzzine/globalData.dart';
+import 'package:buzzine/types/AlarmType.dart';
 import 'package:buzzine/types/Audio.dart';
 import 'package:buzzine/types/Repeat.dart';
 import 'package:buzzine/utils/formatting.dart';
@@ -9,6 +11,7 @@ class AlarmCard extends StatefulWidget {
   final String? name;
   final int hour;
   final int minute;
+  final int? second;
   final DateTime? nextInvocation;
   final bool isActive;
 
@@ -30,12 +33,15 @@ class AlarmCard extends StatefulWidget {
 
   final Function? refresh;
 
+  final AlarmType? alarmType;
+
   const AlarmCard(
       {Key? key,
       required this.id,
       this.name,
       required this.hour,
       required this.minute,
+      this.second,
       required this.isActive,
       this.nextInvocation,
       this.isSnoozeEnabled,
@@ -48,7 +54,8 @@ class AlarmCard extends StatefulWidget {
       this.repeat,
       this.emergencyAlarmTimeoutSeconds,
       this.hideSwitch,
-      this.refresh})
+      this.refresh,
+      this.alarmType})
       : super(key: key);
 
   @override
@@ -56,8 +63,10 @@ class AlarmCard extends StatefulWidget {
 }
 
 class _AlarmCardState extends State<AlarmCard> {
-  late String remainingTime;
+  late String timeDetailsTextContent;
+  late String timeTextContent;
   late bool isActive;
+  Timer? _updateRemainingTimeTimer;
 
   @override
   void initState() {
@@ -65,33 +74,65 @@ class _AlarmCardState extends State<AlarmCard> {
 
     isActive = widget.isActive;
     if (widget.nextInvocation != null) {
-      remainingTime = calculateDateTimeDifference(widget.nextInvocation!);
+      timeDetailsTextContent = calculateDateTimeDifference(
+          widget.nextInvocation!,
+          includeSeconds: widget.alarmType == AlarmType.nap);
     } else {
-      remainingTime = '-';
+      timeDetailsTextContent = '-';
+    }
+
+    if (widget.alarmType == AlarmType.nap) {
+      timeTextContent =
+          "${addZero(widget.hour)}:${addZero(widget.minute)}:${addZero(widget.second!)}";
+    } else {
+      timeTextContent = "${addZero(widget.hour)}:${addZero(widget.minute)}";
+    }
+
+    if (widget.nextInvocation != null) {
+      setTimer();
     }
   }
 
-  String calculateDateTimeDifference(DateTime nextInvocation) {
+  void setTimer() {
+    setState(() {
+      _updateRemainingTimeTimer =
+          Timer.periodic(const Duration(seconds: 1), (_) {
+        setState(() {
+          timeDetailsTextContent = widget.nextInvocation != null
+              ? calculateDateTimeDifference(widget.nextInvocation!,
+                  includeSeconds: widget.alarmType == AlarmType.nap)
+              : "-";
+        });
+      });
+    });
+  }
+
+  String calculateDateTimeDifference(DateTime nextInvocation,
+      {bool? includeSeconds}) {
     Duration difference = nextInvocation.difference(DateTime.now());
     if (difference.inSeconds < 0) {
       //It means that the alarm has already invoked
       return "-";
     }
-    String remainingTime =
-        "${difference.inDays > 0 ? addZero(difference.inDays) + ":" : ""}${addZero(difference.inHours.remainder(24))}:${addZero(difference.inMinutes.remainder(60))}";
+    String timeDetailsTextContent =
+        "${difference.inDays > 0 ? addZero(difference.inDays) + ":" : ""}${addZero(difference.inHours.remainder(24))}:${addZero(difference.inMinutes.remainder(60))}${includeSeconds == true ? ":" + addZero(difference.inSeconds.remainder(60)) : ""}";
 
-    return remainingTime;
+    return timeDetailsTextContent;
   }
 
   void setIsActive(bool status) async {
+    _updateRemainingTimeTimer?.cancel();
     await GlobalData.changeAlarmStatus(widget.id, status);
     setState(() {
       isActive = status;
       if (isActive && widget.nextInvocation != null) {
         //Calculate the remaining time from the initial value - because the alarm recreates
-        remainingTime = calculateDateTimeDifference(widget.nextInvocation!);
+        timeDetailsTextContent = calculateDateTimeDifference(
+            widget.nextInvocation!,
+            includeSeconds: widget.alarmType == AlarmType.nap);
+        setTimer();
       } else if (!isActive) {
-        remainingTime = "-";
+        timeDetailsTextContent = "-";
       }
     });
     if (widget.refresh != null) {
@@ -132,7 +173,7 @@ class _AlarmCardState extends State<AlarmCard> {
           await GlobalData.cancelNextInvocation(widget.id);
       if (nextInvocation != null) {
         setState(() {
-          remainingTime = calculateDateTimeDifference(nextInvocation);
+          timeDetailsTextContent = calculateDateTimeDifference(nextInvocation);
         });
       }
     }
@@ -154,7 +195,10 @@ class _AlarmCardState extends State<AlarmCard> {
           children: [
             Flexible(
                 child: Text(
-              widget.name ?? "Alarm bez nazwy",
+              widget.name ??
+                  (widget.alarmType == AlarmType.nap
+                      ? "Drzemka bez nazwy"
+                      : "Alarm bez nazwy"),
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(fontSize: 18),
             )),
@@ -162,8 +206,7 @@ class _AlarmCardState extends State<AlarmCard> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("${addZero(widget.hour)}:${addZero(widget.minute)}",
-                      style: const TextStyle(fontSize: 50)),
+                  Text(timeTextContent, style: const TextStyle(fontSize: 44)),
                 ],
               ),
               if (widget.hideSwitch != true)
@@ -180,7 +223,7 @@ class _AlarmCardState extends State<AlarmCard> {
                 const Icon(Icons.schedule),
                 Padding(
                     padding: const EdgeInsets.all(5),
-                    child: Text(remainingTime))
+                    child: Text(timeDetailsTextContent))
               ],
             ),
             Row(
@@ -301,5 +344,11 @@ class _AlarmCardState extends State<AlarmCard> {
             ),
           ],
         ));
+  }
+
+  @override
+  void dispose() {
+    _updateRemainingTimeTimer?.cancel();
+    super.dispose();
   }
 }

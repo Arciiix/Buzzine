@@ -1,13 +1,12 @@
+import 'package:buzzine/types/Alarm.dart';
 import 'package:buzzine/types/Audio.dart';
-import 'package:buzzine/types/Repeat.dart';
 
-class Alarm {
+class Nap extends Alarm {
   String? id;
   String? name;
   int hour;
   int minute;
   int? second;
-  DateTime? nextInvocation;
   bool isActive;
 
   bool? isSnoozeEnabled;
@@ -21,17 +20,16 @@ class Alarm {
 
   String? notes;
 
-  bool? isRepeating;
-  Repeat? repeat;
   int? emergencyAlarmTimeoutSeconds;
 
-  Alarm(
+  DateTime? invocationDate;
+
+  Nap(
       {this.id,
       this.name,
       required this.hour,
       required this.minute,
-      this.second,
-      this.nextInvocation,
+      required this.second,
       required this.isActive,
       this.isSnoozeEnabled,
       this.maxTotalSnoozeDuration,
@@ -39,17 +37,32 @@ class Alarm {
       required this.isGuardEnabled,
       this.deleteAfterRinging,
       this.notes,
-      this.isRepeating,
-      this.repeat,
-      this.emergencyAlarmTimeoutSeconds});
+      this.emergencyAlarmTimeoutSeconds,
+      this.invocationDate})
+      : super(
+            id: id,
+            name: name,
+            hour: hour,
+            minute: minute,
+            second: second,
+            isActive: isActive,
+            isSnoozeEnabled: isSnoozeEnabled,
+            maxTotalSnoozeDuration: maxTotalSnoozeDuration,
+            sound: sound,
+            isGuardEnabled: isGuardEnabled,
+            deleteAfterRinging: deleteAfterRinging,
+            notes: notes,
+            emergencyAlarmTimeoutSeconds: emergencyAlarmTimeoutSeconds,
+            isRepeating: false);
 
+  @override
   Map toMap() {
     return {
       'id': id,
       'name': name,
       'hour': hour,
       'minute': minute,
-      'nextInvocation': nextInvocation,
+      'second': second,
       'isActive': isActive,
       'isSnoozeEnabled': isSnoozeEnabled,
       'maxTotalSnoozeDuration': maxTotalSnoozeDuration,
@@ -57,9 +70,8 @@ class Alarm {
       'isGuardEnabled': isGuardEnabled,
       'deleteAfterRinging': deleteAfterRinging,
       'notes': notes,
-      'isRepeating': isRepeating,
-      'repeat': (isRepeating ?? false) ? repeat?.toMap() : null,
       'emergencyAlarmTimeoutSeconds': emergencyAlarmTimeoutSeconds,
+      'invocationDate': invocationDate
     };
   }
 }

@@ -13,6 +13,7 @@ import 'package:buzzine/screens/alarm_list.dart';
 import 'package:buzzine/screens/audio_manager.dart';
 import 'package:buzzine/screens/download_YouTube_audio.dart';
 import 'package:buzzine/screens/loading.dart';
+import 'package:buzzine/screens/nap_list.dart';
 import 'package:buzzine/screens/ringing_alarm.dart';
 import 'package:buzzine/screens/scan_qr_code.dart';
 import 'package:buzzine/screens/settings.dart';
@@ -20,7 +21,9 @@ import 'package:buzzine/screens/temperature_screen.dart';
 import 'package:buzzine/screens/unlock_alarm.dart';
 import 'package:buzzine/screens/weather_screen.dart';
 import 'package:buzzine/types/Alarm.dart';
+import 'package:buzzine/types/AlarmType.dart';
 import 'package:buzzine/types/EmergencyStatus.dart';
+import 'package:buzzine/types/Nap.dart';
 import 'package:buzzine/types/PingResult.dart';
 import 'package:buzzine/types/RingingAlarmEntity.dart';
 import 'package:buzzine/types/Snooze.dart';
@@ -43,6 +46,8 @@ class _HomePageState extends State<HomePage> {
   bool _isLoaded = false;
   List<Alarm> upcomingAlarms = [];
   List<RingingAlarmEntity> ringingAlarms = [];
+  List<Nap> upcomingNaps = [];
+  List<RingingAlarmEntity> ringingNaps = [];
   List<Snooze> activeSnoozes = [];
   late String qrCodeHash;
   PingResult? pingResult;
@@ -58,6 +63,17 @@ class _HomePageState extends State<HomePage> {
           builder: (context) => AlarmList(
               selectedAlarm:
                   alarmIndex != null ? upcomingAlarms[alarmIndex] : null)),
+    );
+
+    await refresh();
+  }
+
+  void handleNapSelect(int? napIndex) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+          builder: (context) => NapList(
+                selectedNap: napIndex != null ? upcomingNaps[napIndex] : null,
+              )),
     );
 
     await refresh();
@@ -236,6 +252,8 @@ class _HomePageState extends State<HomePage> {
         upcomingAlarms = GlobalData.upcomingAlarms;
         qrCodeHash = GlobalData.qrCodeHash;
         ringingAlarms = GlobalData.ringingAlarms;
+        ringingNaps = GlobalData.ringingNaps;
+        upcomingNaps = GlobalData.upcomingNaps;
         activeSnoozes = GlobalData.activeSnoozes;
         emergencyStatus = GlobalData.emergencyStatus;
       });
@@ -278,6 +296,8 @@ class _HomePageState extends State<HomePage> {
                           upcomingAlarms = GlobalData.upcomingAlarms;
                           qrCodeHash = GlobalData.qrCodeHash;
                           ringingAlarms = GlobalData.ringingAlarms;
+                          ringingNaps = GlobalData.ringingNaps;
+                          upcomingNaps = GlobalData.upcomingNaps;
                           activeSnoozes = GlobalData.activeSnoozes;
                           emergencyStatus = GlobalData.emergencyStatus;
                         });
@@ -411,6 +431,57 @@ class _HomePageState extends State<HomePage> {
                                   Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
+                                    children: ringingNaps.isNotEmpty
+                                        ? [
+                                            Align(
+                                              alignment: Alignment.centerLeft,
+                                              child: const Padding(
+                                                padding: EdgeInsets.all(5),
+                                                child: Text("⌛ Aktywne drzemki",
+                                                    style: TextStyle(
+                                                        fontSize: 24,
+                                                        color: Colors.white)),
+                                              ),
+                                            ),
+                                            Carousel(
+                                                height: 360,
+                                                onSelect: (_) =>
+                                                    navigateToRingingAlarm(
+                                                        ringingNaps.first),
+                                                children: ringingNaps.map((e) {
+                                                  return AlarmCard(
+                                                      id: e.alarm.id!,
+                                                      name: e.alarm.name,
+                                                      hour: e.alarm.hour,
+                                                      minute: e.alarm.minute,
+                                                      second: e.alarm.second!,
+                                                      isActive:
+                                                          e.alarm.isActive,
+                                                      isSnoozeEnabled: e.alarm
+                                                          .isSnoozeEnabled,
+                                                      maxTotalSnoozeDuration: e
+                                                          .alarm
+                                                          .maxTotalSnoozeDuration,
+                                                      sound: e.alarm.sound,
+                                                      isGuardEnabled: e
+                                                          .alarm.isGuardEnabled,
+                                                      deleteAfterRinging: e
+                                                          .alarm
+                                                          .deleteAfterRinging,
+                                                      notes: e.alarm.notes,
+                                                      isRepeating: false,
+                                                      emergencyAlarmTimeoutSeconds: e
+                                                          .alarm
+                                                          .emergencyAlarmTimeoutSeconds,
+                                                      hideSwitch: true,
+                                                      alarmType: AlarmType.nap);
+                                                }).toList()),
+                                          ]
+                                        : [],
+                                  ),
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: activeSnoozes.isNotEmpty
                                         ? [
                                             Align(
@@ -477,7 +548,8 @@ class _HomePageState extends State<HomePage> {
                                   ),
                                   Column(
                                     children: ringingAlarms.isEmpty &&
-                                            activeSnoozes.isEmpty
+                                            activeSnoozes.isEmpty &&
+                                            ringingNaps.isEmpty
                                         ? [
                                             Align(
                                               alignment: Alignment.centerLeft,
@@ -520,6 +592,47 @@ class _HomePageState extends State<HomePage> {
                                                       emergencyAlarmTimeoutSeconds:
                                                           e.emergencyAlarmTimeoutSeconds,
                                                       refresh: refresh);
+                                                }).toList()),
+                                            Align(
+                                              alignment: Alignment.centerLeft,
+                                              child: const Padding(
+                                                padding: EdgeInsets.all(5),
+                                                child: Text(
+                                                    "⏳ Nadchodzące drzemki",
+                                                    style: TextStyle(
+                                                        fontSize: 24,
+                                                        color: Colors.white)),
+                                              ),
+                                            ),
+                                            Carousel(
+                                                height: 360,
+                                                onSelect: handleNapSelect,
+                                                children: upcomingNaps.map((e) {
+                                                  return AlarmCard(
+                                                    alarmType: AlarmType.nap,
+                                                    key: Key(e.id!),
+                                                    id: e.id!,
+                                                    name: e.name,
+                                                    hour: e.hour,
+                                                    minute: e.minute,
+                                                    second: e.second,
+                                                    nextInvocation:
+                                                        e.invocationDate,
+                                                    isActive: e.isActive,
+                                                    isSnoozeEnabled:
+                                                        e.isSnoozeEnabled,
+                                                    maxTotalSnoozeDuration: e
+                                                        .maxTotalSnoozeDuration,
+                                                    sound: e.sound,
+                                                    isGuardEnabled:
+                                                        e.isGuardEnabled,
+                                                    deleteAfterRinging:
+                                                        e.deleteAfterRinging,
+                                                    notes: e.notes,
+                                                    isRepeating: false,
+                                                    emergencyAlarmTimeoutSeconds:
+                                                        e.emergencyAlarmTimeoutSeconds,
+                                                  );
                                                 }).toList()),
                                           ]
                                         : [],

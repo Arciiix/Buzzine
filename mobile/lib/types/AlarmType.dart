@@ -1,0 +1,1 @@
+enum AlarmType { alarm, nap }

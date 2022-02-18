@@ -32,7 +32,7 @@ class _TimeNumberPickerState extends State<TimeNumberPicker> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Wybierz liczbę")),
+      appBar: AppBar(title: Text("Wybierz czas")),
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.check),
         onPressed: () => Navigator.of(context)

@@ -3,6 +3,7 @@ import 'package:buzzine/components/temperature_chart.dart';
 import 'package:buzzine/types/API_exception.dart';
 import 'package:buzzine/types/Constants.dart';
 import 'package:buzzine/types/EmergencyStatus.dart';
+import 'package:buzzine/types/Nap.dart';
 import 'package:buzzine/types/PingResult.dart';
 import 'package:buzzine/types/Repeat.dart';
 import 'package:buzzine/types/RingingAlarmEntity.dart';
@@ -22,6 +23,11 @@ class GlobalData {
   static List<Alarm> alarms = [];
   static List<Alarm> upcomingAlarms = [];
   static List<RingingAlarmEntity> ringingAlarms = [];
+
+  static List<Nap> naps = [];
+  static List<Nap> upcomingNaps = [];
+  static List<RingingAlarmEntity> ringingNaps = [];
+
   static List<Snooze> activeSnoozes = [];
   static List<Audio> audios = [];
   static late String qrCodeHash;
@@ -96,7 +102,7 @@ class GlobalData {
     }
   }
 
-  static Future<List<Alarm>> getAlarms() async {
+  static Future<void> getAlarms() async {
     var response = await http.get(Uri.parse("$serverIP/v1/getAllAlarms"));
     var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
 
@@ -147,10 +153,51 @@ class GlobalData {
 
     GlobalData.alarms = [...activeAlarms, ...inactiveAlarms];
 
-    return GlobalData.alarms;
+    //The same for naps
+    List napsResponse = decodedResponse['response']['naps'];
+    GlobalData.naps = napsResponse
+        .map((e) => Nap(
+            id: e['id'],
+            hour: e['hour'],
+            minute: e['minute'],
+            second: e['second'],
+            isActive: e?['isActive'] ?? false,
+            isGuardEnabled: e?['isGuardEnabled'] ?? false,
+            isSnoozeEnabled: e?['isSnoozeEnabled'] ?? false,
+            deleteAfterRinging: e?['deleteAfterRinging'] ?? false,
+            maxTotalSnoozeDuration: e?['maxTotalSnoozeDuration'],
+            sound: Audio(
+                audioId: e['sound']['audioId'],
+                filename: e['sound']['filename'],
+                friendlyName:
+                    e['sound']['friendlyName'] ?? e['sound']['filename']),
+            name: e['name'],
+            notes: e['notes'],
+            emergencyAlarmTimeoutSeconds: e['emergencyAlarmTimeoutSeconds'],
+            invocationDate: DateTime.tryParse(e['invocationDate'] ?? "")))
+        .toList();
+
+    //Sort the naps
+    //By length
+    GlobalData.naps.sort((a, b) =>
+        a.hour * 3600 +
+        a.minute * 60 +
+        a.second! -
+        b.hour * 3600 -
+        b.minute * 60 -
+        b.second!);
+    //Active ones first
+    List<Nap> activeNaps =
+        GlobalData.naps.where((elem) => elem.isActive).toList();
+    List<Nap> inactiveNaps =
+        GlobalData.naps.where((elem) => !elem.isActive).toList();
+    //Sort the active naps by invocationDate
+    activeNaps.sort((a, b) => a.invocationDate!.compareTo(b.invocationDate!));
+
+    GlobalData.naps = [...activeNaps, ...inactiveNaps];
   }
 
-  static Future<List<Alarm>> getUpcomingAlarms() async {
+  static Future<void> getUpcomingAlarms() async {
     var response = await http.get(Uri.parse("$serverIP/v1/getUpcomingAlarms"));
     var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
 
@@ -161,6 +208,7 @@ class GlobalData {
       List alarmsResponse = decodedResponse['response']['alarms'];
 
       GlobalData.upcomingAlarms = alarmsResponse.map((e) {
+        print(e['alarmId']);
         Alarm alarmObj = GlobalData.alarms
             .firstWhere((element) => element.id == e['alarmId']);
         alarmObj.nextInvocation = DateTime.tryParse(e['invocationDate']);
@@ -171,12 +219,24 @@ class GlobalData {
           a.nextInvocation != null && b.nextInvocation != null
               ? a.nextInvocation!.compareTo(b.nextInvocation!)
               : (a.hour * 60 + a.minute) - (b.hour * 60 + b.minute));
-    }
 
-    return GlobalData.upcomingAlarms;
+      //The same for naps
+      List napsResponse = decodedResponse['response']['naps'];
+
+      GlobalData.upcomingNaps = napsResponse.map((e) {
+        Nap nap =
+            GlobalData.naps.firstWhere((element) => element.id == e['napId']);
+        return nap;
+      }).toList();
+
+      //If the date is null on the upcoming nap, it means it's probably invocated just right now
+      GlobalData.upcomingNaps.sort((a, b) =>
+          (a.invocationDate ?? DateTime.now())
+              .compareTo((b.invocationDate ?? DateTime.now())));
+    }
   }
 
-  static Future<List<RingingAlarmEntity>> getRingingAlarms() async {
+  static Future<void> getRingingAlarms() async {
     var response = await http.get(Uri.parse("$serverIP/v1/getRingingAlarms"));
     var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
 
@@ -202,9 +262,27 @@ class GlobalData {
 
         return ringingAlarm;
       }).toList();
-    }
 
-    return GlobalData.ringingAlarms;
+      //The same for naps
+      List napsResponse = decodedResponse['response']['naps'];
+      GlobalData.ringingNaps = napsResponse.map((e) {
+        Nap? napEntity =
+            GlobalData.naps.firstWhere((element) => element.id == e['id']);
+
+        DateTime? maxDate;
+
+        if (e['maxAlarmDate'] != null) {
+          maxDate = DateTime.tryParse(e['maxAlarmDate']);
+        }
+        maxDate ??= DateTime.now()
+            .add(Duration(seconds: napEntity.maxTotalSnoozeDuration ?? 300));
+
+        RingingAlarmEntity ringingNap =
+            RingingAlarmEntity(alarm: napEntity, maxDate: maxDate);
+
+        return ringingNap;
+      }).toList();
+    }
   }
 
   static Future<List<Snooze>> getActiveSnoozes() async {
@@ -215,10 +293,22 @@ class GlobalData {
       throw APIException(
           "Błąd podczas pobierania aktywnych drzemek. Status code: ${response.statusCode}, response: ${response.body}");
     } else {
-      List snoozesResponse = decodedResponse['response']['alarms'];
+      List snoozesResponse = [
+        ...decodedResponse['response']['alarms'],
+        ...decodedResponse['response']['naps']
+      ];
       GlobalData.activeSnoozes = snoozesResponse.map((e) {
-        Alarm? alarmEntity = GlobalData.alarms
-            .firstWhere((element) => element.id == e['alarm']['id']);
+        Alarm alarmEntity = GlobalData.alarms.firstWhere(
+            (element) => element.id == e['alarm']['id'],
+            orElse: () => GlobalData.naps
+                .firstWhere((element) => element.id == e['alarm']['id']));
+
+        if (alarmEntity.id!.contains("NAP/")) {
+          //Alarm is a nap
+          alarmEntity.name = alarmEntity.name != null
+              ? "[D] ${alarmEntity.name}"
+              : "Drzemka bez nazwy";
+        }
 
         DateTime? maxDate;
 
@@ -309,6 +399,26 @@ class GlobalData {
         decodedResponse['error'] == true) {
       throw APIException(
           "Błąd podczas tworzenia alarmu. Status code: ${response.statusCode}, response: ${response.body}");
+    }
+  }
+
+  static Future<void> addNap(Map napRequestBody, bool isEditing) async {
+    var response = await http.post(
+        Uri.parse("$serverIP/v1/${isEditing ? "updateNap" : "addNap"}"),
+        body: json.encode(napRequestBody),
+        headers: {"Content-Type": "application/json"});
+    var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
+
+    if ((response.statusCode != 201 && response.statusCode != 200) ||
+        decodedResponse['error'] == true) {
+      throw APIException(
+          "Błąd podczas tworzenia drzemki. Status code: ${response.statusCode}, response: ${response.body}");
+    }
+
+    //When we add a new nap, turn it on by default
+    if (!isEditing) {
+      await GlobalData.changeAlarmStatus(
+          decodedResponse['response']['id'], true);
     }
   }
 
@@ -538,15 +648,17 @@ class GlobalData {
           CurrentTemperatureData(
               temperature: double.parse(
                   temperatureResponse['currentTemperature'].toStringAsFixed(2)),
-              average: double.parse(
-                  temperatureResponse['average'].toStringAsFixed(2)),
-              min: double.parse(temperatureResponse['min'].toStringAsFixed(2)),
-              max: double.parse(temperatureResponse['max'].toStringAsFixed(2)),
-              range:
-                  double.parse(temperatureResponse['range'].toStringAsFixed(2)),
-              averageOffsetPercent: double.parse(
+              average: double.tryParse(
+                  temperatureResponse['average']?.toStringAsFixed(2)),
+              min: double.tryParse(
+                  temperatureResponse['min']?.toStringAsFixed(2)),
+              max: double.tryParse(
+                  temperatureResponse['max']?.toStringAsFixed(2)),
+              range: double.parse(
+                  temperatureResponse['range']?.toStringAsFixed(2)),
+              averageOffsetPercent: double.tryParse(
                   temperatureResponse['averageOffsetPercent']
-                      .toStringAsFixed(4)),
+                      ?.toStringAsFixed(4)),
               offsetPercent: double.parse(
                   temperatureResponse['offsetPercent'].toStringAsFixed(4)),
               temperatures:
