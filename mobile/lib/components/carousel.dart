@@ -63,7 +63,7 @@ class _CarouselState extends State<Carousel> {
       ]);
     } else {
       return InkWell(
-          onTap: () => widget.onSelect(_current),
+          onTap: () => widget.onSelect(null),
           child: Container(
               width: MediaQuery.of(context).size.width * 0.9,
               padding: const EdgeInsets.all(10),
@@ -79,7 +79,7 @@ class _CarouselState extends State<Carousel> {
                       children: [
                     Text("Brak nadchodzących alarmów!",
                         style: TextStyle(fontSize: 24)),
-                    ElevatedButton(
+                    TextButton(
                         onPressed: () => widget.onSelect(null),
                         child: Text("Zarządzaj alarmami",
                             style: TextStyle(fontSize: 24)))

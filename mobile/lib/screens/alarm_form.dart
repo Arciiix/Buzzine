@@ -261,7 +261,11 @@ class _AlarmFormState extends State<AlarmForm> {
     } else {
       return Scaffold(
           appBar: AppBar(
-            title: Text(_isEditing ? "Edycja alarmu" : "Nowy alarm"),
+            title: Text(_isEditing
+                ? "Edycja ${widget.alarmType == AlarmType.nap ? "drzemki" : "alarmu"}"
+                : widget.alarmType == AlarmType.nap
+                    ? "Nowa drzemka"
+                    : "Nowy alarm"),
             actions: [
               IconButton(
                 icon: const Icon(Icons.save),
