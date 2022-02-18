@@ -233,6 +233,9 @@ class _AlarmFormState extends State<AlarmForm> {
       _repeat = widget.baseAlarm?.repeat ?? Repeat();
       _emergencyAlarmTimeoutSeconds =
           widget.baseAlarm?.emergencyAlarmTimeoutSeconds ?? 0;
+      if (_emergencyAlarmTimeoutSeconds != 0) {
+        _tempEmergencyAlarmTimeoutSeconds = _emergencyAlarmTimeoutSeconds;
+      }
     }
 
     if (widget.alarmType == AlarmType.nap) {
@@ -718,6 +721,8 @@ class _AlarmFormState extends State<AlarmForm> {
                                     if (userSelection != null) {
                                       setState(() {
                                         _tempEmergencyAlarmTimeoutSeconds =
+                                            userSelection.inSeconds;
+                                        _emergencyAlarmTimeoutSeconds =
                                             userSelection.inSeconds;
                                       });
                                     }
