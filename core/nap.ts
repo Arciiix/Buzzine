@@ -1,9 +1,11 @@
+import { scheduleJob } from "node-schedule";
 import { Buzzine } from ".";
-import Alarm, { IAlarm, RingingAlarm } from "./alarm";
+import Alarm from "./alarm";
 import NapModel from "./models/Nap.model";
 import UpcomingAlarmModel from "./models/UpcomingAlarm.model";
 import UpcomingNapModel from "./models/UpcomingNapModel";
 import { saveUpcomingAlarms } from "./utils/alarmProtection";
+import { formatDate } from "./utils/format";
 import logger from "./utils/logger";
 
 class Nap extends Alarm {
@@ -51,6 +53,15 @@ class Nap extends Alarm {
 
     if (invocationDate?.getTime() <= new Date().getTime()) {
       this.saveNextInvocationDate(true);
+    }
+    if (invocationDate?.getTime() > new Date().getTime()) {
+      this.jobObject = scheduleJob(
+        invocationDate,
+        this.onAlarmRinging.bind(this)
+      );
+      logger.info(
+        `Nap ${this.id} recreated - invocation: ${formatDate(invocationDate)}`
+      );
     }
   }
 
