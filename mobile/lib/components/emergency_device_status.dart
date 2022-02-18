@@ -14,6 +14,7 @@ class _EmergencyDeviceStatusState extends State<EmergencyDeviceStatus> {
   bool _isLoading = false;
   late bool _isEmergencyEnabled;
   late bool _isEmergencyDeviceOn;
+  bool _isError = false;
 
   void toogleEmergency(bool isOn) async {
     await GlobalData.toogleEmergency(isOn);
@@ -35,6 +36,7 @@ class _EmergencyDeviceStatusState extends State<EmergencyDeviceStatus> {
       _isLoading = false;
       _isEmergencyEnabled = GlobalData.emergencyStatus.isEmergencyEnabled;
       _isEmergencyDeviceOn = GlobalData.emergencyStatus.isEmergencyDeviceOn;
+      _isError = GlobalData.emergencyStatus.error;
     });
   }
 
@@ -42,6 +44,7 @@ class _EmergencyDeviceStatusState extends State<EmergencyDeviceStatus> {
   void initState() {
     _isEmergencyEnabled = GlobalData.emergencyStatus.isEmergencyEnabled;
     _isEmergencyDeviceOn = GlobalData.emergencyStatus.isEmergencyDeviceOn;
+    _isError = GlobalData.emergencyStatus.error;
     super.initState();
   }
 
@@ -58,67 +61,78 @@ class _EmergencyDeviceStatusState extends State<EmergencyDeviceStatus> {
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          InkWell(
-            onTap: () => toogleEmergencyDevice(!_isEmergencyDeviceOn),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(4),
-                      child: Icon(Icons.power_settings_new),
-                    ),
-                    Text("Status urządzenia",
-                        style: const TextStyle(fontSize: 17)),
-                  ],
-                ),
-                Switch(
-                    value: _isEmergencyDeviceOn,
-                    onChanged: toogleEmergencyDevice),
-              ],
-            ),
-          ),
-          InkWell(
-            onTap: () => toogleEmergency(!_isEmergencyEnabled),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(4),
-                      child: Icon(Icons.verified_user),
-                    ),
-                    Text("Status ochrony",
-                        style: const TextStyle(fontSize: 17)),
-                  ],
-                ),
-                Switch(value: _isEmergencyEnabled, onChanged: toogleEmergency),
-              ],
-            ),
-          ),
-          TextButton(
-              onPressed: refreshEmergencyData,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: _isLoading
-                    ? [
-                        Container(
-                            width: 14,
-                            height: 14,
-                            child: CircularProgressIndicator()),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(
-                            "Czekaj...",
+        children: _isError
+            ? const [
+                Icon(Icons.error_outline, size: 68),
+                Text(
+                  "Błąd podczas pobierania statusu",
+                  style: TextStyle(fontSize: 24),
+                  textAlign: TextAlign.center,
+                )
+              ]
+            : [
+                InkWell(
+                  onTap: () => toogleEmergencyDevice(!_isEmergencyDeviceOn),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(4),
+                            child: Icon(Icons.power_settings_new),
                           ),
-                        )
-                      ]
-                    : [Icon(Icons.refresh), Text("Odśwież")],
-              ))
-        ],
+                          Text("Status urządzenia",
+                              style: const TextStyle(fontSize: 17)),
+                        ],
+                      ),
+                      Switch(
+                          value: _isEmergencyDeviceOn,
+                          onChanged: toogleEmergencyDevice),
+                    ],
+                  ),
+                ),
+                InkWell(
+                  onTap: () => toogleEmergency(!_isEmergencyEnabled),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(4),
+                            child: Icon(Icons.verified_user),
+                          ),
+                          Text("Status ochrony",
+                              style: const TextStyle(fontSize: 17)),
+                        ],
+                      ),
+                      Switch(
+                          value: _isEmergencyEnabled,
+                          onChanged: toogleEmergency),
+                    ],
+                  ),
+                ),
+                TextButton(
+                    onPressed: refreshEmergencyData,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: _isLoading
+                          ? [
+                              Container(
+                                  width: 14,
+                                  height: 14,
+                                  child: CircularProgressIndicator()),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(
+                                  "Czekaj...",
+                                ),
+                              )
+                            ]
+                          : [Icon(Icons.refresh), Text("Odśwież")],
+                    ))
+              ],
       ),
     );
   }

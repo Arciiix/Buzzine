@@ -841,17 +841,17 @@ class GlobalData {
     );
     var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
 
-    if (response.statusCode != 200 || decodedResponse['error'] == true) {
-      throw APIException(
-          "Błąd podczas pobierania statusu systemu przeciwawaryjnego. Status code: ${response.statusCode}, response: ${response.body}");
-    }
+    // if (response.statusCode != 200 || decodedResponse['error'] == true) {
+    //   throw APIException(
+    //       "Błąd podczas pobierania statusu systemu przeciwawaryjnego. Status code: ${response.statusCode}, response: ${response.body}");
+    // }
 
     GlobalData.emergencyStatus = EmergencyStatus(
         isEmergencyActive: decodedResponse['response']?['isActive'] ?? false,
         isEmergencyEnabled:
             decodedResponse['response']?['isProtectionTurnedOn'] ?? false,
-        isEmergencyDeviceOn:
-            decodedResponse['response']?['isRelayOn'] ?? false);
+        isEmergencyDeviceOn: decodedResponse['response']?['isRelayOn'] ?? false,
+        error: decodedResponse['error']);
 
     return GlobalData.emergencyStatus;
   }
@@ -947,6 +947,12 @@ class GlobalData {
             delay: responseData['adapter']['delay']));
 
     if (result.error) {
+      if (result.api.success && result.core.success && result.audio.success) {
+        //Check if the error is caused by the adapter, and if so, return (because the app can start without it)
+        GlobalData.recentPing = result;
+        return result;
+      }
+
       throw APIException(
           "Błąd podczas pingowania serwisów. ${result.toString()}");
     }

@@ -24,7 +24,7 @@ class _PingResultIndicatorState extends State<PingResultIndicator> {
     } else if (this.widget.isSuccess!) {
       return const Icon(Icons.check);
     } else {
-      return const Icon(Icons.close);
+      return const Icon(Icons.close, color: Colors.red);
     }
   }
 

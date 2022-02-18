@@ -251,6 +251,7 @@ api.get("/getEmergencyStatus", async (req, res) => {
     });
   });
 
+  let error = false;
   try {
     let emergencyDeviceStatus = await axios.get(`${ADAPTER_URL}/v1/getStatus`);
     emergencyStatus = {
@@ -268,10 +269,10 @@ api.get("/getEmergencyStatus", async (req, res) => {
         err?.response?.data
       )} with status ${err?.response?.status}`
     );
-    res.status(err?.response?.status ?? 502).send(err?.response?.data);
+    error = true;
   }
 
-  res.send({ error: false, response: emergencyStatus });
+  res.send({ error: error, response: emergencyStatus });
 });
 
 api.put("/cancelEmergencyAlarm", async (req, res) => {
