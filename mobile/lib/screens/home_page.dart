@@ -238,6 +238,22 @@ class _HomePageState extends State<HomePage> {
     setState(() {});
   }
 
+  void displayUptimeAlert() {
+    //Shows the app start date
+    showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+              title: const Text("Czas pracy"),
+              content: Text(
+                  "Czas pracy to ${pingResult!.api.uptimeText!}. Włączono: ${dateToDateTimeString(DateTime.now().subtract(Duration(seconds: pingResult!.api.uptime!)))}"),
+              actions: [
+                TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: const Text("OK"))
+              ],
+            ));
+  }
+
   @override
   void initState() {
     super.initState();
@@ -972,22 +988,32 @@ class _HomePageState extends State<HomePage> {
                                                                 fontSize: 18)),
                                                       ],
                                                     ),
-                                                    Column(
-                                                      children: [
-                                                        Text(
-                                                            pingResult?.api
-                                                                        .uptimeText !=
-                                                                    null
-                                                                ? pingResult!
-                                                                    .api
-                                                                    .uptimeText!
-                                                                : "Czekaj...",
-                                                            style: TextStyle(
-                                                                fontSize: 28)),
-                                                        const Text("Czas pracy",
-                                                            style: TextStyle(
-                                                                fontSize: 18)),
-                                                      ],
+                                                    InkWell(
+                                                      onTap: pingResult?.api
+                                                                  .uptimeText !=
+                                                              null
+                                                          ? displayUptimeAlert
+                                                          : null,
+                                                      child: Column(
+                                                        children: [
+                                                          Text(
+                                                              pingResult?.api
+                                                                          .uptimeText !=
+                                                                      null
+                                                                  ? pingResult!
+                                                                      .api
+                                                                      .uptimeText!
+                                                                  : "Czekaj...",
+                                                              style: TextStyle(
+                                                                  fontSize:
+                                                                      28)),
+                                                          const Text(
+                                                              "Czas pracy",
+                                                              style: TextStyle(
+                                                                  fontSize:
+                                                                      18)),
+                                                        ],
+                                                      ),
                                                     ),
                                                   ],
                                                 ),
