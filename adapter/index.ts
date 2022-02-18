@@ -17,6 +17,7 @@ import {
   CORE_URL,
   HEARTBEAT_CRONJOB,
   PORT,
+  PROTECTION_DELAY,
   RELAY_INDEX,
   TASMOTA_URL,
   TEMPERATURE_CRONJOB,
@@ -88,26 +89,13 @@ api.get("/getHistoricalDailyTemperatureData", async (req, res) => {
 });
 
 api.get("/getStatus", async (req, res) => {
-  try {
-    let response = await axios.get(
-      `${TASMOTA_URL}/cm?cmnd=Power${RELAY_INDEX}`
-    );
-    let isRelayOn = response.data["POWER" + RELAY_INDEX] === "ON";
-    res.send({
-      error: false,
-      response: {
-        isRelayOn,
-        isProtectionTurnedOn,
-      },
-    });
-  } catch (err) {
-    logger.error(
-      `Error while trying to get the device status: ${
-        err?.response?.status
-      } with data: ${JSON.stringify(err?.response?.data)}`
-    );
-    res.status(502).send({ error: true, errorCode: err?.response?.data });
-  }
+  res.send({
+    error: false,
+    response: {
+      isRelayOn: await getRelayStatus(),
+      isProtectionTurnedOn,
+    },
+  });
 });
 
 api.put("/toogleEmergency", async (req, res) => {
@@ -151,6 +139,38 @@ api.put("/toogleProtection", async (req, res) => {
   }
 });
 
+api.put("/tempMute", async (req, res) => {
+  if (!req.body.duration) {
+    res.status(400).send({ error: true, errorCode: "MISSING_DURATION" });
+    logger.warn(`Tried to temp-mute but duration is missing`);
+    return;
+  }
+  let duration = parseInt(req.body.duration);
+
+  if (isNaN(duration)) {
+    res.status(400).send({ error: true, errorCode: "WRONG_DURATION" });
+    logger.warn(`Tried to temp-mute but duration is wrong`);
+    return;
+  }
+
+  //Check if the device is turned on
+  let relayStatus = await getRelayStatus();
+  if (relayStatus) {
+    //If the device is turned on, turn it off temporary
+    try {
+      await axios.get(
+        `${TASMOTA_URL}/cm?cmnd=Backlog%20Power${RELAY_INDEX}%200%3BRuleTimer1%20${req.body.duration}`
+      );
+    } catch (err) {
+      logger.error(
+        `Error while trying to temp-mute: ${
+          err?.response?.status
+        } with data: ${JSON.stringify(err?.response?.data)}`
+      );
+    }
+  }
+});
+
 socket.on("connect", () => {
   logger.info(
     `Made a connection with the core, waiting for the initial message...`
@@ -169,6 +189,23 @@ socket.on("EMERGENCY_ALARM_CANCELLED", async (data) => {
   toogleEmergencyDevice(false);
 });
 
+async function getRelayStatus(): Promise<boolean | null> {
+  try {
+    let response = await axios.get(
+      `${TASMOTA_URL}/cm?cmnd=Power${RELAY_INDEX}`
+    );
+    let isRelayOn = response.data["POWER" + RELAY_INDEX] === "ON";
+    return isRelayOn;
+  } catch (err) {
+    logger.error(
+      `Error while trying to get the relay status: ${
+        err?.response?.status
+      } with data: ${JSON.stringify(err?.response?.data)}`
+    );
+    return null;
+  }
+}
+
 async function toogleEmergencyDevice(isTurnedOn: boolean): Promise<boolean> {
   logger.info(`Turning ${isTurnedOn ? "on" : "off"} the emergency device...`);
 
@@ -177,6 +214,7 @@ async function toogleEmergencyDevice(isTurnedOn: boolean): Promise<boolean> {
       `${TASMOTA_URL}/cm?cmnd=Power${RELAY_INDEX}%20${isTurnedOn ? "1" : "0"}`
     );
     logger.info(`Turned ${isTurnedOn ? "on" : "off"} the emergency device`);
+    await sendHeartbeat();
     return true;
   } catch (err) {
     logger.error(
@@ -192,8 +230,12 @@ async function toogleEmergencyDevice(isTurnedOn: boolean): Promise<boolean> {
 
 async function sendHeartbeat() {
   try {
-    //The heartbeat is Timer1 600 command (setting timer 1 for 600 seconds). Timer1 is a timer which turns on the emergency device.
-    await axios.get(`${TASMOTA_URL}/cm?cmnd=RuleTimer1%20600`);
+    //The heartbeat is Timer1 *DELAY* command (setting timer 1 for *DELAY* seconds). Timer1 is a timer which turns on the emergency device.
+    await axios.get(
+      `${TASMOTA_URL}/cm?cmnd=RuleTimer1%20${
+        isProtectionTurnedOn ? PROTECTION_DELAY.toString() : "0"
+      }`
+    );
     logger.info("Sent the heartbeat to Tasmota");
   } catch (err) {
     logger.error(

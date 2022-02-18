@@ -803,6 +803,41 @@ api.put("/cancelAllAlarms", async (req, res) => {
   });
 });
 
+audioRouter.put("/tempMuteAudio", async (req, res) => {
+  logger.http(`[AUDIO] PUT /tempMuteAudio`);
+
+  //It's just the same request sent to the audio microservice
+  try {
+    let audiosReq = await axios.put(`${AUDIO_URL}/v1/tempMuteAudio`, {
+      duration: req.body.duration,
+    });
+    logger.info(
+      `Made audio request /tempMuteAudio with response ${JSON.stringify(
+        audiosReq.data
+      )}`
+    );
+
+    //Mute the emergency alarm as well (if it's active now)
+    let emergencyReq = await axios.put(`${ADAPTER_URL}/v1/tempMute`, {
+      duration: req.body.duration,
+    });
+    logger.info(
+      `Made emergency request PUT /tempMute with response ${JSON.stringify(
+        emergencyReq.data
+      )}`
+    );
+
+    res.status(audiosReq.status).send(audiosReq.data);
+  } catch (err) {
+    logger.warn(
+      `Error while making emergency request PUT /tempMute: ${JSON.stringify(
+        err?.response?.data
+      )} with status ${err?.response?.status}`
+    );
+    res.status(err?.response?.status ?? 502).send(err?.response?.data);
+  }
+});
+
 audioRouter.all("*", async (req, res) => {
   logger.http(`[AUDIO] ${req.method.toUpperCase()} ${req.path}`);
 

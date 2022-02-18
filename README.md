@@ -53,11 +53,12 @@ Everything is under development, the app will evolve slowly, step by step. Even 
 
 #### Adapter
 
-| Name                | Default value                                     | Description                                                                                       | Unit |
-| ------------------- | ------------------------------------------------- | ------------------------------------------------------------------------------------------------- | ---- |
-| PORT                | 2222                                              | A port the app will run on.                                                                       |      |
-| TAMOSTA_URL         | http://192.168.0.130                              | Tasmota's IP adress used to communicate with the module.                                          |      |
-| RELAY_INDEX         | 1                                                 | Which Tasmota relay to use as emergency. It will inject this into "Power" command, e.g. "Power1". |      |
-| CORE_URL            | http://localhost:3333 (to be changed with Docker) | Used for socket.io connection.                                                                    |      |
-| HEARTBEAT_CRONJOB   | _/3 _ \* \* \*                                    | Cronjob used to send the heartbeat to Tasmota. Default is every 3rd minute.                       | cron |
-| TEMPERATURE_CRONJOB | _/15 _ \* \* \*                                   | Cronjob used to fetch the temperature. Default is every 15th minute.                              | cron |
+| Name                | Default value                                     | Description                                                                                       | Unit    |
+| ------------------- | ------------------------------------------------- | ------------------------------------------------------------------------------------------------- | ------- |
+| PORT                | 2222                                              | A port the app will run on.                                                                       |         |
+| TAMOSTA_URL         | http://192.168.0.130                              | Tasmota's IP adress used to communicate with the module.                                          |         |
+| RELAY_INDEX         | 1                                                 | Which Tasmota relay to use as emergency. It will inject this into "Power" command, e.g. "Power1". |         |
+| CORE_URL            | http://localhost:3333 (to be changed with Docker) | Used for socket.io connection.                                                                    |         |
+| HEARTBEAT_CRONJOB   | _/3 _ \* \* \*                                    | Cronjob used to send the heartbeat to Tasmota. Default is every 3rd minute.                       | cron    |
+| TEMPERATURE_CRONJOB | _/15 _ \* \* \*                                   | Cronjob used to fetch the temperature. Default is every 15th minute.                              | cron    |
+| PROTECTION_DELAY    | 600                                               | Injected into Tasmota command RuleTimer1 x (where x is the value)                                 | seconds |

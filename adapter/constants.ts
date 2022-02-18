@@ -7,6 +7,7 @@ const RELAY_INDEX: number = parseInt(process.env.RELAY_INDEX ?? "1");
 const CORE_URL: string = process.env.CORE_URL ?? "http://localhost:3333";
 const HEARTBEAT_CRONJOB = process.env.HEARTBEAT_CRONJOB ?? "*/3 * * * *";
 const TEMPERATURE_CRONJOB = process.env.TEMPERATURE_CRONJOB ?? "*/15 * * * *";
+const PROTECTION_DELAY = process.env.PROTECTION_DELAY || 600;
 
 export {
   PORT,
@@ -15,4 +16,5 @@ export {
   CORE_URL,
   HEARTBEAT_CRONJOB,
   TEMPERATURE_CRONJOB,
+  PROTECTION_DELAY,
 };
