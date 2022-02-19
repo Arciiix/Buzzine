@@ -30,6 +30,7 @@ import 'package:buzzine/types/Snooze.dart';
 import 'package:buzzine/types/YouTubeVideoInfo.dart';
 import 'package:buzzine/utils/formatting.dart';
 import 'package:buzzine/utils/validate_qr_code.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -288,6 +289,15 @@ class _HomePageState extends State<HomePage> {
         //Re-render the screen
         setState(() {});
       });
+    });
+
+    FirebaseMessaging.onMessageOpenedApp.listen((data) {
+      //TODO: Navigate to the ringing screen if there's an alarm
+      print("User clicked on message: ${data.messageId}");
+    });
+    FirebaseMessaging.onMessage.listen((data) {
+      //TODO
+      print("Got new message: ${data.messageId}");
     });
   }
 

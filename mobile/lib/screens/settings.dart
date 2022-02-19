@@ -3,6 +3,7 @@ import 'package:buzzine/globalData.dart';
 import 'package:buzzine/screens/select_on_map.dart';
 import 'package:buzzine/utils/formatting.dart';
 import 'package:buzzine/utils/show_snackbar.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import "package:flutter/material.dart";
 import 'package:flutter/services.dart';
 import 'package:latlong2/latlong.dart';
@@ -39,6 +40,10 @@ class _SettingsState extends State<Settings> {
   TextEditingController _weatherHoursCountController = TextEditingController();
 
   RangeValues _temperatureRange = RangeValues(19, 24);
+
+  FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
+  bool? _isMessagingEnabled;
+  String? _notificationsToken;
 
   Future<double?> selectNumberFromPicker(double min, double max, double init,
       String quantityName, String unit) async {
@@ -87,6 +92,97 @@ class _SettingsState extends State<Settings> {
         selectedValue + selectedValueFracionalValue / 10 > min &&
         selectedValue + selectedValueFracionalValue / 10 < max) {
       return selectedValue + selectedValueFracionalValue / 10;
+    }
+  }
+
+  Future<void> getNotificationsStatus() async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Czekaj..."),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: CircularProgressIndicator(),
+              ),
+              Text(
+                "Trwa pobieranie statusu powiadomień...",
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        );
+      },
+    );
+
+    //TODO: Request for permissions
+    String? token = await _firebaseMessaging.getToken();
+    print("GOT TOKEN: $token");
+    if (token == null) {
+      //The current context is the AlertDialog, so exit it.
+      Navigator.of(context).pop();
+
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text("Błąd"),
+            content: Text(
+                'Wystąpił nieoczekiwany błąd podczas pobierania tokenu FCM'),
+            actions: <Widget>[
+              TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text("OK")),
+            ],
+          );
+        },
+      );
+      return;
+    }
+    bool isMessagingEnabled = await GlobalData.getNotificationsStatus(token);
+    //The current context is the AlertDialog, so exit it.
+    Navigator.of(context).pop();
+
+    setState(() {
+      _notificationsToken = token;
+      _isMessagingEnabled = isMessagingEnabled;
+    });
+  }
+
+  Future<void> toogleNotifications(bool isTurnedOn) async {
+    await GlobalData.toogleNotifications(isTurnedOn, _notificationsToken!);
+    setState(() {
+      _isMessagingEnabled = !_isMessagingEnabled!;
+    });
+  }
+
+  Future<void> testNotifications() async {
+    bool? confirmed = await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Testowe powiadomienie"),
+          content: Text(
+              'Czy na pewno chcesz wysłać testowe powiadomienie? Uwaga: Aby sprawdzić, czy wszystko działa, po zatwierdzeniu tego komunikatu musisz wyjść szybko z aplikacji - do ekranu głównego!'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text("Anuluj"),
+            ),
+            TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: const Text("Wyślij")),
+          ],
+        );
+      },
+    );
+
+    if (confirmed == true) {
+      await GlobalData.sendTestNotification(_notificationsToken!);
     }
   }
 
@@ -640,6 +736,44 @@ class _SettingsState extends State<Settings> {
                                     )),
                               ],
                             ),
+                            SectionTitle("Powiadomienia"),
+                            Column(
+                              children: _isMessagingEnabled != null
+                                  ? [
+                                      InkWell(
+                                        onTap: () => toogleNotifications(
+                                            !_isMessagingEnabled!),
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.max,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              const Text("Status"),
+                                              Switch(
+                                                  value: _isMessagingEnabled!,
+                                                  onChanged:
+                                                      toogleNotifications),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                      if (_isMessagingEnabled == true)
+                                        TextButton(
+                                            child: const Text("Przetestuj"),
+                                            onPressed: testNotifications),
+                                    ]
+                                  : [
+                                      SizedBox(
+                                        width: double.infinity,
+                                        child: TextButton(
+                                          child: Text("Pobierz status"),
+                                          onPressed: getNotificationsStatus,
+                                        ),
+                                      )
+                                    ],
+                            )
                           ],
                         ))),
               ),

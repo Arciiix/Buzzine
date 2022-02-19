@@ -8,3 +8,6 @@ logs/
 dist/
 # db
 buzzineAPI.db
+
+# Firebase credentials
+firebaseServiceAccountKey.json

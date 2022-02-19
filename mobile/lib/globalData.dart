@@ -959,4 +959,57 @@ class GlobalData {
     GlobalData.recentPing = result;
     return result;
   }
+
+  static Future<void> toogleNotifications(bool isTurnedOn, String token) async {
+    Map requestData = {'isTurnedOn': isTurnedOn, 'token': token};
+
+    var response = await http.put(
+        Uri.parse("$serverIP/v1/notifications/toogleNotifications"),
+        body: json.encode(requestData),
+        headers: {"Content-Type": "application/json"});
+    var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
+
+    if (response.statusCode != 200 || decodedResponse['error'] == true) {
+      throw APIException(
+          "Błąd podczas ${isTurnedOn ? "włączania" : "wyłączania"} powiadomień. Status code: ${response.statusCode}, response: ${response.body}");
+    }
+  }
+
+  static Future<void> sendTestNotification(String token) async {
+    Map<String, String> requestData = {
+      'token': token,
+    };
+
+    var response = await http.get(
+      Uri.parse("$serverIP/v1/notifications/sendTestNotification")
+          .replace(queryParameters: requestData),
+    );
+    var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
+
+    if (response.statusCode != 200 || decodedResponse['error'] == true) {
+      throw APIException(
+          "Błąd podczas wysyłania testowego powiadomienia. Status code: ${response.statusCode}, response: ${response.body}");
+    }
+  }
+
+  static Future<bool> getNotificationsStatus(String token) async {
+    Map<String, String> requestData = {
+      'token': token,
+    };
+
+    var response = await http.get(
+      Uri.parse("$serverIP/v1/notifications/checkIfTokenExists")
+          .replace(queryParameters: requestData),
+    );
+
+    var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
+
+    if ((response.statusCode != 200 && response.statusCode != 404) ||
+        decodedResponse['error'] == true) {
+      throw APIException(
+          "Błąd podczas pobierania statusu powiadomień. Status code: ${response.statusCode}, response: ${response.body}");
+    } else {
+      return decodedResponse['response']['found'];
+    }
+  }
 }

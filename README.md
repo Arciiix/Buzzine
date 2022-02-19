@@ -19,6 +19,7 @@ Everything is under development, the app will evolve slowly, step by step. Even 
    **Important: copy all the necessary assets into that folder**, e.g., audio/default.mp3 when it comes to the audio service or the database. Use the `copyFilesToDist.cmd` script.
 
 4. Adapter is a microservice used for emergency. If you wish to use it, flash ESP8266 with Tasmota and pass its IP adress as an environment variable to the adapter.
+5. Remember to initialize a Firebase project and update the necessary config, such as `google-services.json` on mobile or `firebaseServiceAccountKey.json` on API
 
 ### Environment variables
 

@@ -8,12 +8,15 @@ import guardRouter, { checkQRCode } from "./guard";
 import { initDatabase } from "./utils/db";
 import cdn from "./utils/cdn";
 import weatherRouter from "./weather";
+import notificationsRouter, { loadFirebaseConfig } from "./notifications";
 
 //Load environment variables from file
 dotenv.config();
 const PORT = process.env.PORT || 1111;
 const AUDIO_URL = process.env.AUDIO_URL || "http://localhost:7777"; //DEV TODO: Change it
 const ADAPTER_URL = process.env.ADAPTER_URL || "http://localhost:2222"; //DEV TODO: Change it
+
+const socket = io(process.env.CORE_URL || "http://localhost:3333"); //DEV - to be changed with Docker
 
 const app = express();
 app.use(bodyParser.json());
@@ -42,6 +45,7 @@ api.use("/weather", weatherRouter);
 api.use("/audio", audioRouter);
 api.use("/emergency", emergencyRouter);
 api.use("/temperature", emergencyRouter);
+api.use("/notifications", notificationsRouter);
 
 api.get("/ping", async (req, res) => {
   let now = new Date();
@@ -846,8 +850,6 @@ emergencyRouter.all("*", async (req, res) => {
   }
 });
 
-const socket = io(process.env.CORE_URL || "http://localhost:3333"); //DEV - to be changed with Docker
-
 socket.on("connect", () => {
   logger.info(
     `Made a connection with the core, waiting for the initial message...`
@@ -864,6 +866,7 @@ const server = app.listen(PORT, () => {
 async function init() {
   await initDatabase();
   await getServicesConstants();
+  loadFirebaseConfig();
 }
 
 interface IServicesConstants {
@@ -874,4 +877,4 @@ interface IServicesConstants {
 }
 
 init();
-export { io };
+export { socket };
