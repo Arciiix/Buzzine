@@ -37,7 +37,14 @@ class NotificationService {
 
     let response = await firebaseAdmin.messaging().sendToDevice(
       this.tokens,
-      { notification },
+      {
+        notification,
+        data: {
+          alarmId: alarmId,
+          alarmName: alarmName ?? "",
+          alarmDescription: alarmDescription ?? "",
+        },
+      },
       {
         priority: "high",
         timeToLive: 60 * 15, //15 minutes

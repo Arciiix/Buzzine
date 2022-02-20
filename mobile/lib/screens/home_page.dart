@@ -92,7 +92,7 @@ class _HomePageState extends State<HomePage> {
     await refresh();
   }
 
-  void navigateToRingingAlarm(RingingAlarmEntity ringingAlarm,
+  Future<void> navigateToRingingAlarm(RingingAlarmEntity ringingAlarm,
       {bool? isItActuallyRinging}) async {
     await Navigator.of(context).push(MaterialPageRoute(
         builder: (context) => RingingAlarm(
@@ -291,13 +291,29 @@ class _HomePageState extends State<HomePage> {
       });
     });
 
-    FirebaseMessaging.onMessageOpenedApp.listen((data) {
-      //TODO: Navigate to the ringing screen if there's an alarm
-      print("User clicked on message: ${data.messageId}");
-    });
-    FirebaseMessaging.onMessage.listen((data) {
-      //TODO
-      print("Got new message: ${data.messageId}");
+    FirebaseMessaging.instance.getToken().then((value) {
+      FirebaseMessaging.onMessageOpenedApp.listen((data) async {
+        print("User clicked on message: ${data.messageId}");
+
+        //When the notification has alarmId property, it means that the alarm is ringing right now
+        if (data.data['alarmId'] != null) {
+          print("Fetching the data because of a notification...");
+          //Fetch the data
+          await GlobalData.getData();
+
+          print("Going to the ringing alarm screen...");
+          await navigateToRingingAlarm(GlobalData.ringingAlarms.firstWhere(
+              (element) => element.alarm.id == data.data['alarmId'],
+              orElse: () => GlobalData.ringingNaps.firstWhere(
+                  (element) => element.alarm.id == data.data['alarmId'])));
+        }
+      });
+      FirebaseMessaging.onMessage.listen((data) async {
+        print("Got new message: ${data.messageId}");
+
+        //That's probably a ringing alarm - refresh the data
+        await refresh();
+      });
     });
   }
 

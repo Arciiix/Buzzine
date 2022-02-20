@@ -649,20 +649,19 @@ class GlobalData {
               temperature: double.parse(
                   temperatureResponse['currentTemperature'].toStringAsFixed(2)),
               average: double.tryParse(
-                  temperatureResponse['average']?.toStringAsFixed(2)),
+                  temperatureResponse?['average']?.toStringAsFixed(2) ?? ""),
               min: double.tryParse(
-                  temperatureResponse['min']?.toStringAsFixed(2)),
+                  temperatureResponse?['min']?.toStringAsFixed(2) ?? ""),
               max: double.tryParse(
-                  temperatureResponse['max']?.toStringAsFixed(2)),
+                  temperatureResponse?['max']?.toStringAsFixed(2) ?? ""),
               range: double.parse(
-                  temperatureResponse['range']?.toStringAsFixed(2)),
+                  temperatureResponse?['range']?.toStringAsFixed(2) ?? ""),
               averageOffsetPercent: double.tryParse(
-                  temperatureResponse['averageOffsetPercent']
-                      ?.toStringAsFixed(4)),
+                  temperatureResponse?['averageOffsetPercent']?.toStringAsFixed(4) ??
+                      ""),
               offsetPercent: double.parse(
                   temperatureResponse['offsetPercent'].toStringAsFixed(4)),
-              temperatures:
-                  temperatureResponse['temperatures'].map<ChartData>((e) {
+              temperatures: temperatureResponse['temperatures'].map<ChartData>((e) {
                 return ChartData(
                     timestamp: DateTime.parse(e['timestamp']),
                     value: e['value']);

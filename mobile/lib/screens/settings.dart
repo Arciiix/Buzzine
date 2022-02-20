@@ -1,3 +1,4 @@
+import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:buzzine/components/number_vertical_picker.dart';
 import 'package:buzzine/globalData.dart';
 import 'package:buzzine/screens/select_on_map.dart';
@@ -119,7 +120,8 @@ class _SettingsState extends State<Settings> {
       },
     );
 
-    //TODO: Request for permissions
+    await requestNotificationPermission();
+
     String? token = await _firebaseMessaging.getToken();
     print("GOT TOKEN: $token");
     if (token == null) {
@@ -183,6 +185,21 @@ class _SettingsState extends State<Settings> {
 
     if (confirmed == true) {
       await GlobalData.sendTestNotification(_notificationsToken!);
+    }
+  }
+
+  Future<void> requestNotificationPermission() async {
+    bool isGranted = await AwesomeNotifications().isNotificationAllowed();
+    print("Is notification permission granted: $isGranted");
+    while (!isGranted) {
+      isGranted = await AwesomeNotifications()
+          .requestPermissionToSendNotifications(permissions: [
+        NotificationPermission.Alert,
+        NotificationPermission.CriticalAlert,
+        NotificationPermission.PreciseAlarms,
+        NotificationPermission.Provisional,
+        NotificationPermission.Sound,
+      ]);
     }
   }
 
@@ -759,10 +776,27 @@ class _SettingsState extends State<Settings> {
                                           ),
                                         ),
                                       ),
-                                      if (_isMessagingEnabled == true)
-                                        TextButton(
-                                            child: const Text("Przetestuj"),
-                                            onPressed: testNotifications),
+                                      Row(
+                                          mainAxisSize: MainAxisSize.max,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Expanded(
+                                              child: TextButton(
+                                                child: Text("Odśwież status"),
+                                                onPressed:
+                                                    getNotificationsStatus,
+                                              ),
+                                            ),
+                                            if (_isMessagingEnabled == true)
+                                              Expanded(
+                                                child: TextButton(
+                                                    child: const Text(
+                                                        "Przetestuj"),
+                                                    onPressed:
+                                                        testNotifications),
+                                              ),
+                                          ])
                                     ]
                                   : [
                                       SizedBox(
