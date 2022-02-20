@@ -134,7 +134,7 @@ class _SleepAsAndroidIntegrationState extends State<SleepAsAndroidIntegration> {
                       builder: (_) => AlertDialog(
                             title: const Text("Sleep as Android"),
                             content: Text(
-                                'Dzięki tej integracji alarmy z aplikacji Sleep as Android będą też odtwarzane w Buzzine - kiedy nadejdzie czas na alarm, równocześnie z telefonem włączy się Buzzine z wybranym dźwiękiem oraz po pewnym (wybranym) czasie dodatkowe urządzenie.\nAby włączyć tę integrację, w Sleep as Android przejdź do ustawień, a następnie: Integrations -> Services -> Automation. W sekcji "Webhooks" zaznacz checkboxa, a w polu URL wpisz adres API z dodatkiem "/v1/sleepasandroid/webhook", np. "http://192.168.0.105:1111/v1/sleepasandroid/webhook".'),
+                                'Dzięki tej integracji alarmy z aplikacji Sleep as Android będą też odtwarzane w Buzzine - kiedy nadejdzie czas na alarm, równocześnie z telefonem włączy się Buzzine z wybranym dźwiękiem oraz po pewnym (wybranym) czasie dodatkowe urządzenie.\nAby włączyć tę integrację, w Sleep as Android przejdź do ustawień, a następnie: Integrations -> Services -> Automation. W sekcji "Webhooks" zaznacz checkboxa, a w polu URL wpisz: "${GlobalData.serverIP}/v1/sleepasandroid/webhook" - czyli adres API z dodatkiem "/v1/sleepasandroid/webhook".'),
                             actions: [
                               TextButton(
                                   onPressed: () => Navigator.of(context).pop(),
