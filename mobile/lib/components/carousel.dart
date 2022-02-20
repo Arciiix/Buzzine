@@ -77,8 +77,11 @@ class _CarouselState extends State<Carousel> {
                   child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                    Text("Brak nadchodzących alarmów!",
-                        style: TextStyle(fontSize: 24)),
+                    Text(
+                      "Brak nadchodzących alarmów!",
+                      style: TextStyle(fontSize: 24),
+                      textAlign: TextAlign.center,
+                    ),
                     TextButton(
                         onPressed: () => widget.onSelect(null),
                         child: Text("Zarządzaj alarmami",
