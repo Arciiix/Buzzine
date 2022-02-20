@@ -35,23 +35,29 @@ class NotificationService {
       title: "Buzzine - " + (alarmName ?? "Alarm"),
     };
 
-    let response = await firebaseAdmin.messaging().sendToDevice(
-      this.tokens,
-      {
-        notification,
-        data: {
-          alarmId: alarmId,
-          alarmName: alarmName ?? "",
-          alarmDescription: alarmDescription ?? "",
+    try {
+      let response = await firebaseAdmin.messaging().sendToDevice(
+        this.tokens,
+        {
+          notification,
+          data: {
+            alarmId: alarmId,
+            alarmName: alarmName ?? "",
+            alarmDescription: alarmDescription ?? "",
+          },
         },
-      },
-      {
-        priority: "high",
-        timeToLive: 60 * 15, //15 minutes
-      }
-    );
+        {
+          priority: "high",
+          timeToLive: 60 * 15, //15 minutes
+        }
+      );
 
-    logger.info(`Sent Firebase notification: ${JSON.stringify(response)}`);
+      logger.info(`Sent Firebase notification: ${JSON.stringify(response)}`);
+    } catch (err) {
+      logger.error(
+        `Error while sending a Firebase notification: ${err.toString()}`
+      );
+    }
   }
 
   clearNotificationHistory() {
