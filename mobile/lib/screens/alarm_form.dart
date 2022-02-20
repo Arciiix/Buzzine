@@ -279,10 +279,13 @@ class _AlarmFormState extends State<AlarmForm> {
                   padding: const EdgeInsets.all(8),
                   child: Column(
                     children: [
-                      TextFormField(
-                        controller: _nameController,
-                        textCapitalization: TextCapitalization.sentences,
-                        decoration: InputDecoration(hintText: "Nazwa"),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                        child: TextFormField(
+                          controller: _nameController,
+                          textCapitalization: TextCapitalization.sentences,
+                          decoration: InputDecoration(hintText: "Nazwa"),
+                        ),
                       ),
                       if (widget.alarmType == AlarmType.nap)
                         InkWell(
@@ -747,11 +750,15 @@ class _AlarmFormState extends State<AlarmForm> {
                               ]
                             : [],
                       ),
-                      TextFormField(
-                        controller: _notesController,
-                        maxLines: 2,
-                        textCapitalization: TextCapitalization.sentences,
-                        decoration: const InputDecoration(hintText: "Notatki"),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                        child: TextFormField(
+                          controller: _notesController,
+                          maxLines: 2,
+                          textCapitalization: TextCapitalization.sentences,
+                          decoration:
+                              const InputDecoration(hintText: "Notatki"),
+                        ),
                       ),
                     ],
                   ))));
