@@ -153,6 +153,9 @@ class _RingingAlarmState extends State<RingingAlarm>
     );
     //It could be null
     if (shouldMuteAudio == true) {
+      setState(() {
+        didMuteAudio = true;
+      });
       bool isAudioMuted = await GlobalData.muteAudio(tempMuteAudioDuration);
       if (!isAudioMuted) {
         showDialog(
@@ -168,9 +171,6 @@ class _RingingAlarmState extends State<RingingAlarm>
                   ],
                 ));
       }
-      setState(() {
-        didMuteAudio = true;
-      });
     }
   }
 
@@ -284,101 +284,135 @@ class _RingingAlarmState extends State<RingingAlarm>
                 )),
                 child: Scaffold(
                   backgroundColor: Colors.black,
-                  body: SingleChildScrollView(
-                    child: Container(
-                      margin: EdgeInsets.symmetric(horizontal: 15),
-                      padding: EdgeInsets.all(8),
-                      child: Row(children: [
-                        Expanded(
-                            child: SafeArea(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              AnimatedOpacity(
-                                opacity: _isBlinkVisible ? 1.0 : 0.0,
-                                duration: const Duration(milliseconds: 100),
+                  body: Column(
+                    children: [
+                      Expanded(
+                        child: SingleChildScrollView(
+                          child: Container(
+                            margin: EdgeInsets.symmetric(horizontal: 15),
+                            padding: EdgeInsets.all(8),
+                            child: Row(children: [
+                              Expanded(
+                                  child: SafeArea(
                                 child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
+                                    AnimatedOpacity(
+                                      opacity: _isBlinkVisible ? 1.0 : 0.0,
+                                      duration:
+                                          const Duration(milliseconds: 100),
+                                      child: Column(
+                                        children: [
+                                          Text(
+                                              "${addZero(now.hour)}:${addZero(now.minute)}",
+                                              style: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 72)),
+                                          Text(
+                                              "${addZero(now.day)}.${addZero(now.month)}.${now.year}",
+                                              style: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 24)),
+                                        ],
+                                      ),
+                                    ),
                                     Text(
-                                        "${addZero(now.hour)}:${addZero(now.minute)}",
-                                        style: const TextStyle(
-                                            color: Colors.white, fontSize: 72)),
+                                      widget.ringingAlarm.alarm.name ?? "Alarm",
+                                      style: const TextStyle(fontSize: 32),
+                                      textAlign: TextAlign.center,
+                                    ),
                                     Text(
-                                        "${addZero(now.day)}.${addZero(now.month)}.${now.year}",
-                                        style: const TextStyle(
-                                            color: Colors.white, fontSize: 24)),
+                                      widget.ringingAlarm.alarm.notes ?? "",
+                                      style: const TextStyle(fontSize: 16),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    Padding(
+                                        padding: const EdgeInsets.all(10),
+                                        child: Column(
+                                          children: isSnoozeAvailable
+                                              ? [
+                                                  const Text(
+                                                      "Zużyty czas drzemek",
+                                                      style: TextStyle(
+                                                          color: Colors.white,
+                                                          fontSize: 18)),
+                                                  Padding(
+                                                    padding: const EdgeInsets
+                                                        .symmetric(vertical: 5),
+                                                    child:
+                                                        LinearProgressIndicator(
+                                                      value: 1 -
+                                                          (remainingTime
+                                                                  .inSeconds /
+                                                              (widget
+                                                                      .ringingAlarm
+                                                                      .alarm
+                                                                      .maxTotalSnoozeDuration ??
+                                                                  300)),
+                                                      minHeight: 20,
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                      remainingTime.inSeconds >
+                                                              0
+                                                          ? "${addZero(remainingTime.inMinutes)}:${addZero(remainingTime.inSeconds.remainder(60))}"
+                                                          : "Brak",
+                                                      style: const TextStyle(
+                                                          color: Colors.white,
+                                                          fontSize: 18))
+                                                ]
+                                              : [],
+                                        )),
+                                    Column(
+                                      children: GlobalData.weather != null
+                                          ? [
+                                              InkWell(
+                                                onTap: navigateToWeather,
+                                                child: Hero(
+                                                  tag: "WEATHER_WIDGET",
+                                                  child: WeatherWidget(
+                                                    backgroundColor:
+                                                        Colors.black,
+                                                  ),
+                                                ),
+                                              ),
+                                            ]
+                                          : [],
+                                    ),
+                                    InkWell(
+                                        onTap: navigateToTemperature,
+                                        child: TemperatureWidget(
+                                          backgroundColor: Colors.black,
+                                        )),
                                   ],
                                 ),
-                              ),
-                              Text(
-                                widget.ringingAlarm.alarm.name ?? "Alarm",
-                                style: const TextStyle(fontSize: 32),
-                                textAlign: TextAlign.center,
-                              ),
-                              Text(
-                                widget.ringingAlarm.alarm.notes ?? "",
-                                style: const TextStyle(fontSize: 16),
-                                textAlign: TextAlign.center,
-                              ),
-                              Padding(
-                                  padding: const EdgeInsets.all(10),
-                                  child: Column(
-                                    children: isSnoozeAvailable
-                                        ? [
-                                            const Text("Zużyty czas drzemek",
-                                                style: TextStyle(
-                                                    color: Colors.white,
-                                                    fontSize: 18)),
-                                            Padding(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      vertical: 5),
-                                              child: LinearProgressIndicator(
-                                                value: 1 -
-                                                    (remainingTime.inSeconds /
-                                                        (widget
-                                                                .ringingAlarm
-                                                                .alarm
-                                                                .maxTotalSnoozeDuration ??
-                                                            300)),
-                                                minHeight: 20,
-                                              ),
-                                            ),
-                                            Text(
-                                                remainingTime.inSeconds > 0
-                                                    ? "${addZero(remainingTime.inMinutes)}:${addZero(remainingTime.inSeconds.remainder(60))}"
-                                                    : "Brak",
-                                                style: const TextStyle(
-                                                    color: Colors.white,
-                                                    fontSize: 18))
-                                          ]
-                                        : [],
-                                  )),
-                              Column(
-                                children: GlobalData.weather != null
-                                    ? [
-                                        InkWell(
-                                          onTap: navigateToWeather,
-                                          child: Hero(
-                                            tag: "WEATHER_WIDGET",
-                                            child: WeatherWidget(
-                                              backgroundColor: Colors.black,
-                                            ),
-                                          ),
-                                        ),
-                                      ]
-                                    : [],
-                              ),
-                              InkWell(
-                                  onTap: navigateToTemperature,
-                                  child: TemperatureWidget(
-                                    backgroundColor: Colors.black,
-                                  )),
-                            ],
+                              )),
+                            ]),
                           ),
-                        )),
-                      ]),
-                    ),
+                        ),
+                      ),
+                      Padding(
+                        padding: EdgeInsets.only(
+                            bottom: swipeHeight / 2 +
+                                (MediaQuery.of(context).size.height /
+                                    50 *
+                                    (1 - _animation.value)) +
+                                10),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: didMuteAudio ||
+                                  widget.isItActuallyRinging == false
+                              ? []
+                              : [
+                                  const Icon(Icons.keyboard_arrow_up,
+                                      color: Colors.white),
+                                  Text("Wycisz",
+                                      style: const TextStyle(
+                                          color: Colors.white, fontSize: 15))
+                                ],
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -408,26 +442,6 @@ class _RingingAlarmState extends State<RingingAlarm>
                               bottomLeft: Radius.circular(5))),
                     )),
               ),
-              Positioned(
-                  width: MediaQuery.of(context).size.width, //100% width
-                  bottom: swipeHeight / 2 +
-                      (MediaQuery.of(context).size.height /
-                          50 *
-                          (1 - _animation.value)) +
-                      10,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children:
-                        didMuteAudio || widget.isItActuallyRinging == false
-                            ? []
-                            : [
-                                const Icon(Icons.keyboard_arrow_up,
-                                    color: Colors.white),
-                                Text("Wycisz",
-                                    style: const TextStyle(
-                                        color: Colors.white, fontSize: 15))
-                              ],
-                  )),
             ],
           )),
     );
