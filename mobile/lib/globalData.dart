@@ -7,6 +7,7 @@ import 'package:buzzine/types/Nap.dart';
 import 'package:buzzine/types/PingResult.dart';
 import 'package:buzzine/types/Repeat.dart';
 import 'package:buzzine/types/RingingAlarmEntity.dart';
+import 'package:buzzine/types/SleepAsAndroidIntegrationStatus.dart';
 import 'package:buzzine/types/Snooze.dart';
 import 'package:buzzine/types/TemperatureData.dart';
 import 'package:buzzine/types/Weather.dart';
@@ -41,6 +42,8 @@ class GlobalData {
   static LatLng? homeLocation;
   static int weatherHoursCount = 24;
   static RangeValues temperatureRange = RangeValues(19, 24);
+
+  static late SleepAsAndroidIntegrationStatus sleepAsAndroidIntegrationStatus;
 
   static late Constants constants;
   static late EmergencyStatus emergencyStatus;
@@ -83,6 +86,9 @@ class GlobalData {
     if (onProgress != null) onProgress("Status systemu przeciwawaryjnego");
     await getEmergencyStatus();
     print("Got emergency status");
+    if (onProgress != null) onProgress("Status integracji: Sleep as Android");
+    await getSleepAsAndroidIntegrationStatus();
+    print("Got Sleep as Android integration status");
     if (onProgress != null) onProgress("Wersja aplikacji");
     await getAppVersion();
     print("Got app version");
@@ -1019,6 +1025,98 @@ class GlobalData {
           "Błąd podczas pobierania statusu powiadomień. Status code: ${response.statusCode}, response: ${response.body}");
     } else {
       return decodedResponse['response']['found'];
+    }
+  }
+
+  static Future<SleepAsAndroidIntegrationStatus>
+      getSleepAsAndroidIntegrationStatus() async {
+    var response =
+        await http.get(Uri.parse("$serverIP/v1/sleepasandroid/getStatus"));
+
+    var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
+
+    if (response.statusCode != 200 || decodedResponse['error'] == true) {
+      throw APIException(
+          "Błąd podczas pobierania statusu integracji z Sleep as Android. Status code: ${response.statusCode}, response: ${response.body}");
+    } else {
+      var response = decodedResponse['response'];
+      SleepAsAndroidIntegrationStatus _status = SleepAsAndroidIntegrationStatus(
+          isActive: response['isActive'],
+          emergencyAlarmTimeoutSeconds:
+              response['emergencyAlarmTimeoutSeconds'],
+          audio: Audio(
+            audioId: response['associatedSound']['audioId'],
+            filename: response['associatedSound']['filename'],
+            friendlyName: response['associatedSound']['friendlyName'],
+          ));
+      GlobalData.sleepAsAndroidIntegrationStatus = _status;
+      return _status;
+    }
+  }
+
+  static Future<void> toogleSleepAsAndroidIntegrationStatus(
+      bool isActive) async {
+    Map requestData = {'isActive': isActive};
+
+    var response = await http.put(
+        Uri.parse("$serverIP/v1/sleepasandroid/toogleStatus"),
+        body: json.encode(requestData),
+        headers: {"Content-Type": "application/json"});
+    var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
+
+    if (response.statusCode != 200 || decodedResponse['error'] == true) {
+      throw APIException(
+          "Błąd podczas ${isActive ? "włączania" : "wyłączania"} integracji z Sleep as Android. Status code: ${response.statusCode}, response: ${response.body}");
+    }
+  }
+
+  static Future<void> changeSleepAsAndroidIntegrationEmergencyAlarmTimeout(
+      int emergencyAlarmTimeoutSeconds) async {
+    Map requestData = {
+      'emergencyAlarmTimeoutSeconds': emergencyAlarmTimeoutSeconds
+    };
+
+    var response = await http.put(
+        Uri.parse(
+            "$serverIP/v1/sleepasandroid/changeEmergencyAlarmTimeoutSeconds"),
+        body: json.encode(requestData),
+        headers: {"Content-Type": "application/json"});
+    var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
+
+    if (response.statusCode != 200 || decodedResponse['error'] == true) {
+      throw APIException(
+          "Błąd podczas zmieniania opóźnienia włączania dodatkowego urządzenia w integracji z Sleep as Android. Status code: ${response.statusCode}, response: ${response.body}");
+    }
+  }
+
+  static Future<void> changeSleepAsAndroidIntegrationSound(
+      String audioId) async {
+    Map requestData = {'audioId': audioId};
+
+    var response = await http.put(
+        Uri.parse("$serverIP/v1/sleepasandroid/changeSound"),
+        body: json.encode(requestData),
+        headers: {"Content-Type": "application/json"});
+    var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
+
+    if (response.statusCode != 200 || decodedResponse['error'] == true) {
+      throw APIException(
+          "Błąd podczas zmieniania dźwięku integracji z Sleep as Android. Status code: ${response.statusCode}, response: ${response.body}");
+    }
+  }
+
+  static Future<void> toogleSleepAsAndroidCurrentAlarm(bool isActive) async {
+    Map requestData = {'isActive': isActive};
+
+    var response = await http.put(
+        Uri.parse("$serverIP/v1/sleepasandroid/toogleCurrentAlarm"),
+        body: json.encode(requestData),
+        headers: {"Content-Type": "application/json"});
+    var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
+
+    if (response.statusCode != 200 || decodedResponse['error'] == true) {
+      throw APIException(
+          "Błąd podczas ${isActive ? "włączania" : "wyłączania"} bieżącego alarmu Sleep as Android. Status code: ${response.statusCode}, response: ${response.body}");
     }
   }
 }

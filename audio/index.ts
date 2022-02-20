@@ -109,9 +109,51 @@ api.get("/ping", (req, res) => {
   res.send({ error: false, timestamp: new Date() });
 });
 
+api.put("/alarmRinging", async (req, res) => {
+  if (!req.body.alarmId) {
+    res.status(400).send({ error: true, errorCode: "MISSING_ALARM_ID" });
+    return;
+  }
+  if (!audioInstance && !isRinging) {
+    isRinging = true;
+    let audioObj = await getAlarmAudio(req.body.alarmId);
+    audioInstance = new PlaySound(audioObj.filename);
+  } else {
+    logger.info(`Skipping playing audio since the audio is playing already...`);
+  }
+
+  res.send({ error: false });
+});
+api.put("/muteAudio", async (req, res) => {
+  if (!req.body.alarmId) {
+    res.status(400).send({ error: true, errorCode: "MISSING_ALARM_ID" });
+    return;
+  }
+  if (!audioInstance) {
+    logger.warn(
+      `Trying to mute audio, but it doesn't exist. Alarm id: ${req.body.alarmId}`
+    );
+    res.status(404).send({ error: true, errorCode: "AUDIO_DOES_NOT_EXIST" });
+    return;
+  }
+  audioInstance.destroy();
+  audioInstance = null;
+  isRinging = false;
+  res.send({ error: false });
+});
+
 api.get("/getSoundList", async (req, res) => {
   let soundList = await AudioNameMappingModel.findAll();
   res.send({ error: false, data: soundList });
+});
+
+api.get("/getAlarmSound", async (req, res) => {
+  if (!req.query.alarmId) {
+    res.status(400).send({ error: true, errorCode: "MISSING_ALARM_ID" });
+    return;
+  }
+  let alarmSound = await getAlarmAudio(req.query.alarmId as string);
+  res.send({ error: false, response: alarmSound });
 });
 
 api.get("/getAlarmSoundList", async (req, res) => {
@@ -179,11 +221,11 @@ api.put("/updateAudio", async (req, res) => {
 
 api.put("/changeAlarmSound", async (req, res) => {
   if (!req.body.alarmId) {
-    res.send({ error: true, errorCode: "MISSING_ALARMID" });
+    res.status(400).send({ error: true, errorCode: "MISSING_ALARMID" });
     return;
   }
   if (!req.body.audioId) {
-    res.send({ error: true, errorCode: "MISSING_AUDIOID" });
+    res.status(400).send({ error: true, errorCode: "MISSING_AUDIOID" });
     return;
   }
 

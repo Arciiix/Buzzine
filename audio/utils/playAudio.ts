@@ -77,16 +77,31 @@ class PlayAudio {
 
 async function getAlarmAudio(
   alarmId: string
-): Promise<{ filename: string; audioId: string }> {
-  if (!alarmId) return { filename: "default.mp3", audioId: "default" };
+): Promise<{ filename: string; audioId: string; friendlyName: string }> {
+  if (!alarmId)
+    return {
+      filename: "default.mp3",
+      audioId: "default",
+      friendlyName: "Default audio",
+    };
   let audio: any = await AlarmsAudioModel.findOne({
     where: { alarmId: alarmId },
     include: AudioNameMappingModel,
   });
 
   return audio
-    ? { filename: audio.AudioNameMapping.filename, audioId: audio.audioId }
-    : { filename: "default.mp3", audioId: "default" };
+    ? {
+        filename: audio.AudioNameMapping.filename,
+        audioId: audio.audioId,
+        friendlyName:
+          audio.AudioNameMapping.friendlyName ??
+          audio.AudioNameMapping.filename,
+      }
+    : {
+        filename: "default.mp3",
+        audioId: "default",
+        friendlyName: "Default audio",
+      };
 }
 
 async function changeAlarmSound(alarmId: string, audioId?: string) {

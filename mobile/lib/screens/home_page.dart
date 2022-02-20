@@ -5,6 +5,7 @@ import 'package:buzzine/components/carousel.dart';
 import 'package:buzzine/components/emergency_device_status.dart';
 import 'package:buzzine/components/logo.dart';
 import 'package:buzzine/components/ping_result_indicator.dart';
+import 'package:buzzine/components/sleep_as_android_integration.dart';
 import 'package:buzzine/components/snooze_card.dart';
 import 'package:buzzine/components/temperature_widget.dart';
 import 'package:buzzine/components/weather_widget.dart';
@@ -430,16 +431,7 @@ class _HomePageState extends State<HomePage> {
                                         CrossAxisAlignment.start,
                                     children: ringingAlarms.isNotEmpty
                                         ? [
-                                            Align(
-                                              alignment: Alignment.centerLeft,
-                                              child: const Padding(
-                                                padding: EdgeInsets.all(5),
-                                                child: Text("🚨 Aktywne alarmy",
-                                                    style: TextStyle(
-                                                        fontSize: 24,
-                                                        color: Colors.white)),
-                                              ),
-                                            ),
+                                            Section("🚨 Aktywne alarmy"),
                                             Carousel(
                                                 height: 360,
                                                 onSelect: (_) =>
@@ -484,16 +476,7 @@ class _HomePageState extends State<HomePage> {
                                         CrossAxisAlignment.start,
                                     children: ringingNaps.isNotEmpty
                                         ? [
-                                            Align(
-                                              alignment: Alignment.centerLeft,
-                                              child: const Padding(
-                                                padding: EdgeInsets.all(5),
-                                                child: Text("⌛ Aktywne drzemki",
-                                                    style: TextStyle(
-                                                        fontSize: 24,
-                                                        color: Colors.white)),
-                                              ),
-                                            ),
+                                            Section("⌛ Aktywne drzemki"),
                                             Carousel(
                                                 height: 360,
                                                 onSelect: (_) =>
@@ -535,17 +518,7 @@ class _HomePageState extends State<HomePage> {
                                         CrossAxisAlignment.start,
                                     children: activeSnoozes.isNotEmpty
                                         ? [
-                                            Align(
-                                              alignment: Alignment.centerLeft,
-                                              child: const Padding(
-                                                padding: EdgeInsets.all(5),
-                                                child: Text(
-                                                    "😴 Aktywne drzemki",
-                                                    style: TextStyle(
-                                                        fontSize: 24,
-                                                        color: Colors.white)),
-                                              ),
-                                            ),
+                                            Section("😴 Aktywne drzemki"),
                                             Carousel(
                                                 height: 320,
                                                 onSelect: (_) =>
@@ -602,16 +575,8 @@ class _HomePageState extends State<HomePage> {
                                             activeSnoozes.isEmpty &&
                                             ringingNaps.isEmpty
                                         ? [
-                                            Align(
-                                              alignment: Alignment.centerLeft,
-                                              child: const Padding(
-                                                padding: EdgeInsets.all(5),
-                                                child: Text(
-                                                    "⏰ Nadchodzące alarmy",
-                                                    style: TextStyle(
-                                                        fontSize: 24,
-                                                        color: Colors.white)),
-                                              ),
+                                            Section(
+                                              "⏰ Nadchodzące alarmy",
                                             ),
                                             Carousel(
                                                 height: 360,
@@ -644,17 +609,7 @@ class _HomePageState extends State<HomePage> {
                                                           e.emergencyAlarmTimeoutSeconds,
                                                       refresh: refresh);
                                                 }).toList()),
-                                            Align(
-                                              alignment: Alignment.centerLeft,
-                                              child: const Padding(
-                                                padding: EdgeInsets.all(5),
-                                                child: Text(
-                                                    "⏳ Nadchodzące drzemki",
-                                                    style: TextStyle(
-                                                        fontSize: 24,
-                                                        color: Colors.white)),
-                                              ),
-                                            ),
+                                            Section("⏳ Nadchodzące drzemki"),
                                             Carousel(
                                                 height: 360,
                                                 onSelect: handleNapSelect,
@@ -688,27 +643,11 @@ class _HomePageState extends State<HomePage> {
                                           ]
                                         : [],
                                   ),
-                                  Align(
-                                    alignment: Alignment.centerLeft,
-                                    child: const Padding(
-                                        padding: EdgeInsets.all(5),
-                                        child: Text("🎵 Audio",
-                                            style: TextStyle(
-                                                fontSize: 24,
-                                                color: Colors.white))),
-                                  ),
+                                  Section("🎵 Audio"),
                                   InkWell(
                                       onTap: navigateToAudioManager,
                                       child: AudioWidget()),
-                                  Align(
-                                    alignment: Alignment.centerLeft,
-                                    child: const Padding(
-                                        padding: EdgeInsets.all(5),
-                                        child: Text("🔒 Ochrona",
-                                            style: TextStyle(
-                                                fontSize: 24,
-                                                color: Colors.white))),
-                                  ),
+                                  Section("🔒 Ochrona"),
                                   Container(
                                       width: MediaQuery.of(context).size.width *
                                           0.9,
@@ -768,16 +707,7 @@ class _HomePageState extends State<HomePage> {
                                     child: Column(
                                       children: GlobalData.weather != null
                                           ? [
-                                              Align(
-                                                alignment: Alignment.centerLeft,
-                                                child: const Padding(
-                                                    padding: EdgeInsets.all(5),
-                                                    child: Text("⛅ Pogoda",
-                                                        style: TextStyle(
-                                                            fontSize: 24,
-                                                            color:
-                                                                Colors.white))),
-                                              ),
+                                              Section("⛅ Pogoda"),
                                               InkWell(
                                                   onTap: navigateToWeather,
                                                   child: Hero(
@@ -796,17 +726,7 @@ class _HomePageState extends State<HomePage> {
                                     child: Column(
                                       children: GlobalData.weather != null
                                           ? [
-                                              Align(
-                                                alignment: Alignment.centerLeft,
-                                                child: const Padding(
-                                                    padding: EdgeInsets.all(5),
-                                                    child: Text(
-                                                        "🌡️ Temperatura",
-                                                        style: TextStyle(
-                                                            fontSize: 24,
-                                                            color:
-                                                                Colors.white))),
-                                              ),
+                                              Section("🌡️ Temperatura"),
                                               InkWell(
                                                   onTap: navigateToTemperature,
                                                   child: TemperatureWidget(
@@ -818,14 +738,8 @@ class _HomePageState extends State<HomePage> {
                                           : [],
                                     ),
                                   ),
-                                  Align(
-                                    alignment: Alignment.centerLeft,
-                                    child: const Padding(
-                                        padding: EdgeInsets.all(5),
-                                        child: Text("🛡️ Ochrona",
-                                            style: TextStyle(
-                                                fontSize: 24,
-                                                color: Colors.white))),
+                                  Section(
+                                    "🛡️ Ochrona",
                                   ),
                                   EmergencyDeviceStatus(
                                     refreshEmergencyStatus: () async {
@@ -837,15 +751,7 @@ class _HomePageState extends State<HomePage> {
                                       });
                                     },
                                   ),
-                                  Align(
-                                    alignment: Alignment.centerLeft,
-                                    child: const Padding(
-                                        padding: EdgeInsets.all(5),
-                                        child: Text("⚙️ Ustawienia",
-                                            style: TextStyle(
-                                                fontSize: 24,
-                                                color: Colors.white))),
-                                  ),
+                                  Section("⚙️ Ustawienia"),
                                   InkWell(
                                       onTap: navigateToSettings,
                                       child: Container(
@@ -875,15 +781,9 @@ class _HomePageState extends State<HomePage> {
                                                       TextStyle(fontSize: 24)),
                                             ],
                                           ))),
-                                  Align(
-                                    alignment: Alignment.centerLeft,
-                                    child: const Padding(
-                                        padding: EdgeInsets.all(5),
-                                        child: Text("📈 Informacje",
-                                            style: TextStyle(
-                                                fontSize: 24,
-                                                color: Colors.white))),
-                                  ),
+                                  Section("🤖 Sleep as Android"),
+                                  SleepAsAndroidIntegration(onRefresh: refresh),
+                                  Section("📈 Informacje"),
                                   Container(
                                       width: MediaQuery.of(context).size.width *
                                           0.9,
@@ -1097,5 +997,24 @@ class _HomePageState extends State<HomePage> {
                         ),
                       )))));
     }
+  }
+}
+
+class Section extends StatelessWidget {
+  final String name;
+  const Section(
+    this.name, {
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Padding(
+          padding: const EdgeInsets.all(5),
+          child: Text(name,
+              style: const TextStyle(fontSize: 24, color: Colors.white))),
+    );
   }
 }

@@ -9,12 +9,17 @@ import { initDatabase } from "./utils/db";
 import cdn from "./utils/cdn";
 import weatherRouter from "./weather";
 import notificationsRouter, { loadFirebaseConfig } from "./notifications";
+import sleepAsAndroidRouter, {
+  initSleepAsAndroidIntegration,
+} from "./SleepAsAndroid";
 
 //Load environment variables from file
 dotenv.config();
 const PORT = process.env.PORT || 1111;
 const AUDIO_URL = process.env.AUDIO_URL || "http://localhost:7777"; //DEV TODO: Change it
 const ADAPTER_URL = process.env.ADAPTER_URL || "http://localhost:2222"; //DEV TODO: Change it
+const SLEEP_AS_ANDROID_MUTE_AFTER =
+  parseInt(process.env.SLEEP_AS_ANDROID_MUTE_AFTER) || 10;
 
 const socket = io(process.env.CORE_URL || "http://localhost:3333"); //DEV - to be changed with Docker
 
@@ -46,6 +51,7 @@ api.use("/audio", audioRouter);
 api.use("/emergency", emergencyRouter);
 api.use("/temperature", emergencyRouter);
 api.use("/notifications", notificationsRouter);
+api.use("/sleepasandroid", sleepAsAndroidRouter);
 
 api.get("/ping", async (req, res) => {
   let now = new Date();
@@ -863,9 +869,26 @@ const server = app.listen(PORT, () => {
   logger.info(`API has started on port ${PORT}`);
 });
 
+async function toogleEmergencyDevice(isTurnedOn: boolean): Promise<void> {
+  try {
+    await axios.put(`${ADAPTER_URL}/v1/toogleEmergency`, {
+      isTurnedOn,
+    });
+  } catch (err) {
+    logger.error(
+      `Error when trying to turn the emergency device ${
+        isTurnedOn ? "on" : "off"
+      }. ${JSON.stringify(err?.response?.data ?? "")} with status ${
+        err?.response?.status
+      }`
+    );
+  }
+}
+
 async function init() {
   await initDatabase();
   await getServicesConstants();
+  await initSleepAsAndroidIntegration();
   loadFirebaseConfig();
 }
 
@@ -877,4 +900,10 @@ interface IServicesConstants {
 }
 
 init();
-export { socket };
+export {
+  socket,
+  ADAPTER_URL,
+  AUDIO_URL,
+  SLEEP_AS_ANDROID_MUTE_AFTER,
+  toogleEmergencyDevice,
+};
