@@ -257,7 +257,7 @@ class _AlarmFormState extends State<AlarmForm> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const Loading();
+      return Loading();
     } else {
       return Scaffold(
           appBar: AppBar(

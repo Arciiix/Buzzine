@@ -55,6 +55,8 @@ class _HomePageState extends State<HomePage> {
   late EmergencyStatus emergencyStatus;
   late StreamSubscription _intentData;
 
+  String? _currentLoadingStage = "Inicjalizacja";
+
   GlobalKey<RefreshIndicatorState> _refreshState =
       GlobalKey<RefreshIndicatorState>();
 
@@ -263,7 +265,7 @@ class _HomePageState extends State<HomePage> {
         ReceiveSharingIntent.getTextStream().listen(handleShareIntent);
     ReceiveSharingIntent.getInitialText().then(handleShareIntent);
 
-    GlobalData.getData().then((value) {
+    GlobalData.getData(onProgress: _updateLoadingStage).then((value) {
       setState(() {
         _isLoaded = true;
         upcomingAlarms = GlobalData.upcomingAlarms;
@@ -317,12 +319,19 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  void _updateLoadingStage(String stage) {
+    setState(() {
+      _currentLoadingStage = stage;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     if (!_isLoaded) {
-      return const Loading(
+      return Loading(
         showText: true,
         isInitLoading: true,
+        currentStage: _currentLoadingStage,
       );
     } else {
       return Scaffold(

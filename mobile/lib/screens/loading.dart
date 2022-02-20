@@ -4,8 +4,9 @@ import 'package:flutter/material.dart';
 class Loading extends StatefulWidget {
   final bool? showText;
   final bool? isInitLoading;
+  String? currentStage;
 
-  const Loading({Key? key, this.showText, this.isInitLoading})
+  Loading({Key? key, this.showText, this.isInitLoading, this.currentStage})
       : super(key: key);
 
   @override
@@ -30,6 +31,8 @@ class _LoadingState extends State<Loading> {
           const SizedBox(height: 10),
           Text(widget.showText == true ? "Ładowanie..." : "",
               style: const TextStyle(color: Colors.white, fontSize: 32)),
+          Text(widget.currentStage ?? "",
+              style: const TextStyle(color: Colors.white, fontSize: 14)),
           //Settings button for the first time settings, such as server ip address
           TextButton(
               onPressed: navigateToSettings,

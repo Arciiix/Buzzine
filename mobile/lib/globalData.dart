@@ -51,29 +51,39 @@ class GlobalData {
     getData();
   }
 
-  static Future<void> getData() async {
+  static Future<void> getData({Function? onProgress}) async {
     isLoading = true;
 
+    if (onProgress != null) onProgress("Ustawienia");
     await loadSettings();
 
     print("Fetching data...");
+    if (onProgress != null) onProgress("Alarmy");
     await getAlarms();
     print("Got alarms");
+    if (onProgress != null) onProgress("Nadchodzące alarmy");
     await getUpcomingAlarms();
     print("Got upcoming alarms");
+    if (onProgress != null) onProgress("Aktywne alarmy");
     await getRingingAlarms();
     print("Got ringing alarms");
+    if (onProgress != null) onProgress("Drzemki alarmów");
     await getActiveSnoozes();
     print("Got snoozes");
+    if (onProgress != null) onProgress("Audio");
     await getAudios();
     print("Got audios");
+    if (onProgress != null) onProgress("Hash kodu QR");
     await getQrCodeHash();
     print("Got hash");
 
+    if (onProgress != null) onProgress("Wartości stałe");
     await getConstants();
     print("Got constants");
+    if (onProgress != null) onProgress("Status systemu przeciwawaryjnego");
     await getEmergencyStatus();
     print("Got emergency status");
+    if (onProgress != null) onProgress("Wersja aplikacji");
     await getAppVersion();
     print("Got app version");
 

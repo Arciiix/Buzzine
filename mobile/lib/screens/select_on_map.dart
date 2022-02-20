@@ -123,7 +123,7 @@ class _SelectOnMapState extends State<SelectOnMap> {
           appBar: AppBar(
             title: const Text("Wybierz punkt"),
           ),
-          body: const Loading(
+          body: Loading(
             showText: true,
           ));
     }
