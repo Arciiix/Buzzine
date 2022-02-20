@@ -691,8 +691,8 @@ class GlobalData {
     } else {
       var temperatureResponse = decodedResponse['response'];
 
-      //Check if the temperature exists, for example check for the averageTemp param
-      if (temperatureResponse['average'] == null) {
+      //Check if the temperature exists, for example check for the temperatures array
+      if (temperatureResponse['temperatures'].length < 1) {
         return null;
       }
 
