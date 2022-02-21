@@ -195,9 +195,7 @@ class _SettingsState extends State<Settings> {
       isGranted = await AwesomeNotifications()
           .requestPermissionToSendNotifications(permissions: [
         NotificationPermission.Alert,
-        NotificationPermission.CriticalAlert,
         NotificationPermission.PreciseAlarms,
-        NotificationPermission.Provisional,
         NotificationPermission.Sound,
       ]);
     }
