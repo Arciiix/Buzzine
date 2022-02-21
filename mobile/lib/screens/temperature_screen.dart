@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:buzzine/components/temperature_chart.dart';
 import 'package:buzzine/components/temperature_widget.dart';
 import 'package:buzzine/globalData.dart';
@@ -18,6 +19,8 @@ class _TemperatureScreenState extends State<TemperatureScreen> {
   bool _isLoaded = true;
   late DateTime _currentSelectedDate;
   late TemperatureData temperatureData;
+  double leftIconOffset = 0;
+  double rightIconOffset = 0;
 
   void selectDate() async {
     DateTime? datePickerResponse = await showDatePicker(
@@ -85,7 +88,7 @@ class _TemperatureScreenState extends State<TemperatureScreen> {
     }
   }
 
-  void dateBackwards() async {
+  void dateBackward() async {
     getTemperatureDataForDate(
         _currentSelectedDate.subtract(const Duration(days: 1)));
   }
@@ -106,64 +109,114 @@ class _TemperatureScreenState extends State<TemperatureScreen> {
                 bodyColor: Colors.white,
                 displayColor: Colors.white,
                 fontSizeFactor: 1.2)),
-        child: Scaffold(
-            appBar: AppBar(title: const Text("Temperatura")),
-            body: Column(
-              children: [
-                Expanded(
-                  child: SafeArea(
-                    child: SingleChildScrollView(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Row(
-                            children: [
-                              Material(
-                                child: IconButton(
-                                  icon: Icon(Icons.arrow_back,
-                                      color: Theme.of(context)
-                                          .buttonTheme
-                                          .colorScheme!
-                                          .primary),
-                                  onPressed: dateBackwards,
-                                ),
+        child: Stack(
+          children: [
+            GestureDetector(
+                onHorizontalDragEnd: (DragEndDetails details) {
+                  if ((details.primaryVelocity ?? 0) > 0) {
+                    dateBackward();
+                  }
+                  if ((details.primaryVelocity ?? 0) < 0) {
+                    dateForward();
+                  }
+                  setState(() {
+                    rightIconOffset = 0;
+                    leftIconOffset = 0;
+                  });
+                },
+                onHorizontalDragUpdate: (details) {
+                  setState(() {
+                    if (details.delta.dx * details.delta.distance * 5 > 0) {
+                      leftIconOffset = min(
+                          details.delta.dx * details.delta.distance * 5, 20);
+                      rightIconOffset = 0;
+                    } else {
+                      rightIconOffset = max(
+                          details.delta.dx * details.delta.distance * 5, 20);
+                      leftIconOffset = 0;
+                    }
+                  });
+                },
+                child: Scaffold(
+                    appBar: AppBar(title: const Text("Temperatura")),
+                    body: Column(
+                      children: [
+                        Expanded(
+                          child: SafeArea(
+                            child: SingleChildScrollView(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Material(
+                                        child: IconButton(
+                                          icon: Icon(Icons.arrow_back,
+                                              color: Theme.of(context)
+                                                  .buttonTheme
+                                                  .colorScheme!
+                                                  .primary),
+                                          onPressed: dateBackward,
+                                        ),
+                                      ),
+                                      Expanded(
+                                        child: TextButton(
+                                          onPressed: selectDate,
+                                          child: Text(dateToDateString(
+                                              _currentSelectedDate)),
+                                        ),
+                                      ),
+                                      Material(
+                                        child: IconButton(
+                                          icon: Icon(Icons.arrow_forward,
+                                              color: Theme.of(context)
+                                                  .buttonTheme
+                                                  .colorScheme!
+                                                  .primary),
+                                          onPressed: dateForward,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  TemperatureChart(
+                                      chartData: temperatureData.temperatures
+                                          .map((e) => ChartData(
+                                              timestamp: e.timestamp.toLocal(),
+                                              value: e.value))
+                                          .toList(),
+                                      id: "temperatureChart"),
+                                  TemperatureStatsWidget(
+                                    temperatureData: temperatureData,
+                                  ),
+                                ],
                               ),
-                              Expanded(
-                                child: TextButton(
-                                  onPressed: selectDate,
-                                  child: Text(
-                                      dateToDateString(_currentSelectedDate)),
-                                ),
-                              ),
-                              Material(
-                                child: IconButton(
-                                  icon: Icon(Icons.arrow_forward,
-                                      color: Theme.of(context)
-                                          .buttonTheme
-                                          .colorScheme!
-                                          .primary),
-                                  onPressed: dateForward,
-                                ),
-                              ),
-                            ],
+                            ),
                           ),
-                          TemperatureChart(
-                              chartData: temperatureData.temperatures
-                                  .map((e) => ChartData(
-                                      timestamp: e.timestamp.toLocal(),
-                                      value: e.value))
-                                  .toList(),
-                              id: "temperatureChart"),
-                          TemperatureStatsWidget(
-                            temperatureData: temperatureData,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            )),
+                        ),
+                      ],
+                    ))),
+            AnimatedPositioned(
+                duration: const Duration(milliseconds: 100),
+                left: leftIconOffset - 5,
+                top: MediaQuery.of(context).size.height / 2,
+                child: SizedBox(
+                  width: 50,
+                  height: 50,
+                  child: AnimatedOpacity(
+                      duration: const Duration(milliseconds: 100),
+                      opacity: leftIconOffset > 0 ? 1 : 0,
+                      child: Icon(Icons.arrow_left, size: 50)),
+                )),
+            AnimatedPositioned(
+                duration: const Duration(milliseconds: 100),
+                right: rightIconOffset - 5,
+                top: MediaQuery.of(context).size.height / 2,
+                child: AnimatedOpacity(
+                    duration: const Duration(milliseconds: 100),
+                    opacity: rightIconOffset > 0 ? 1 : 0,
+                    child: Icon(Icons.arrow_right, size: 50)))
+          ],
+        ),
       );
     } else {
       return Loading(showText: true);
