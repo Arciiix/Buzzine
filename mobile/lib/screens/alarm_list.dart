@@ -7,8 +7,10 @@ import 'package:flutter/material.dart';
 
 class AlarmList extends StatefulWidget {
   final Alarm? selectedAlarm;
+  final bool Function(Alarm)? filter;
 
-  const AlarmList({Key? key, this.selectedAlarm}) : super(key: key);
+  const AlarmList({Key? key, this.selectedAlarm, this.filter})
+      : super(key: key);
 
   @override
   _AlarmListState createState() => _AlarmListState();
@@ -39,7 +41,11 @@ class _AlarmListState extends State<AlarmList> {
   @override
   void initState() {
     super.initState();
-    alarms = GlobalData.alarms;
+    if (widget.filter != null) {
+      alarms = GlobalData.alarms.where(widget.filter!).toList();
+    } else {
+      alarms = GlobalData.alarms;
+    }
   }
 
   @override
@@ -55,7 +61,11 @@ class _AlarmListState extends State<AlarmList> {
             onRefresh: () async {
               await GlobalData.getData();
               setState(() {
-                alarms = GlobalData.alarms;
+                if (widget.filter != null) {
+                  alarms = GlobalData.alarms.where(widget.filter!).toList();
+                } else {
+                  alarms = GlobalData.alarms;
+                }
               });
             },
             child: alarms.isNotEmpty

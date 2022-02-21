@@ -9,8 +9,9 @@ import 'package:flutter/material.dart';
 
 class NapList extends StatefulWidget {
   final Nap? selectedNap;
+  final bool Function(Nap)? filter;
 
-  const NapList({Key? key, this.selectedNap}) : super(key: key);
+  const NapList({Key? key, this.selectedNap, this.filter}) : super(key: key);
 
   @override
   _NapListState createState() => _NapListState();
@@ -59,7 +60,11 @@ class _NapListState extends State<NapList> {
   @override
   void initState() {
     super.initState();
-    naps = GlobalData.naps;
+    if (widget.filter != null) {
+      naps = GlobalData.naps.where(widget.filter!).toList();
+    } else {
+      naps = GlobalData.naps;
+    }
   }
 
   @override
@@ -75,7 +80,11 @@ class _NapListState extends State<NapList> {
             onRefresh: () async {
               await GlobalData.getData();
               setState(() {
-                naps = GlobalData.naps;
+                if (widget.filter != null) {
+                  naps = GlobalData.naps.where(widget.filter!).toList();
+                } else {
+                  naps = GlobalData.naps;
+                }
               });
             },
             child: naps.isNotEmpty

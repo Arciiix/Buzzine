@@ -7,7 +7,6 @@ import 'package:buzzine/screens/loading.dart';
 import 'package:buzzine/types/Alarm.dart';
 import 'package:buzzine/types/AlarmType.dart';
 import 'package:buzzine/types/Audio.dart';
-import 'package:buzzine/types/Nap.dart';
 import 'package:buzzine/types/Repeat.dart';
 import 'package:buzzine/utils/formatting.dart';
 import "package:flutter/material.dart";

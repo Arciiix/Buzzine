@@ -35,14 +35,19 @@ class AudioWidget extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                    GlobalData.alarms
-                        .where((element) => element.sound?.audioId != "default")
-                        .length
+                    (GlobalData.alarms
+                                .where((element) =>
+                                    element.sound?.audioId != "default")
+                                .length +
+                            GlobalData.naps
+                                .where((element) =>
+                                    element.sound?.audioId != "default")
+                                .length)
                         .toString(),
                     style: const TextStyle(fontSize: 52)),
                 const Icon(Icons.alarm),
                 const Text(
-                  "Powiązane\nalarmy",
+                  "Powiązane\nalarmy i drzemki",
                   style: TextStyle(fontSize: 24),
                   textAlign: TextAlign.center,
                 )

@@ -1,8 +1,12 @@
 import 'dart:async';
 import 'package:buzzine/globalData.dart';
+import 'package:buzzine/screens/alarm_list.dart';
 import 'package:buzzine/screens/cut_audio.dart';
 import 'package:buzzine/screens/download_YouTube_audio.dart';
+import 'package:buzzine/screens/nap_list.dart';
+import 'package:buzzine/types/Alarm.dart';
 import 'package:buzzine/types/Audio.dart';
+import 'package:buzzine/types/Nap.dart';
 import 'package:buzzine/utils/formatting.dart';
 import 'package:flutter/material.dart';
 
@@ -122,6 +126,43 @@ class _AudioManagerState extends State<AudioManager> {
     await _refreshState.currentState!.show();
   }
 
+  void showAlarmsWithAudio(Audio audio) async {
+    await GlobalData.stopAudioPreview();
+    bool? showAlarms = await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Zobacz powiązania"),
+          content: Text('Wybierz, co chcesz zobaczyć'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text("Drzemki"),
+            ),
+            TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: const Text("Alarmy")),
+          ],
+        );
+      },
+    );
+    if (showAlarms == true) {
+      await Navigator.of(context).push(MaterialPageRoute(
+        builder: (context) =>
+            AlarmList(filter: (Alarm e) => e.sound?.audioId == audio.audioId),
+      ));
+
+      await _refreshState.currentState!.show();
+    } else if (showAlarms == false) {
+      await Navigator.of(context).push(MaterialPageRoute(
+        builder: (context) =>
+            NapList(filter: (Nap e) => e.sound?.audioId == audio.audioId),
+      ));
+
+      await _refreshState.currentState!.show();
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -231,7 +272,7 @@ class _AudioManagerState extends State<AudioManager> {
                               child: ListTile(
                                 onTap: widget.selectAudio
                                     ? () => Navigator.of(context).pop(e)
-                                    : null,
+                                    : () => showAlarmsWithAudio(e),
                                 onLongPress: () => changeAudioName(e),
                                 title: Text(e.friendlyName ?? e.filename),
                                 subtitle: Text(e.filename +
