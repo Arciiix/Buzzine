@@ -13,6 +13,7 @@ let notificationServiceInstance: NotificationService;
 
 class NotificationService {
   alarmIdsWithNotificationSent: string[] = [];
+  emergencyNotificationSent: boolean;
   tokens: string[];
 
   constructor() {
@@ -43,8 +44,6 @@ class NotificationService {
           notification,
           data: {
             alarmId: alarmId,
-            alarmName: alarmName ?? "",
-            alarmDescription: alarmDescription ?? "",
           },
         },
         {
@@ -57,6 +56,41 @@ class NotificationService {
     } catch (err) {
       logger.error(
         `Error while sending a Firebase notification: ${err.toString()}`
+      );
+    }
+  }
+
+  async sendEmergencyNotification(): Promise<void> {
+    if (this.emergencyNotificationSent) return;
+    this.emergencyNotificationSent = true;
+
+    //The Firebase send notification logic
+    const notification: NotificationMessagePayload = {
+      body: "System przeciwawaryjny aktywny",
+      color: "#eb344c",
+      sound: "default",
+      title: "Buzzine - emergency",
+    };
+
+    if (this.tokens.length < 1) return;
+    try {
+      let response = await firebaseAdmin.messaging().sendToDevice(
+        this.tokens,
+        {
+          notification,
+        },
+        {
+          priority: "high",
+          timeToLive: 3600, //1 hour
+        }
+      );
+
+      logger.info(
+        `Sent Firebase emergency notification: ${JSON.stringify(response)}`
+      );
+    } catch (err) {
+      logger.error(
+        `Error while sending the Firebase emergency notification: ${err.toString()}`
       );
     }
   }
@@ -190,10 +224,16 @@ function loadFirebaseConfig() {
     socket.on("ALARM_MUTE", () => {
       notificationServiceInstance.clearNotificationHistory();
     });
+    socket.on("EMERGENCY_ALARM", async () => {
+      notificationServiceInstance.sendEmergencyNotification();
+    });
+    socket.on("EMERGENCY_ALARM_CANCELLED", async () => {
+      notificationServiceInstance.emergencyNotificationSent = false;
+    });
 
     logger.info(`Loaded Firebase account config`);
   }
 }
 
 export default notificationsRouter;
-export { loadFirebaseConfig, NotificationService };
+export { loadFirebaseConfig, NotificationService, notificationServiceInstance };

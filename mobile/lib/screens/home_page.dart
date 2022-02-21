@@ -298,12 +298,12 @@ class _HomePageState extends State<HomePage> {
       FirebaseMessaging.onMessageOpenedApp.listen((data) async {
         print("User clicked on message: ${data.messageId}");
 
+        print("Fetching the data because of a notification...");
+        //Fetch the data
+        await GlobalData.getData();
+
         //When the notification has alarmId property, it means that the alarm is ringing right now
         if (data.data['alarmId'] != null) {
-          print("Fetching the data because of a notification...");
-          //Fetch the data
-          await GlobalData.getData();
-
           print("Going to the ringing alarm screen...");
           await navigateToRingingAlarm(GlobalData.ringingAlarms.firstWhere(
               (element) => element.alarm.id == data.data['alarmId'],

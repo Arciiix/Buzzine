@@ -198,9 +198,9 @@ io.on("connection", (socket: Socket) => {
       return;
     }
     if (payload.status) {
-      alarm.turnOn();
+      await alarm.turnOn();
     } else {
-      alarm.disableAlarm();
+      await alarm.disableAlarm();
     }
 
     logger.info(

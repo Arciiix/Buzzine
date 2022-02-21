@@ -87,6 +87,10 @@ class Nap extends Alarm {
   }
 
   override async turnOn(): Promise<void> {
+    await this.saveNextInvocationDate();
+    if (!this.dbObject.invocationDate) {
+      this.isActive = false;
+    }
     await super.turnOn();
     await this.saveNextInvocationDate();
   }
