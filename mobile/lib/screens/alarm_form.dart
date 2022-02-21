@@ -74,6 +74,32 @@ class _AlarmFormState extends State<AlarmForm> {
   }
 
   void handleSave() {
+    Alarm returnedAlarm = generateAlarmObject();
+    Navigator.of(context).pop(returnedAlarm);
+  }
+
+  Future<bool> displayDiscardWarning() async {
+    return await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Odrzuć niezapisane zmiany"),
+          content: Text("Czy na pewno chcesz odrzucić niezapisane zmiany?"),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text("Anuluj"),
+            ),
+            TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: const Text("Odrzuć")),
+          ],
+        );
+      },
+    );
+  }
+
+  Alarm generateAlarmObject() {
     Alarm returnedAlarm = Alarm(
         id: widget.baseAlarm?.id,
         name: _nameController.text,
@@ -91,13 +117,11 @@ class _AlarmFormState extends State<AlarmForm> {
         repeat: _repeat,
         emergencyAlarmTimeoutSeconds: _emergencyAlarmTimeoutSeconds,
         isActive: widget.baseAlarm?.isActive ?? true);
-
     if (widget.alarmType == AlarmType.nap) {
       returnedAlarm.second = _second!;
       returnedAlarm.isRepeating = false;
     }
-
-    Navigator.of(context).pop(returnedAlarm);
+    return returnedAlarm;
   }
 
   void calculateRemainingTime({bool? calculateTime}) {
@@ -259,509 +283,530 @@ class _AlarmFormState extends State<AlarmForm> {
     if (_isLoading) {
       return Loading();
     } else {
-      return Scaffold(
-          appBar: AppBar(
-            title: Text(_isEditing
-                ? "Edycja ${widget.alarmType == AlarmType.nap ? "drzemki" : "alarmu"}"
-                : widget.alarmType == AlarmType.nap
-                    ? "Nowa drzemka"
-                    : "Nowy alarm"),
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.save),
-                onPressed: handleSave,
-              )
-            ],
-          ),
-          backgroundColor: Theme.of(context).cardColor,
-          body: SingleChildScrollView(
-              child: Padding(
-                  padding: const EdgeInsets.all(8),
-                  child: Column(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4),
-                        child: TextFormField(
-                          controller: _nameController,
-                          textCapitalization: TextCapitalization.sentences,
-                          decoration: InputDecoration(hintText: "Nazwa"),
+      return WillPopScope(
+        onWillPop: displayDiscardWarning,
+        child: Scaffold(
+            appBar: AppBar(
+              title: Text(_isEditing
+                  ? "Edycja ${widget.alarmType == AlarmType.nap ? "drzemki" : "alarmu"}"
+                  : widget.alarmType == AlarmType.nap
+                      ? "Nowa drzemka"
+                      : "Nowy alarm"),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.save),
+                  onPressed: handleSave,
+                )
+              ],
+            ),
+            backgroundColor: Theme.of(context).cardColor,
+            body: SingleChildScrollView(
+                child: Padding(
+                    padding: const EdgeInsets.all(8),
+                    child: Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          child: TextFormField(
+                            controller: _nameController,
+                            textCapitalization: TextCapitalization.sentences,
+                            decoration: InputDecoration(hintText: "Nazwa"),
+                          ),
                         ),
-                      ),
-                      if (widget.alarmType == AlarmType.nap)
+                        if (widget.alarmType == AlarmType.nap)
+                          InkWell(
+                              onTap: () async {
+                                Duration? selectedTime =
+                                    await selectTimeManually(1, 9999999,
+                                        _hour * 3600 + _minute * 60 + _second!);
+                                if (selectedTime != null) {
+                                  setState(() {
+                                    _hour = selectedTime.inHours.remainder(60);
+                                    _minute =
+                                        selectedTime.inMinutes.remainder(60);
+                                    _second =
+                                        selectedTime.inSeconds.remainder(60);
+                                  });
+                                  calculateRemainingTime(calculateTime: true);
+                                }
+                              },
+                              child: Padding(
+                                  padding: EdgeInsets.all(8),
+                                  child: Text(
+                                      "${addZero(_hour)}:${addZero(_minute)}:${addZero(_second!)}",
+                                      style: const TextStyle(fontSize: 52))))
+                        else
+                          InkWell(
+                              onTap: getTime,
+                              child: Padding(
+                                  padding: EdgeInsets.all(8),
+                                  child: Text(
+                                      "${addZero(_hour)}:${addZero(_minute)}",
+                                      style: const TextStyle(fontSize: 52)))),
                         InkWell(
-                            onTap: () async {
-                              Duration? selectedTime = await selectTimeManually(
-                                  1,
-                                  9999999,
-                                  _hour * 3600 + _minute * 60 + _second!);
-                              if (selectedTime != null) {
-                                setState(() {
-                                  _hour = selectedTime.inHours.remainder(60);
-                                  _minute =
-                                      selectedTime.inMinutes.remainder(60);
-                                  _second =
-                                      selectedTime.inSeconds.remainder(60);
-                                });
-                                calculateRemainingTime(calculateTime: true);
-                              }
+                          onTap: () => showDialog(
+                              context: context,
+                              builder: (_) => AlertDialog(
+                                  title: const Text("Różnica czasu"),
+                                  content: Text(widget.alarmType ==
+                                          AlarmType.nap
+                                      ? "Data wywołania tej drzemki"
+                                      : "Wartość ta, w formacie HH:mm, oznacza, za ile wywołany zostanie ten alarm."))),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.schedule),
+                              Padding(
+                                  padding: const EdgeInsets.all(5),
+                                  child: Text(remainingTime))
+                            ],
+                          ),
+                        ),
+                        InkWell(
+                            onTap: () {
+                              setState(() {
+                                _isGuardEnabled = !_isGuardEnabled;
+                              });
                             },
-                            child: Padding(
-                                padding: EdgeInsets.all(8),
-                                child: Text(
-                                    "${addZero(_hour)}:${addZero(_minute)}:${addZero(_second!)}",
-                                    style: const TextStyle(fontSize: 52))))
-                      else
-                        InkWell(
-                            onTap: getTime,
-                            child: Padding(
-                                padding: EdgeInsets.all(8),
-                                child: Text(
-                                    "${addZero(_hour)}:${addZero(_minute)}",
-                                    style: const TextStyle(fontSize: 52)))),
-                      InkWell(
-                        onTap: () => showDialog(
-                            context: context,
-                            builder: (_) => AlertDialog(
-                                title: const Text("Różnica czasu"),
-                                content: Text(widget.alarmType == AlarmType.nap
-                                    ? "Data wywołania tej drzemki"
-                                    : "Wartość ta, w formacie HH:mm, oznacza, za ile wywołany zostanie ten alarm."))),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.schedule),
-                            Padding(
-                                padding: const EdgeInsets.all(5),
-                                child: Text(remainingTime))
-                          ],
-                        ),
-                      ),
-                      InkWell(
-                          onTap: () {
-                            setState(() {
-                              _isGuardEnabled = !_isGuardEnabled;
-                            });
-                          },
-                          child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(
-                                  children: [
-                                    Icon(_isGuardEnabled
-                                        ? Icons.verified_user
-                                        : Icons.privacy_tip),
-                                    const Padding(
-                                        padding: EdgeInsets.all(5),
-                                        child: Text("Ochrona"))
-                                  ],
-                                ),
-                                Switch(
-                                  value: _isGuardEnabled,
-                                  onChanged: (bool value) {
-                                    setState(() {
-                                      _isGuardEnabled = value;
-                                    });
-                                  },
-                                )
-                              ])),
-                      InkWell(
-                          onTap: () {
-                            setState(() {
-                              _isSnoozeEnabled = !_isSnoozeEnabled;
-                            });
-                          },
-                          child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(
-                                  children: const [
-                                    Icon(Icons.snooze),
-                                    Padding(
-                                        padding: EdgeInsets.all(5),
-                                        child: Text("Drzemki"))
-                                  ],
-                                ),
-                                Switch(
-                                  value: _isSnoozeEnabled,
-                                  onChanged: (bool value) {
-                                    setState(() {
-                                      _isSnoozeEnabled = value;
-                                    });
-                                  },
-                                )
-                              ])),
-                      Column(
-                        children: _isSnoozeEnabled
-                            ? [
-                                Container(
-                                    width: double.infinity,
-                                    child: const Text(
-                                      "Maksymalny łączny czas drzemek",
-                                    )),
-                                Slider(
-                                  min: _minTotalSnoozeDurationValue.toDouble(),
-                                  max: _maxTotalSnoozeDurationValue.toDouble(),
-                                  onChanged: (double value) {
-                                    setState(() {
-                                      _maxTotalSnoozeDuration = value.toInt();
-                                    });
-                                  },
-                                  value: _maxTotalSnoozeDuration?.toDouble() ??
-                                      15.0,
-                                ),
-                                InkWell(
-                                  onTap: () async {
-                                    int? selectedValue =
-                                        await selectValueManually(
-                                            _minTotalSnoozeDurationValue,
-                                            _maxTotalSnoozeDurationValue,
-                                            _maxTotalSnoozeDuration ?? 15,
-                                            "Maksymalny łączny czas drzemek",
-                                            "min");
-                                    if (selectedValue != null) {
+                            child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Icon(_isGuardEnabled
+                                          ? Icons.verified_user
+                                          : Icons.privacy_tip),
+                                      const Padding(
+                                          padding: EdgeInsets.all(5),
+                                          child: Text("Ochrona"))
+                                    ],
+                                  ),
+                                  Switch(
+                                    value: _isGuardEnabled,
+                                    onChanged: (bool value) {
                                       setState(() {
-                                        _maxTotalSnoozeDuration = selectedValue;
+                                        _isGuardEnabled = value;
                                       });
-                                    }
-                                  },
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Text(
-                                      "$_maxTotalSnoozeDuration min",
+                                    },
+                                  )
+                                ])),
+                        InkWell(
+                            onTap: () {
+                              setState(() {
+                                _isSnoozeEnabled = !_isSnoozeEnabled;
+                              });
+                            },
+                            child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Row(
+                                    children: const [
+                                      Icon(Icons.snooze),
+                                      Padding(
+                                          padding: EdgeInsets.all(5),
+                                          child: Text("Drzemki"))
+                                    ],
+                                  ),
+                                  Switch(
+                                    value: _isSnoozeEnabled,
+                                    onChanged: (bool value) {
+                                      setState(() {
+                                        _isSnoozeEnabled = value;
+                                      });
+                                    },
+                                  )
+                                ])),
+                        Column(
+                          children: _isSnoozeEnabled
+                              ? [
+                                  Container(
+                                      width: double.infinity,
+                                      child: const Text(
+                                        "Maksymalny łączny czas drzemek",
+                                      )),
+                                  Slider(
+                                    min:
+                                        _minTotalSnoozeDurationValue.toDouble(),
+                                    max:
+                                        _maxTotalSnoozeDurationValue.toDouble(),
+                                    onChanged: (double value) {
+                                      setState(() {
+                                        _maxTotalSnoozeDuration = value.toInt();
+                                      });
+                                    },
+                                    value:
+                                        _maxTotalSnoozeDuration?.toDouble() ??
+                                            15.0,
+                                  ),
+                                  InkWell(
+                                    onTap: () async {
+                                      int? selectedValue =
+                                          await selectValueManually(
+                                              _minTotalSnoozeDurationValue,
+                                              _maxTotalSnoozeDurationValue,
+                                              _maxTotalSnoozeDuration ?? 15,
+                                              "Maksymalny łączny czas drzemek",
+                                              "min");
+                                      if (selectedValue != null) {
+                                        setState(() {
+                                          _maxTotalSnoozeDuration =
+                                              selectedValue;
+                                        });
+                                      }
+                                    },
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Text(
+                                        "$_maxTotalSnoozeDuration min",
+                                      ),
                                     ),
                                   ),
-                                ),
-                              ]
-                            : [],
-                      ),
-                      InkWell(
-                          onTap: chooseAudio,
-                          child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Flexible(
-                                    child: Row(
-                                  children: [
-                                    const Icon(Icons.music_note),
-                                    Expanded(
-                                        child: Text(
-                                            _sound?.friendlyName ?? "Domyślna"))
-                                  ],
-                                )),
-                                IconButton(
-                                  icon: const Icon(Icons.edit),
-                                  onPressed: chooseAudio,
-                                )
-                              ])),
-                      Column(
-                        children: widget.alarmType == AlarmType.nap
-                            ? []
-                            : [
-                                InkWell(
-                                    onTap: () => setState(() {
-                                          _isRepeating = !_isRepeating;
-                                        }),
-                                    child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          const Text("Powtarzaj"),
-                                          Switch(
-                                            value: _isRepeating,
-                                            onChanged: (bool value) {
-                                              setState(() {
-                                                _isRepeating = value;
-                                              });
-                                            },
-                                          )
-                                        ])),
-                                ...(_isRepeating
-                                    ? [
-                                        InkWell(
-                                            onTap: () async {
-                                              List<String>?
-                                                  selectedDaysOfTheWeek =
-                                                  await showMultipleSelect(
-                                                      context,
-                                                      daysOfWeek,
-                                                      "Wybierz dni tygodnia",
-                                                      (_repeat.daysOfWeek ??
-                                                              [
-                                                                0,
-                                                                ...List.generate(
-                                                                    6,
-                                                                    (index) =>
-                                                                        index +
-                                                                        1)
-                                                              ])
-                                                          .map((e) =>
-                                                              daysOfWeek[e])
-                                                          .toList());
-                                              if (selectedDaysOfTheWeek !=
-                                                  null) {
-                                                //Convert the text days names to an array of int (indexes)
-                                                List<int>?
+                                ]
+                              : [],
+                        ),
+                        InkWell(
+                            onTap: chooseAudio,
+                            child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Flexible(
+                                      child: Row(
+                                    children: [
+                                      const Icon(Icons.music_note),
+                                      Expanded(
+                                          child: Text(_sound?.friendlyName ??
+                                              "Domyślna"))
+                                    ],
+                                  )),
+                                  IconButton(
+                                    icon: const Icon(Icons.edit),
+                                    onPressed: chooseAudio,
+                                  )
+                                ])),
+                        Column(
+                          children: widget.alarmType == AlarmType.nap
+                              ? []
+                              : [
+                                  InkWell(
+                                      onTap: () => setState(() {
+                                            _isRepeating = !_isRepeating;
+                                          }),
+                                      child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            const Text("Powtarzaj"),
+                                            Switch(
+                                              value: _isRepeating,
+                                              onChanged: (bool value) {
+                                                setState(() {
+                                                  _isRepeating = value;
+                                                });
+                                              },
+                                            )
+                                          ])),
+                                  ...(_isRepeating
+                                      ? [
+                                          InkWell(
+                                              onTap: () async {
+                                                List<String>?
+                                                    selectedDaysOfTheWeek =
+                                                    await showMultipleSelect(
+                                                        context,
+                                                        daysOfWeek,
+                                                        "Wybierz dni tygodnia",
+                                                        (_repeat.daysOfWeek ??
+                                                                [
+                                                                  0,
+                                                                  ...List.generate(
+                                                                      6,
+                                                                      (index) =>
+                                                                          index +
+                                                                          1)
+                                                                ])
+                                                            .map((e) =>
+                                                                daysOfWeek[e])
+                                                            .toList());
+                                                if (selectedDaysOfTheWeek !=
+                                                    null) {
+                                                  //Convert the text days names to an array of int (indexes)
+                                                  List<int>?
+                                                      selectedDaysOfTheWeekIndexes =
+                                                      selectedDaysOfTheWeek
+                                                          .map((e) => daysOfWeek
+                                                              .indexOf(e))
+                                                          .toList();
+                                                  //If all week days are selected
+                                                  if (selectedDaysOfTheWeekIndexes
+                                                          .length ==
+                                                      7) {
                                                     selectedDaysOfTheWeekIndexes =
-                                                    selectedDaysOfTheWeek
-                                                        .map((e) => daysOfWeek
-                                                            .indexOf(e))
-                                                        .toList();
-                                                //If all week days are selected
-                                                if (selectedDaysOfTheWeekIndexes
-                                                        .length ==
-                                                    7) {
-                                                  selectedDaysOfTheWeekIndexes =
-                                                      null;
+                                                        null;
+                                                  }
+                                                  setState(() {
+                                                    _repeat.daysOfWeek =
+                                                        selectedDaysOfTheWeekIndexes;
+                                                  });
                                                 }
-                                                setState(() {
-                                                  _repeat.daysOfWeek =
-                                                      selectedDaysOfTheWeekIndexes;
-                                                });
-                                              }
-                                            },
-                                            child: Padding(
-                                                padding:
-                                                    const EdgeInsets.all(8),
-                                                child: Row(
-                                                  children: [
-                                                    const Text(
-                                                        "Dni tygodnia: "),
-                                                    Flexible(
-                                                      child: Text(_repeat
-                                                                  .daysOfWeek ==
-                                                              null
-                                                          ? "wszystkie"
-                                                          : (_repeat.daysOfWeek ??
-                                                                  [])
-                                                              .map((e) =>
-                                                                  daysOfWeek[e]
-                                                                      .substring(
-                                                                          0, 3))
-                                                              .toList()
-                                                              .join(', ')),
-                                                    )
-                                                  ],
-                                                ))),
-                                        InkWell(
-                                            onTap: () async {
-                                              List<String>? selectedDays =
-                                                  await showMultipleSelect(
-                                                      context,
-                                                      List.generate(
-                                                              31, (i) => i + 1)
-                                                          .map((elem) =>
-                                                              elem.toString())
-                                                          .toList(),
-                                                      "Wybierz dni miesiąca",
-                                                      (_repeat.days ??
-                                                              List.generate(
-                                                                  31,
-                                                                  (index) =>
-                                                                      index +
-                                                                      1))
-                                                          .map((e) =>
-                                                              e.toString())
-                                                          .toList());
-
-                                              //If all days are selected
-                                              if (selectedDays?.length == 31) {
-                                                selectedDays = null;
-                                              }
-                                              if (selectedDays != null) {
-                                                setState(() {
-                                                  _repeat.days = selectedDays
-                                                      ?.map((e) => int.parse(e))
-                                                      .toList();
-                                                });
-                                              } else {
-                                                setState(() {
-                                                  _repeat.days = null;
-                                                });
-                                              }
-                                            },
-                                            child: Padding(
-                                                padding:
-                                                    const EdgeInsets.all(8),
-                                                child: Row(
-                                                  children: [
-                                                    const Text(
-                                                        "Dni miesiąca: "),
-                                                    Flexible(
-                                                      child: Text(
-                                                          _repeat.days == null
-                                                              ? "wszystkie"
-                                                              : (_repeat.days ??
-                                                                      [])
-                                                                  .toList()
-                                                                  .join(', ')),
-                                                    )
-                                                  ],
-                                                ))),
-                                        InkWell(
-                                            onTap: () async {
-                                              List<String>? selectedMonths =
-                                                  await showMultipleSelect(
-                                                      context,
-                                                      months,
-                                                      "Wybierz miesiące",
-                                                      (_repeat.months ??
-                                                              [
-                                                                0,
-                                                                ...List.generate(
-                                                                    11,
+                                              },
+                                              child: Padding(
+                                                  padding:
+                                                      const EdgeInsets.all(8),
+                                                  child: Row(
+                                                    children: [
+                                                      const Text(
+                                                          "Dni tygodnia: "),
+                                                      Flexible(
+                                                        child: Text(_repeat
+                                                                    .daysOfWeek ==
+                                                                null
+                                                            ? "wszystkie"
+                                                            : (_repeat.daysOfWeek ??
+                                                                    [])
+                                                                .map((e) =>
+                                                                    daysOfWeek[
+                                                                            e]
+                                                                        .substring(
+                                                                            0,
+                                                                            3))
+                                                                .toList()
+                                                                .join(', ')),
+                                                      )
+                                                    ],
+                                                  ))),
+                                          InkWell(
+                                              onTap: () async {
+                                                List<String>? selectedDays =
+                                                    await showMultipleSelect(
+                                                        context,
+                                                        List.generate(31,
+                                                                (i) => i + 1)
+                                                            .map((elem) =>
+                                                                elem.toString())
+                                                            .toList(),
+                                                        "Wybierz dni miesiąca",
+                                                        (_repeat.days ??
+                                                                List.generate(
+                                                                    31,
                                                                     (index) =>
                                                                         index +
-                                                                        1)
-                                                              ])
-                                                          .map((e) => months[e])
-                                                          .toList());
-                                              if (selectedMonths != null) {
-                                                //Convert the text month names to an array of int (indexes)
-                                                List<int>?
-                                                    selectedMonthsIndexes =
-                                                    selectedMonths
-                                                        .map((e) =>
-                                                            months.indexOf(e))
-                                                        .toList();
-                                                //If all months are selected
-                                                if (selectedMonthsIndexes
-                                                        .length ==
-                                                    12) {
-                                                  selectedMonthsIndexes = null;
+                                                                        1))
+                                                            .map((e) =>
+                                                                e.toString())
+                                                            .toList());
+
+                                                //If all days are selected
+                                                if (selectedDays?.length ==
+                                                    31) {
+                                                  selectedDays = null;
                                                 }
-                                                setState(() {
-                                                  _repeat.months =
-                                                      selectedMonthsIndexes;
-                                                });
-                                              }
-                                            },
-                                            child: Padding(
-                                                padding:
-                                                    const EdgeInsets.all(8),
-                                                child: Row(
-                                                  children: [
-                                                    const Text("Miesiące: "),
-                                                    Flexible(
-                                                      child: Text(_repeat
-                                                                  .months ==
-                                                              null
-                                                          ? "wszystkie"
-                                                          : (_repeat.months ??
-                                                                  [])
-                                                              .map((e) =>
-                                                                  months[e]
-                                                                      .substring(
-                                                                          0, 3))
-                                                              .toList()
-                                                              .join(', ')),
-                                                    )
-                                                  ],
-                                                ))),
-                                      ]
-                                    : [])
-                              ],
-                      ),
-                      InkWell(
-                          onTap: () => setState(() {
-                                _deleteAfterRinging = !_deleteAfterRinging;
-                              }),
-                          child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                const Text("Usuń po zadzwonieniu"),
-                                Switch(
-                                  value: _deleteAfterRinging,
-                                  onChanged: (bool value) {
-                                    setState(() {
-                                      _deleteAfterRinging = value;
-                                    });
-                                  },
-                                )
-                              ])),
-                      InkWell(
-                          onTap: () => setState(() {
-                                _emergencyAlarmTimeoutSeconds =
-                                    _emergencyAlarmTimeoutSeconds == 0
-                                        ? _tempEmergencyAlarmTimeoutSeconds
-                                        : 0;
-                              }),
-                          child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                const Text("Dodatkowy zapasowy alarm"),
-                                Switch(
-                                  value: _emergencyAlarmTimeoutSeconds != 0,
-                                  onChanged: (bool value) {
-                                    setState(() {
-                                      _emergencyAlarmTimeoutSeconds =
-                                          _emergencyAlarmTimeoutSeconds == 0
-                                              ? _tempEmergencyAlarmTimeoutSeconds
-                                              : 0;
-                                    });
-                                  },
-                                )
-                              ])),
-                      Column(
-                        children: _emergencyAlarmTimeoutSeconds != 0
-                            ? [
-                                Slider(
-                                  min: 1,
-                                  max: GlobalData.constants.muteAfter * 60 - 1,
-                                  onChanged: (double value) {
-                                    setState(() {
-                                      _tempEmergencyAlarmTimeoutSeconds =
-                                          value.floor();
-                                      _emergencyAlarmTimeoutSeconds =
-                                          value.floor();
-                                    });
-                                  },
-                                  value: _tempEmergencyAlarmTimeoutSeconds
-                                      .toDouble(),
-                                ),
-                                InkWell(
-                                  onTap: () async {
-                                    Duration? userSelection =
-                                        await selectTimeManually(
-                                            1,
-                                            GlobalData.constants.muteAfter *
-                                                    60 -
-                                                1,
-                                            _tempEmergencyAlarmTimeoutSeconds);
-                                    if (userSelection != null) {
+                                                if (selectedDays != null) {
+                                                  setState(() {
+                                                    _repeat.days = selectedDays
+                                                        ?.map(
+                                                            (e) => int.parse(e))
+                                                        .toList();
+                                                  });
+                                                } else {
+                                                  setState(() {
+                                                    _repeat.days = null;
+                                                  });
+                                                }
+                                              },
+                                              child: Padding(
+                                                  padding:
+                                                      const EdgeInsets.all(8),
+                                                  child: Row(
+                                                    children: [
+                                                      const Text(
+                                                          "Dni miesiąca: "),
+                                                      Flexible(
+                                                        child: Text(_repeat
+                                                                    .days ==
+                                                                null
+                                                            ? "wszystkie"
+                                                            : (_repeat.days ??
+                                                                    [])
+                                                                .toList()
+                                                                .join(', ')),
+                                                      )
+                                                    ],
+                                                  ))),
+                                          InkWell(
+                                              onTap: () async {
+                                                List<String>? selectedMonths =
+                                                    await showMultipleSelect(
+                                                        context,
+                                                        months,
+                                                        "Wybierz miesiące",
+                                                        (_repeat.months ??
+                                                                [
+                                                                  0,
+                                                                  ...List.generate(
+                                                                      11,
+                                                                      (index) =>
+                                                                          index +
+                                                                          1)
+                                                                ])
+                                                            .map((e) =>
+                                                                months[e])
+                                                            .toList());
+                                                if (selectedMonths != null) {
+                                                  //Convert the text month names to an array of int (indexes)
+                                                  List<int>?
+                                                      selectedMonthsIndexes =
+                                                      selectedMonths
+                                                          .map((e) =>
+                                                              months.indexOf(e))
+                                                          .toList();
+                                                  //If all months are selected
+                                                  if (selectedMonthsIndexes
+                                                          .length ==
+                                                      12) {
+                                                    selectedMonthsIndexes =
+                                                        null;
+                                                  }
+                                                  setState(() {
+                                                    _repeat.months =
+                                                        selectedMonthsIndexes;
+                                                  });
+                                                }
+                                              },
+                                              child: Padding(
+                                                  padding:
+                                                      const EdgeInsets.all(8),
+                                                  child: Row(
+                                                    children: [
+                                                      const Text("Miesiące: "),
+                                                      Flexible(
+                                                        child: Text(_repeat
+                                                                    .months ==
+                                                                null
+                                                            ? "wszystkie"
+                                                            : (_repeat.months ??
+                                                                    [])
+                                                                .map((e) =>
+                                                                    months[e]
+                                                                        .substring(
+                                                                            0,
+                                                                            3))
+                                                                .toList()
+                                                                .join(', ')),
+                                                      )
+                                                    ],
+                                                  ))),
+                                        ]
+                                      : [])
+                                ],
+                        ),
+                        InkWell(
+                            onTap: () => setState(() {
+                                  _deleteAfterRinging = !_deleteAfterRinging;
+                                }),
+                            child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  const Text("Usuń po zadzwonieniu"),
+                                  Switch(
+                                    value: _deleteAfterRinging,
+                                    onChanged: (bool value) {
+                                      setState(() {
+                                        _deleteAfterRinging = value;
+                                      });
+                                    },
+                                  )
+                                ])),
+                        InkWell(
+                            onTap: () => setState(() {
+                                  _emergencyAlarmTimeoutSeconds =
+                                      _emergencyAlarmTimeoutSeconds == 0
+                                          ? _tempEmergencyAlarmTimeoutSeconds
+                                          : 0;
+                                }),
+                            child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  const Text("Dodatkowy zapasowy alarm"),
+                                  Switch(
+                                    value: _emergencyAlarmTimeoutSeconds != 0,
+                                    onChanged: (bool value) {
+                                      setState(() {
+                                        _emergencyAlarmTimeoutSeconds =
+                                            _emergencyAlarmTimeoutSeconds == 0
+                                                ? _tempEmergencyAlarmTimeoutSeconds
+                                                : 0;
+                                      });
+                                    },
+                                  )
+                                ])),
+                        Column(
+                          children: _emergencyAlarmTimeoutSeconds != 0
+                              ? [
+                                  Slider(
+                                    min: 1,
+                                    max:
+                                        GlobalData.constants.muteAfter * 60 - 1,
+                                    onChanged: (double value) {
                                       setState(() {
                                         _tempEmergencyAlarmTimeoutSeconds =
-                                            userSelection.inSeconds;
+                                            value.floor();
                                         _emergencyAlarmTimeoutSeconds =
-                                            userSelection.inSeconds;
+                                            value.floor();
                                       });
-                                    }
-                                  },
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Text(addZero(
-                                            (_tempEmergencyAlarmTimeoutSeconds /
-                                                    60)
-                                                .floor()) +
-                                        ":" +
-                                        addZero(
-                                            _tempEmergencyAlarmTimeoutSeconds
-                                                .remainder(60))),
+                                    },
+                                    value: _tempEmergencyAlarmTimeoutSeconds
+                                        .toDouble(),
                                   ),
-                                )
-                              ]
-                            : [],
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4),
-                        child: TextFormField(
-                          controller: _notesController,
-                          maxLines: 2,
-                          textCapitalization: TextCapitalization.sentences,
-                          decoration:
-                              const InputDecoration(hintText: "Notatki"),
+                                  InkWell(
+                                    onTap: () async {
+                                      Duration? userSelection =
+                                          await selectTimeManually(
+                                              1,
+                                              GlobalData.constants.muteAfter *
+                                                      60 -
+                                                  1,
+                                              _tempEmergencyAlarmTimeoutSeconds);
+                                      if (userSelection != null) {
+                                        setState(() {
+                                          _tempEmergencyAlarmTimeoutSeconds =
+                                              userSelection.inSeconds;
+                                          _emergencyAlarmTimeoutSeconds =
+                                              userSelection.inSeconds;
+                                        });
+                                      }
+                                    },
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Text(addZero(
+                                              (_tempEmergencyAlarmTimeoutSeconds /
+                                                      60)
+                                                  .floor()) +
+                                          ":" +
+                                          addZero(
+                                              _tempEmergencyAlarmTimeoutSeconds
+                                                  .remainder(60))),
+                                    ),
+                                  )
+                                ]
+                              : [],
                         ),
-                      ),
-                    ],
-                  ))));
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          child: TextFormField(
+                            controller: _notesController,
+                            maxLines: 2,
+                            textCapitalization: TextCapitalization.sentences,
+                            decoration:
+                                const InputDecoration(hintText: "Notatki"),
+                          ),
+                        ),
+                      ],
+                    )))),
+      );
     }
   }
 }
