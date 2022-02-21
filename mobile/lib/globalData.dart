@@ -1048,7 +1048,8 @@ class GlobalData {
             audioId: response['associatedSound']['audioId'],
             filename: response['associatedSound']['filename'],
             friendlyName: response['associatedSound']['friendlyName'],
-          ));
+          ),
+          delay: response['delay']);
       GlobalData.sleepAsAndroidIntegrationStatus = _status;
       return _status;
     }
@@ -1086,6 +1087,21 @@ class GlobalData {
     if (response.statusCode != 200 || decodedResponse['error'] == true) {
       throw APIException(
           "Błąd podczas zmieniania opóźnienia włączania dodatkowego urządzenia w integracji z Sleep as Android. Status code: ${response.statusCode}, response: ${response.body}");
+    }
+  }
+
+  static Future<void> changeSleepAsAndroidIntegrationDelay(int delay) async {
+    Map requestData = {'delay': delay};
+
+    var response = await http.put(
+        Uri.parse("$serverIP/v1/sleepasandroid/changeDelay"),
+        body: json.encode(requestData),
+        headers: {"Content-Type": "application/json"});
+    var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
+
+    if (response.statusCode != 200 || decodedResponse['error'] == true) {
+      throw APIException(
+          "Błąd podczas zmieniania opóźnienia włączania w integracji z Sleep as Android. Status code: ${response.statusCode}, response: ${response.body}");
     }
   }
 

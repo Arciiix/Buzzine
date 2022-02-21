@@ -28,6 +28,8 @@ sleepAsAndroidRouter.get("/getStatus", async (req, res) => {
       await getSleepAsAndroidIntegrationDBObject()
     )?.config?.emergencyAlarmTimeoutSeconds) ??
     SLEEP_AS_ANDROID_MUTE_AFTER * 60;
+  let delay =
+    (await (await getSleepAsAndroidIntegrationDBObject())?.config?.delay) ?? 0;
   let associatedSound;
 
   try {
@@ -51,6 +53,7 @@ sleepAsAndroidRouter.get("/getStatus", async (req, res) => {
     response: {
       isActive: status,
       emergencyAlarmTimeoutSeconds,
+      delay,
       associatedSound,
     },
   });
@@ -145,6 +148,43 @@ sleepAsAndroidRouter.put("/changeSound", async (req, res) => {
   }
 });
 
+sleepAsAndroidRouter.put("/changeDelay", async (req, res) => {
+  if (!req.body.delay) {
+    res.status(400).send({
+      error: true,
+      errorCode: "MISSING_DELAY",
+    });
+    return;
+  }
+
+  if (isNaN(parseInt(req.body.delay)) || parseInt(req.body.delay) < 0) {
+    res.status(400).send({
+      error: true,
+      errorCode: "WRONG_DELAY",
+    });
+    return;
+  }
+
+  let dbIntegrationInstance: any = await getSleepAsAndroidIntegrationDBObject();
+
+  //Do it this way to avoid unexisting config error
+  let oldConfig = { ...dbIntegrationInstance.config };
+  oldConfig.delay = req.body.delay;
+  dbIntegrationInstance.config = oldConfig;
+  await dbIntegrationInstance.save();
+
+  logger.info(
+    `[SLEEP AS ANDROID] Set Sleep as Android delay to ${req.body.delay}`
+  );
+
+  res.send({
+    error: false,
+    response: {
+      delay: dbIntegrationInstance.config.delay,
+    },
+  });
+});
+
 sleepAsAndroidRouter.put("/toogleCurrentAlarm", async (req, res) => {
   if (req.body.isActive === null || req.body.isActive === undefined) {
     res.status(400).send({ error: true, errorCode: "MISSING_IS_ACTIVE" });
@@ -152,7 +192,7 @@ sleepAsAndroidRouter.put("/toogleCurrentAlarm", async (req, res) => {
   }
 
   if (req.body.isActive) {
-    await SleepAsAndroidAlarm.startTheAlarm();
+    await SleepAsAndroidAlarm.onAlarm();
   } else {
     await SleepAsAndroidAlarm.stopTheAlarm();
   }
@@ -168,7 +208,7 @@ async function handleSleepAsAndroidWebhook(event, value1?, value2?, value3?) {
   );
   switch (event) {
     case "alarm_alert_start":
-      SleepAsAndroidAlarm.startTheAlarm();
+      SleepAsAndroidAlarm.onAlarm();
       break;
     case "alarm_snooze_clicked":
     case "alarm_alert_dismiss":
@@ -214,15 +254,33 @@ interface IRingingStats {
 
 class SleepAsAndroidAlarm {
   static ringingStats?: IRingingStats;
+  static delayTimeout: ReturnType<typeof setTimeout>;
+
+  static async onAlarm(): Promise<void> {
+    if (this.delayTimeout) {
+      clearTimeout(this.delayTimeout);
+      this.delayTimeout = null;
+    }
+
+    let delay =
+      (await (await getSleepAsAndroidIntegrationDBObject())?.config?.delay) ??
+      0; //In seconds
+
+    this.delayTimeout = setTimeout(() => this.startTheAlarm(), delay * 1000);
+  }
 
   static async startTheAlarm(): Promise<boolean> {
+    if (this.delayTimeout) {
+      clearTimeout(this.delayTimeout);
+      this.delayTimeout = null;
+    }
     if (this.ringingStats) {
       clearTimeout(this.ringingStats?.alarmSilentTimeout);
     }
     this.ringingStats = {
       dateStarted: new Date(),
       alarmSilentTimeout: setTimeout(
-        this.stopTheAlarm,
+        () => this.stopTheAlarm,
         SLEEP_AS_ANDROID_MUTE_AFTER * 60 * 1000
       ),
       alarmEmergencyDeviceTimeout: setTimeout(
@@ -251,6 +309,11 @@ class SleepAsAndroidAlarm {
   }
 
   static async stopTheAlarm(): Promise<boolean> {
+    if (this.delayTimeout) {
+      clearTimeout(this.delayTimeout);
+      this.delayTimeout = null;
+      return;
+    }
     if (this.ringingStats) {
       clearTimeout(this.ringingStats?.alarmSilentTimeout);
       clearTimeout(this.ringingStats?.alarmEmergencyDeviceTimeout);

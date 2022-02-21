@@ -6,6 +6,7 @@ import 'package:buzzine/types/Audio.dart';
 import 'package:buzzine/types/SleepAsAndroidIntegrationStatus.dart';
 import 'package:buzzine/utils/formatting.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class SleepAsAndroidIntegration extends StatefulWidget {
   final Function onRefresh;
@@ -117,7 +118,7 @@ class _SleepAsAndroidIntegrationState extends State<SleepAsAndroidIntegration> {
     } else {
       return Container(
           width: MediaQuery.of(context).size.width * 0.9,
-          height: 275,
+          height: 250,
           padding: const EdgeInsets.all(10),
           margin: const EdgeInsets.all(5),
           decoration: BoxDecoration(
@@ -137,51 +138,56 @@ class _SleepAsAndroidIntegrationState extends State<SleepAsAndroidIntegration> {
                                 'Dzięki tej integracji alarmy z aplikacji Sleep as Android będą też odtwarzane w Buzzine - kiedy nadejdzie czas na alarm, równocześnie z telefonem włączy się Buzzine z wybranym dźwiękiem oraz po pewnym (wybranym) czasie dodatkowe urządzenie.\nAby włączyć tę integrację, w Sleep as Android przejdź do ustawień, a następnie: Integrations -> Services -> Automation. W sekcji "Webhooks" zaznacz checkboxa, a w polu URL wpisz: "${GlobalData.serverIP}/v1/sleepasandroid/webhook" - czyli adres API z dodatkiem "/v1/sleepasandroid/webhook".'),
                             actions: [
                               TextButton(
+                                  onPressed: () async {
+                                    await Clipboard.setData(ClipboardData(
+                                        text:
+                                            "${GlobalData.serverIP}/v1/sleepasandroid/webhook"));
+                                    Navigator.of(context).pop();
+                                  },
+                                  child: const Text("Kopiuj URL")),
+                              TextButton(
                                   onPressed: () => Navigator.of(context).pop(),
                                   child: const Text("OK"))
                             ],
                           ));
                 },
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        mainAxisSize: MainAxisSize.max,
-                        children: const [
-                          Padding(
-                            padding: EdgeInsets.all(8.0),
-                            child: Icon(Icons.android),
-                          ),
-                          Expanded(
-                            child: Text("Integracja z Sleep as Android",
-                                style: TextStyle(fontSize: 20),
-                                overflow: TextOverflow.ellipsis),
-                          )
-                        ],
-                      ),
-                      Row(
-                        mainAxisSize: MainAxisSize.max,
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: const Text("Status",
-                                style: TextStyle(fontSize: 17),
-                                overflow: TextOverflow.ellipsis),
-                          ),
-                          Switch(
-                            value: _sleepAsAndroidIntegrationStatus.isActive,
-                            onChanged: (value) async {
-                              await GlobalData
-                                  .toogleSleepAsAndroidIntegrationStatus(value);
-                              await refresh();
-                            },
-                          )
-                        ],
-                      ),
-                    ],
-                  ),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.max,
+                      children: const [
+                        Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: Icon(Icons.android),
+                        ),
+                        Expanded(
+                          child: Text("Integracja z Sleep as Android",
+                              style: TextStyle(fontSize: 20),
+                              overflow: TextOverflow.ellipsis),
+                        )
+                      ],
+                    ),
+                    Row(
+                      mainAxisSize: MainAxisSize.max,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: const Text("Status",
+                              style: TextStyle(fontSize: 17),
+                              overflow: TextOverflow.ellipsis),
+                        ),
+                        Switch(
+                          value: _sleepAsAndroidIntegrationStatus.isActive,
+                          onChanged: (value) async {
+                            await GlobalData
+                                .toogleSleepAsAndroidIntegrationStatus(value);
+                            await refresh();
+                          },
+                        )
+                      ],
+                    ),
+                  ],
                 ),
               ),
               Column(
@@ -236,6 +242,54 @@ class _SleepAsAndroidIntegrationState extends State<SleepAsAndroidIntegration> {
                         InkWell(
                           onTap: () async {
                             Duration? userSelection = await selectTimeManually(
+                                0,
+                                360000, //100 hours
+                                GlobalData
+                                    .sleepAsAndroidIntegrationStatus.delay);
+                            if (userSelection != null) {
+                              await GlobalData
+                                  .changeSleepAsAndroidIntegrationDelay(
+                                      userSelection.inSeconds);
+                              await refresh();
+                            }
+                          },
+                          onLongPress: () {
+                            showDialog(
+                                context: context,
+                                builder: (_) => AlertDialog(
+                                      title: const Text("Opóźnienie"),
+                                      content: Text(
+                                          "Po tym czasie (format mm:ss) włączony zostanie alarm Buzzine."),
+                                      actions: [
+                                        TextButton(
+                                            onPressed: () =>
+                                                Navigator.of(context).pop(),
+                                            child: const Text("OK"))
+                                      ],
+                                    ));
+                          },
+                          child: Row(
+                            mainAxisSize: MainAxisSize.max,
+                            children: [
+                              const Icon(Icons.hourglass_empty),
+                              Padding(
+                                padding: const EdgeInsets.all(5),
+                                child: Text(addZero(
+                                        (_sleepAsAndroidIntegrationStatus
+                                                    .delay /
+                                                60)
+                                            .floor()) +
+                                    ":" +
+                                    addZero(_sleepAsAndroidIntegrationStatus
+                                        .delay
+                                        .remainder(60))),
+                              ),
+                            ],
+                          ),
+                        ),
+                        InkWell(
+                          onTap: () async {
+                            Duration? userSelection = await selectTimeManually(
                                 1,
                                 GlobalData.constants.muteAfter * 60 - 1,
                                 GlobalData.sleepAsAndroidIntegrationStatus
@@ -254,7 +308,7 @@ class _SleepAsAndroidIntegrationState extends State<SleepAsAndroidIntegration> {
                                       title: const Text(
                                           "Opóźnienie włączenia urządzenia"),
                                       content: Text(
-                                          "Po tym czasie (format mm:ss) włączone zostanie dodatkowe urządzenie systemu przeciwawaryjnego."),
+                                          "Po tym czasie (format mm:ss) włączone zostanie dodatkowe urządzenie systemu przeciwawaryjnego. Druga wartość, w nawiasie, to rzeczywista wartość - po uwzględnieniu ogólnego opóźnienia."),
                                       actions: [
                                         TextButton(
                                             onPressed: () =>
@@ -269,15 +323,26 @@ class _SleepAsAndroidIntegrationState extends State<SleepAsAndroidIntegration> {
                               const Icon(Icons.shield_outlined),
                               Padding(
                                 padding: const EdgeInsets.all(5),
-                                child: Text(addZero(
-                                        (_sleepAsAndroidIntegrationStatus
-                                                    .emergencyAlarmTimeoutSeconds /
-                                                60)
-                                            .floor()) +
+                                child: Text(addZero((_sleepAsAndroidIntegrationStatus.emergencyAlarmTimeoutSeconds / 60).floor()) +
                                     ":" +
                                     addZero(_sleepAsAndroidIntegrationStatus
                                         .emergencyAlarmTimeoutSeconds
-                                        .remainder(60))),
+                                        .remainder(60)) +
+                                    " (" +
+                                    addZero((_sleepAsAndroidIntegrationStatus.delay /
+                                                60 +
+                                            _sleepAsAndroidIntegrationStatus
+                                                    .emergencyAlarmTimeoutSeconds /
+                                                60)
+                                        .floor()) +
+                                    ":" +
+                                    addZero(_sleepAsAndroidIntegrationStatus
+                                            .delay
+                                            .remainder(60) +
+                                        _sleepAsAndroidIntegrationStatus
+                                            .emergencyAlarmTimeoutSeconds
+                                            .remainder(60)) +
+                                    ")"),
                               ),
                             ],
                           ),
