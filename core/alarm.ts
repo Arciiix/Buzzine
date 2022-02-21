@@ -235,7 +235,6 @@ class Alarm {
     if (this.ringingStats) {
       clearInterval(this.ringingStats?.eventResendingInterval);
       clearTimeout(this.ringingStats?.alarmSilentTimeout);
-      clearTimeout(this.ringingStats?.emergencyAlarmTimeout);
     }
     this.toogleEmergencyDevice(false);
     Buzzine.currentlyRingingAlarms = Buzzine.currentlyRingingAlarms.filter(
@@ -254,7 +253,6 @@ class Alarm {
     if (this.ringingStats) {
       clearInterval(this.ringingStats?.eventResendingInterval);
       clearTimeout(this.ringingStats?.alarmSilentTimeout);
-      clearTimeout(this.ringingStats?.emergencyAlarmTimeout);
     }
     this.ringingStats = null;
     this.toogleEmergencyDevice(false);
@@ -298,7 +296,6 @@ class Alarm {
     if (this.ringingStats) {
       clearInterval(this.ringingStats?.eventResendingInterval);
       clearTimeout(this.ringingStats?.alarmSilentTimeout);
-      clearTimeout(this.ringingStats?.emergencyAlarmTimeout);
     }
     this.ringingStats = null;
     this.toogleEmergencyDevice(false);
@@ -415,7 +412,6 @@ class Alarm {
     if (this.ringingStats) {
       clearInterval(this.ringingStats?.eventResendingInterval);
       clearTimeout(this.ringingStats?.alarmSilentTimeout);
-      clearTimeout(this.ringingStats?.emergencyAlarmTimeout);
     }
     this.ringingStats = {
       timeElapsed: 0,
@@ -432,6 +428,13 @@ class Alarm {
           ...{ timeElapsed: this.ringingStats.timeElapsed },
         });
 
+        if (
+          this.emergencyAlarmTimeoutSeconds &&
+          this.ringingStats.timeElapsed >= this.emergencyAlarmTimeoutSeconds
+        ) {
+          this.toogleEmergencyDevice(true);
+        }
+
         logger.info(
           `Resent ALARM_RINGING event of alarm ${this.id}. Time elapsed: ${this.ringingStats.timeElapsed}`
         );
@@ -441,12 +444,6 @@ class Alarm {
         this.mute();
         sendEmergency([this.toObject()]);
       }, (parseInt(process.env.MUTE_AFTER) || 10) * 1000 * 60),
-      emergencyAlarmTimeout:
-        this.emergencyAlarmTimeoutSeconds &&
-        setTimeout(
-          () => this.toogleEmergencyDevice(true),
-          this.emergencyAlarmTimeoutSeconds * 1000
-        ),
     };
     this.pushToCurrentlyRinging();
     io.emit("ALARM_RINGING", { ...this.toObject(), ...{ timeElapsed: 0 } });
@@ -520,7 +517,6 @@ interface IRingingStats {
   dateStarted: Date;
   eventResendingInterval: ReturnType<typeof setInterval>;
   alarmSilentTimeout: ReturnType<typeof setTimeout>;
-  emergencyAlarmTimeout?: ReturnType<typeof setTimeout>;
 }
 
 type RingingAlarm = IAlarm & { maxAlarmDate?: Date };

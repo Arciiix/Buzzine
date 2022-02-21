@@ -35,6 +35,7 @@ class NotificationService {
       title: "Buzzine - " + (alarmName ?? "Alarm"),
     };
 
+    if (this.tokens.length < 1) return;
     try {
       let response = await firebaseAdmin.messaging().sendToDevice(
         this.tokens,
