@@ -1,0 +1,11 @@
+node_modules/
+
+# Build
+dist/
+# Logs
+logs/
+# Environment variables
+.env
+# Database
+buzzineTracking.db
+buzzineTracking.db-journal

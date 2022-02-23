@@ -45,6 +45,7 @@ Everything is under development, the app will evolve slowly, step by step. Even 
 | OPEN_WEATHER_MAP_API_KEY    |                                                   | OpenWeatherMap API key used for the weather information                                    |         |
 | ADAPTER_URL                 | http://localhost:2222 (to be changed with Docker) | Used for emergency requests                                                                |         |
 | SLEEP_AS_ANDROID_MUTE_AFTER | 10                                                | The Sleep as Android alarm will mute itself after that time if no user action is performed | minutes |
+| TRACKING_URL                | http://localhost:4444 (to be changed with Docker) | Used for saving sleep data                                                                 |         |
 
 #### Audio
 
@@ -64,3 +65,10 @@ Everything is under development, the app will evolve slowly, step by step. Even 
 | HEARTBEAT_CRONJOB   | _/3 _ \* \* \*                                    | Cronjob used to send the heartbeat to Tasmota. Default is every 3rd minute.                       | cron    |
 | TEMPERATURE_CRONJOB | _/15 _ \* \* \*                                   | Cronjob used to fetch the temperature. Default is every 15th minute.                              | cron    |
 | PROTECTION_DELAY    | 600                                               | Injected into Tasmota command RuleTimer1 x (where x is the value)                                 | seconds |
+
+#### Tracking
+
+| Name                     | Default value | Description                                                                               | Unit |
+| ------------------------ | ------------- | ----------------------------------------------------------------------------------------- | ---- |
+| PORT                     | 4444          | A port the app will run on.                                                               |      |
+| VERSION_HISTORY_MAX_DAYS | 7             | The version history of given tracking entity will delete itself after that amount of days | days |

@@ -20,6 +20,7 @@ const AUDIO_URL = process.env.AUDIO_URL || "http://localhost:7777"; //DEV TODO: 
 const ADAPTER_URL = process.env.ADAPTER_URL || "http://localhost:2222"; //DEV TODO: Change it
 const SLEEP_AS_ANDROID_MUTE_AFTER =
   parseInt(process.env.SLEEP_AS_ANDROID_MUTE_AFTER) || 10;
+const TRACKING_URL = process.env.TRACKING_URL ?? "http://localhost:4444";
 
 const socket = io(process.env.CORE_URL || "http://localhost:3333"); //DEV - to be changed with Docker
 
@@ -32,6 +33,7 @@ app.get("/", (req, res) => {
 
 const audioRouter = express.Router();
 const emergencyRouter = express.Router();
+const trackingRouter = express.Router();
 
 const uptime = new Date();
 
@@ -52,6 +54,7 @@ api.use("/emergency", emergencyRouter);
 api.use("/temperature", emergencyRouter);
 api.use("/notifications", notificationsRouter);
 api.use("/sleepasandroid", sleepAsAndroidRouter);
+api.use("/tracking", trackingRouter);
 
 api.get("/ping", async (req, res) => {
   let now = new Date();
@@ -849,6 +852,33 @@ emergencyRouter.all("*", async (req, res) => {
   } catch (err) {
     logger.warn(
       `Error while making emergency request: ${JSON.stringify(
+        err?.response?.data
+      )} with status ${err?.response?.status}`
+    );
+    res.status(err?.response?.status ?? 502).send(err?.response?.data);
+  }
+});
+
+trackingRouter.all("*", async (req, res) => {
+  //It's just the same request sent to the tracking service
+  try {
+    let trackingReq = await axios({
+      url: `${TRACKING_URL}/v1${req.path}`,
+      method: req.method as Method,
+      data: req.body,
+      params: req.query,
+    });
+    logger.info(
+      `Made a request ${
+        req.path
+      } to the tracking service with response ${JSON.stringify(
+        trackingReq.data
+      )}`
+    );
+    res.status(trackingReq.status).send(trackingReq.data);
+  } catch (err) {
+    logger.warn(
+      `Error while making a request to the tracking service: ${JSON.stringify(
         err?.response?.data
       )} with status ${err?.response?.status}`
     );
