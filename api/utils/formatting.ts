@@ -15,4 +15,9 @@ function parseHHmm(
   }
   return { hour: parseInt(parsed[0]), minute: parseInt(parsed[1]) };
 }
-export { parseHHmm };
+
+function addZero(num: number): string {
+  return num.toString().padStart(2, "0");
+}
+
+export { parseHHmm, addZero };

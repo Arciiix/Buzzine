@@ -10,6 +10,7 @@ import {
   NotificationMessagePayload,
 } from "firebase-admin/lib/messaging/messaging-api";
 import TrackingAdapter from "./trackingAdapter";
+import { addZero } from "./utils/formatting";
 
 const notificationsRouter = express.Router();
 
@@ -27,6 +28,7 @@ class NotificationService {
 
   async sendNotification(
     alarmId: string,
+    time: { hour: number; minute: number; second?: number },
     alarmName?: string,
     alarmDescription?: string
   ): Promise<void> {
@@ -35,10 +37,17 @@ class NotificationService {
 
     //The Firebase send notification logic
     const notification: NotificationMessagePayload = {
-      body: alarmDescription ?? "Aktywny alarm",
+      body:
+        alarmDescription ??
+        `Aktywn${alarmId.includes("NAP/") ? "a drzemka" : "y alarm"}`,
       color: "#0078f2",
       sound: "default",
-      title: "Buzzine - " + (alarmName ?? "Alarm"),
+      title:
+        "Buzzine - " +
+        (alarmName ?? alarmId.includes("NAP/") ? "drzemka" : "alarm") +
+        ` - ${addZero(time.hour)}:${addZero(time.minute)}${
+          time.second ? ":" + addZero(time.second) : ""
+        }`,
     };
 
     if (this.tokens.length < 1) return;
@@ -254,6 +263,11 @@ function loadFirebaseConfig() {
     socket.on("ALARM_RINGING", async (alarmObj) => {
       notificationServiceInstance.sendNotification(
         alarmObj.id,
+        {
+          hour: alarmObj.hour,
+          minute: alarmObj.minute,
+          second: alarmObj?.second,
+        },
         alarmObj?.name,
         alarmObj?.notes
       );
