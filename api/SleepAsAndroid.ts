@@ -7,6 +7,7 @@ import {
   toogleEmergencyDevice,
 } from ".";
 import IntegrationStatusModel from "./models/IntegrationStatus.model";
+import TrackingAdapter from "./trackingAdapter";
 import logger from "./utils/logger";
 
 const sleepAsAndroidRouter = express.Router();
@@ -209,10 +210,32 @@ async function handleSleepAsAndroidWebhook(event, value1?, value2?, value3?) {
   switch (event) {
     case "alarm_alert_start":
       SleepAsAndroidAlarm.onAlarm();
+      TrackingAdapter.updateIfDoesNotExistCurrent(
+        {
+          firstAlarmTime: new Date(),
+        },
+        true
+      );
       break;
     case "alarm_snooze_clicked":
+      SleepAsAndroidAlarm.stopTheAlarm();
+      break;
     case "alarm_alert_dismiss":
       SleepAsAndroidAlarm.stopTheAlarm();
+      TrackingAdapter.updateIfDoesNotExistCurrent(
+        {
+          wakeUpTime: new Date(),
+        },
+        true
+      );
+      break;
+    case "sleep_tracking_started":
+      TrackingAdapter.updateIfDoesNotExistCurrent(
+        {
+          sleepTime: new Date(),
+        },
+        true
+      );
       break;
     default:
       break;

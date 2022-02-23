@@ -4,7 +4,12 @@ import firebaseAdmin from "firebase-admin";
 import fs from "fs";
 import FirebaseNotificationTokenModel from "./models/FirebaseNotificationToken.model";
 import { socket } from ".";
-import { NotificationMessagePayload } from "firebase-admin/lib/messaging/messaging-api";
+import {
+  MessagingDevicesResponse,
+  MessagingOptions,
+  NotificationMessagePayload,
+} from "firebase-admin/lib/messaging/messaging-api";
+import TrackingAdapter from "./trackingAdapter";
 
 const notificationsRouter = express.Router();
 
@@ -111,19 +116,55 @@ class NotificationService {
         title: "Buzzine - test",
       };
 
-      let response = await firebaseAdmin.messaging().sendToDevice(
+      let response = await this.sendCustomNotification(notification, {
         token,
-        { notification },
-        {
+        options: {
           priority: "high",
           timeToLive: 60 * 5, //5 minutes
-        }
-      );
+        },
+      });
 
       logger.info(
         `Sent test Firebase notification: ${JSON.stringify(response)}`
       );
     }, 5000);
+  }
+
+  async sendCustomNotification(
+    notification: NotificationMessagePayload,
+    options?: {
+      token?: string;
+      options?: MessagingOptions;
+    }
+  ): Promise<MessagingDevicesResponse> {
+    try {
+      let response = await firebaseAdmin.messaging().sendToDevice(
+        options?.token ?? this.tokens,
+        {
+          notification,
+        },
+        options?.options ?? {
+          priority: "high",
+          timeToLive: 3600, //1 hour
+        }
+      );
+
+      logger.info(
+        `Sent Firebase custom notification (${JSON.stringify(
+          notification
+        )} with options ${JSON.stringify(options)} to ${
+          options?.token ? "token " + options.token : "all"
+        }): ${JSON.stringify(response)}`
+      );
+
+      return response;
+    } catch (err) {
+      logger.error(
+        `Error while sending a Firebase custom notification to ${
+          options?.token ? "token " + options.token : "all"
+        }: ${err.toString()}`
+      );
+    }
   }
 
   async fetchTokens() {
@@ -216,6 +257,9 @@ function loadFirebaseConfig() {
         alarmObj?.name,
         alarmObj?.notes
       );
+      TrackingAdapter.updateIfDoesNotExistCurrent({
+        firstAlarmTime: new Date(),
+      });
     });
     socket.on("ALARM_OFF", () => {
       notificationServiceInstance.clearNotificationHistory();
@@ -235,5 +279,23 @@ function loadFirebaseConfig() {
   }
 }
 
+async function sendCustomNotification(
+  notification: NotificationMessagePayload,
+  options?: {
+    token?: string;
+    options?: MessagingOptions;
+  }
+): Promise<MessagingDevicesResponse> {
+  return await notificationServiceInstance.sendCustomNotification(
+    notification,
+    options
+  );
+}
+
 export default notificationsRouter;
-export { loadFirebaseConfig, NotificationService, notificationServiceInstance };
+export {
+  loadFirebaseConfig,
+  NotificationService,
+  notificationServiceInstance,
+  sendCustomNotification,
+};
