@@ -46,7 +46,7 @@ Everything is under development, the app will evolve slowly, step by step. Even 
 | ADAPTER_URL                 | http://localhost:2222 (to be changed with Docker) | Used for emergency requests                                                                                                                |         |
 | SLEEP_AS_ANDROID_MUTE_AFTER | 10                                                | The Sleep as Android alarm will mute itself after that time if no user action is performed                                                 | minutes |
 | TRACKING_URL                | http://localhost:4444 (to be changed with Docker) | Used for saving sleep data                                                                                                                 |         |
-| TRACKER_DAY_START           | 16:00                                             | The tracker next day will start at that time. Generally it's the latest you would ever wake up and the earliest you would ever go to sleep | HH:mm   |
+| TRACKER_DAY_START           | 20:00                                             | The tracker next day will start at that time. Generally it's the latest you would ever wake up and the earliest you would ever go to sleep | HH:mm   |
 
 #### Audio
 

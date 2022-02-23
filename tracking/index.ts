@@ -1,7 +1,11 @@
 import express from "express";
 import { PORT } from "./utils/constants";
 import db, { initDatabase } from "./utils/db";
-import { dateTimeToDateOnly, toDateString } from "./utils/formatting";
+import {
+  dateTimeToDateOnly,
+  toDateString,
+  toDateTimeString,
+} from "./utils/formatting";
 import logger, { logHTTPEndpoints } from "./utils/logger";
 import {
   clearOldVersionHistory,
@@ -20,9 +24,9 @@ api.get("/getDataForDay", async (req, res) => {
     return;
   }
 
-  let data = await db.trackingEntry.findFirst({
+  let data = await db.trackingEntry.findMany({
     where: {
-      day: dateTimeToDateOnly(new Date(req.query.day as string)),
+      date: dateTimeToDateOnly(new Date(req.query.day as string)),
     },
   });
 
@@ -32,9 +36,9 @@ api.get("/getDataForDay", async (req, res) => {
   );
 });
 
-api.put("/updateDataForDay", async (req, res) => {
-  if (!req.body.day || isNaN(new Date(req.body.day)?.getTime())) {
-    res.status(400).send({ error: true, errorCode: "WRONG_DAY" });
+api.put("/updateDataForDate", async (req, res) => {
+  if (!req.body.date || isNaN(new Date(req.body.date)?.getTime())) {
+    res.status(400).send({ error: true, errorCode: "WRONG_DATE" });
     return;
   }
   if (!req.body.updateObject || typeof req.body.updateObject !== "object") {
@@ -53,11 +57,11 @@ api.put("/updateDataForDay", async (req, res) => {
 
   let dbObject = await db.trackingEntry.upsert({
     where: {
-      day: dateTimeToDateOnly(new Date(req.body.day)),
+      date: new Date(req.body.date),
     },
     update: {},
     create: {
-      day: dateTimeToDateOnly(new Date(req.body.day)),
+      date: new Date(req.body.date),
       ...updateObject,
     },
   });
@@ -71,39 +75,59 @@ api.put("/updateDataForDay", async (req, res) => {
     rate: dbObject.rate,
   };
 
-  await saveVersionHistory(
-    dateTimeToDateOnly(new Date(req.body.day)),
-    oldValues,
-    updateObject
-  );
+  await saveVersionHistory(new Date(req.body.date), oldValues, updateObject);
 
   await db.trackingEntry.update({
     where: {
-      day: dateTimeToDateOnly(new Date(req.body.day)),
+      date: new Date(req.body.date),
     },
     data: updateObject,
   });
 
   clearOldVersionHistory();
 
-  logger.info(`Updated data for day ${toDateString(new Date(req.body.day))}`);
+  logger.info(
+    `Updated data for date ${toDateTimeString(new Date(req.body.date))}`
+  );
 
   res.send({
     error: false,
     response: await db.trackingEntry.findUnique({
-      where: { day: dateTimeToDateOnly(new Date(req.body.day)) },
+      where: { date: new Date(req.body.date) },
     }),
   });
 });
 
-api.put("/updateDataForDayIfDoesntExist", async (req, res) => {
-  if (!req.body.day || isNaN(new Date(req.body.day)?.getTime())) {
-    res.status(400).send({ error: true, errorCode: "WRONG_DAY" });
+api.put("/updateDataForLatestOrDateIfDoesntExist", async (req, res) => {
+  if (!req.body.date || isNaN(new Date(req.body.date)?.getTime())) {
+    res.status(400).send({ error: true, errorCode: "WRONG_DATE" });
     return;
   }
   if (!req.body.updateObject || typeof req.body.updateObject !== "object") {
     res.status(400).send({ error: true, errorCode: "WRONG_UPDATE_OBJECT" });
     return;
+  }
+  //Find a daytime nap, and if it exists - change the targeted date to it
+  let latest = await db.trackingEntry.findFirst({
+    where: {
+      date: {
+        gt: new Date(req.body.date),
+      },
+    },
+    orderBy: [
+      {
+        date: "desc",
+      },
+    ],
+  });
+
+  if (latest) {
+    logger.info(
+      `Found newer entry (probably a nap) with date ${toDateTimeString(
+        latest.date
+      )}`
+    );
+    req.body.date = latest.date;
   }
 
   let updateObject: ITrackingEntryObject = {
@@ -117,11 +141,11 @@ api.put("/updateDataForDayIfDoesntExist", async (req, res) => {
 
   let dbObject = await db.trackingEntry.upsert({
     where: {
-      day: dateTimeToDateOnly(new Date(req.body.day)),
+      date: new Date(req.body.date),
     },
     update: {},
     create: {
-      day: dateTimeToDateOnly(new Date(req.body.day)),
+      date: new Date(req.body.date),
       ...updateObject,
     },
   });
@@ -143,17 +167,15 @@ api.put("/updateDataForDayIfDoesntExist", async (req, res) => {
     ) {
       await db.trackingEntry.update({
         where: {
-          day: dateTimeToDateOnly(new Date(req.body.day)),
+          date: new Date(req.body.date),
         },
         data: {
           [key]: value,
         },
       });
-      await saveVersionHistory(
-        dateTimeToDateOnly(new Date(req.body.day)),
-        oldValues,
-        { [key]: value }
-      );
+      await saveVersionHistory(new Date(req.body.date), oldValues, {
+        [key]: value,
+      });
     }
   }
 
@@ -162,7 +184,7 @@ api.put("/updateDataForDayIfDoesntExist", async (req, res) => {
   res.send({
     error: false,
     response: await db.trackingEntry.findUnique({
-      where: { day: dateTimeToDateOnly(new Date(req.body.day)) },
+      where: { date: new Date(req.body.date) },
     }),
   });
 });

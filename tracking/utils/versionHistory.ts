@@ -5,7 +5,7 @@ import { toDateString, toDateTimeString } from "./formatting";
 import logger from "./logger";
 
 async function saveVersionHistory(
-  day: Date,
+  date: Date,
   oldValues: ITrackingEntryObject,
   newValues: ITrackingEntryObject
 ): Promise<void> {
@@ -14,7 +14,7 @@ async function saveVersionHistory(
     if (new Date(oldValues[key]).getTime() !== new Date(value).getTime()) {
       await db.trackingVersionHistory.create({
         data: {
-          day: day,
+          date: date,
           fieldName: key,
           value: new Date(value), //To fit the data type - it has to be date. When it comes to the rate for example, it can be stored as a date - because it's convereted to the unix timestamp anyway, so it'll be stored as a number
         },
@@ -22,7 +22,7 @@ async function saveVersionHistory(
     }
   }
 
-  logger.info(`Saved version history for date ${toDateString(day)}`);
+  logger.info(`Saved version history for date ${toDateTimeString(date)}`);
 }
 
 async function clearOldVersionHistory(): Promise<void> {
@@ -32,7 +32,7 @@ async function clearOldVersionHistory(): Promise<void> {
 
   await db.trackingVersionHistory.deleteMany({
     where: {
-      day: {
+      date: {
         lt: minDate,
       },
     },

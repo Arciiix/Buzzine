@@ -1,6 +1,7 @@
 import axios from "axios";
 import { TRACKER_DAY_START, TRACKING_URL } from ".";
 import { sendCustomNotification } from "./notifications";
+import { dateTimeToDateOnly } from "./utils/formatting";
 import logger from "./utils/logger";
 
 class TrackingAdapter {
@@ -18,12 +19,14 @@ class TrackingAdapter {
       day.setDate(day.getDate() + 1);
     }
 
+    day = dateTimeToDateOnly(day);
+
     try {
       //Associate the alarm with given sound
       let response = await axios.put(
-        `${TRACKING_URL}/v1/updateDataForDayIfDoesntExist`,
+        `${TRACKING_URL}/v1/updateDataForLatestOrDateIfDoesntExist`,
         {
-          day,
+          date: day,
           updateObject: data,
         }
       );

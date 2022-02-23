@@ -22,7 +22,7 @@ const ADAPTER_URL = process.env.ADAPTER_URL || "http://localhost:2222"; //DEV TO
 const SLEEP_AS_ANDROID_MUTE_AFTER =
   parseInt(process.env.SLEEP_AS_ANDROID_MUTE_AFTER) || 10;
 const TRACKING_URL = process.env.TRACKING_URL ?? "http://localhost:4444";
-const TRACKER_DAY_START_TEXT = process.env.TRACKER_DAY_START ?? "16:00";
+const TRACKER_DAY_START_TEXT = process.env.TRACKER_DAY_START ?? "20:00";
 const TRACKER_DAY_START = parseHHmm(TRACKER_DAY_START_TEXT, {
   hour: 16,
   minute: 0,
