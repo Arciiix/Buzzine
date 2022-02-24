@@ -1,6 +1,5 @@
 import socketioClient from "socket.io-client";
 import express from "express";
-import bodyParser from "body-parser";
 import dotenv from "dotenv";
 import logger, { logHTTPEndpoints } from "./utils/logger";
 import db, { initDatabase } from "./utils/db";
@@ -25,7 +24,7 @@ const io = socketioClient(process.env.CORE_URL || "http://localhost:3333"); //DE
 const app = express();
 const PORT = process.env.PORT || 7777;
 
-app.use(bodyParser.json());
+app.use(express.json());
 
 let audioInstance: PlaySound;
 let emergencyInstance: PlaySound;

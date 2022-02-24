@@ -1,4 +1,3 @@
-import bodyParser from "body-parser";
 import express from "express";
 import socketio from "socket.io-client";
 import logger, { logHTTPEndpoints } from "./logger";
@@ -26,7 +25,7 @@ let heartbeatsJob: schedule.Job, temperaturesJob: schedule.Job;
 let isProtectionTurnedOn = true;
 
 const app = express();
-app.use(bodyParser.json());
+app.use(express.json());
 const api = express.Router();
 app.use("/v1", api);
 api.use(logHTTPEndpoints);

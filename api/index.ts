@@ -2,7 +2,6 @@ import express from "express";
 import { io } from "socket.io-client";
 import dotenv from "dotenv";
 import logger, { logHTTPEndpoints } from "./utils/logger";
-import bodyParser from "body-parser";
 import axios, { Method } from "axios";
 import guardRouter, { checkQRCode } from "./guard";
 import { initDatabase } from "./utils/db";
@@ -31,7 +30,7 @@ const TRACKER_DAY_START = parseHHmm(TRACKER_DAY_START_TEXT, {
 const socket = io(process.env.CORE_URL || "http://localhost:3333"); //DEV - to be changed with Docker
 
 const app = express();
-app.use(bodyParser.json());
+app.use(express.json());
 
 app.get("/", (req, res) => {
   res.send({ error: false, currentVersion: "v1", timestamp: new Date() });
