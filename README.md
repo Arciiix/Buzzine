@@ -10,9 +10,22 @@
 
 Everything is under development, the app will evolve slowly, step by step. Even the README file is under construction and will be better :)
 
+## So many modules...
+
+Buzzine is built on the modular application design - every unit of it is split into a functional microservice. The microservices communicate with each other.
+
+| Service name | Description                                                                                                                                                                                                                                                                                           | Default port |
+| ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ |
+| core         | The core of the app - a basic module. Other microservices cannot run without it. Handles all the alarm logic.                                                                                                                                                                                         | 3333         |
+| API          | The way Buzzine communicates with the outside world (e.g. used by the mobile app). It's also used to exchange information through notifications or fetch weather from an external [`OpenWeatherMap`](https://openweathermap.org/api) API.                                                             | 1111         |
+| audio        | That's the one you can judge for waking you up - it uses [`ffplay`](https://ffmpeg.org/ffplay.html) to play sound. It also allows to add new audio, e.g. from YouTube, or cut it (using [`ffmpeg`](https://ffmpeg.org/)).                                                                             | 7777         |
+| adapter      | It's called an adapter, because it's used to communicate with different interfaces, not built into the app, for example [`Tasmota`](https://tasmota.github.io/docs/). It's used for emergency and getting the temperature, so you may also call it ou may also call it "emergency" or "temperatures". | 2222         |
+| tracking     | It's a service that's built to analyze your sleep and make it better. It gathers the sleep data, for example when you go to bed and when you actually go to sleep, or when you wake up vs when you get out of the bed.                                                                                | 4444         |
+| mobile       | A mobile app built with Flutter that makes "talking" to the whole Buzzine app easy.                                                                                                                                                                                                                   | -            |
+
 ## Important things
 
-1. Make a _default.mp3_ file in _audio/audio_ directory - it will be your default alarm tone.
+1. Make a _default.mp3_ file in _audio/audio_ directory - it will be your default alarm tone. Ensure you have ffmpeg and ffplay installed.
 2. Provide the OpenWeatherMap API key as an API microservice environment variable OPEN_WEATHER_MAP_API_KEY (see below).
 3. Remember - if you compile the code using `tsc` command, you will find the output files in the /dist folder of each microservice.
 
