@@ -3,8 +3,14 @@
     <h2 align="center">Buzzine</h2>
 </p>
 
-> An improved version of my personal Arduino-based alarm clock, made to work on **Raspberry Pi** (especially with Docker environment). Easy to use **REST API** based on **Socket.io** done with a compound **Node.js** core with some doses of **Python**.
-> **Multiple alarms, custom sounds, physical LCD support** and **effective waking up with protection** are only a few of many features.
+> An improved version of my personal Arduino-based **alarm clock**, made to work on Raspberry Pi (especially with Docker environment). Easy to use **REST API** based on **Socket.io** done with a compound **Node.js core** and many other services, including **physical device support** (using **Tasmota on ESP8266** based devices).
+> **Multiple alarms, custom sounds, sleep and indoor temperature data, and effective waking up with protection** are only a few of many features.
+
+## Made with ❤️ by Arciiix 2021/2022
+
+This is my biggest project at the time, I'm 15 years old now and so excited about it :DD <br>
+Mainly done during two school winter breaks. <br>
+I think I'll miss those great moments I came through while making the Buzzine, I put so much heart into it ❤️
 
 #### Under development
 
