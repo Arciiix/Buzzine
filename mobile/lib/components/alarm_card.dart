@@ -345,8 +345,7 @@ class _AlarmCardState extends State<AlarmCard> {
                 Icon(Icons.verified_user),
                 Flexible(
                     child: Text(
-                  widget.notes ??
-                      "Zapasowy alarm: ${widget.emergencyAlarmTimeoutSeconds != null && widget.emergencyAlarmTimeoutSeconds != 0 ? addZero((widget.emergencyAlarmTimeoutSeconds! / 60).floor()) + ":" + addZero(widget.emergencyAlarmTimeoutSeconds!.remainder(60)) : "tylko ochrona"}",
+                  "Zapasowy alarm: ${widget.emergencyAlarmTimeoutSeconds != null && widget.emergencyAlarmTimeoutSeconds != 0 ? addZero((widget.emergencyAlarmTimeoutSeconds! / 60).floor()) + ":" + addZero(widget.emergencyAlarmTimeoutSeconds!.remainder(60)) : "tylko ochrona"}",
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 )),
