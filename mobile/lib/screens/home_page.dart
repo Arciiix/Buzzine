@@ -782,6 +782,8 @@ class _HomePageState extends State<HomePage> {
                                       });
                                     },
                                   ),
+                                  Section("🤖 Sleep as Android"),
+                                  SleepAsAndroidIntegration(onRefresh: refresh),
                                   Section("⚙️ Ustawienia"),
                                   InkWell(
                                       onTap: navigateToSettings,
@@ -812,8 +814,6 @@ class _HomePageState extends State<HomePage> {
                                                       TextStyle(fontSize: 24)),
                                             ],
                                           ))),
-                                  Section("🤖 Sleep as Android"),
-                                  SleepAsAndroidIntegration(onRefresh: refresh),
                                   Section("📈 Informacje"),
                                   Container(
                                       width: MediaQuery.of(context).size.width *

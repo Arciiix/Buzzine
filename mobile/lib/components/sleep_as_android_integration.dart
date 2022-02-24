@@ -126,15 +126,16 @@ class _SleepAsAndroidIntegrationState extends State<SleepAsAndroidIntegration> {
                 Text("Ładowanie...", style: TextStyle(fontSize: 32))
               ]));
     } else {
-      return Container(
+      return AnimatedContainer(
           width: MediaQuery.of(context).size.width * 0.9,
-          height: 250,
+          height: _sleepAsAndroidIntegrationStatus.isActive ? 250 : 120,
           padding: const EdgeInsets.all(10),
           margin: const EdgeInsets.all(5),
           decoration: BoxDecoration(
             color: Theme.of(context).cardColor,
             borderRadius: BorderRadius.circular(5),
           ),
+          duration: const Duration(milliseconds: 200),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
