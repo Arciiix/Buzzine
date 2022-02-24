@@ -31,6 +31,7 @@ import 'package:buzzine/types/RingingAlarmEntity.dart';
 import 'package:buzzine/types/Snooze.dart';
 import 'package:buzzine/types/YouTubeVideoInfo.dart';
 import 'package:buzzine/utils/formatting.dart';
+import 'package:buzzine/utils/show_snackbar.dart';
 import 'package:buzzine/utils/validate_qr_code.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -332,6 +333,11 @@ class _HomePageState extends State<HomePage> {
 
         //That's probably a ringing alarm - refresh the data
         await refresh();
+      });
+      GlobalData.getNotificationsStatus(value ?? "").then((areEnabled) {
+        if (!areEnabled) {
+          showSnackbar(context, "Ostrzeżenie: powiadomienia są wyłączone");
+        }
       });
     });
   }
