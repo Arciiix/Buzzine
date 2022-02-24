@@ -43,7 +43,7 @@ class _SnoozeAlarmState extends State<SnoozeAlarm> {
             (widget.leftSnooze > 300 ? 300 : widget.leftSnooze.toDouble() / 2)
                 .toInt());
 
-    _snoozeInvocationDate = DateTime.now()..add(selectedSnoozeDurationValue);
+    _snoozeInvocationDate = DateTime.now().add(selectedSnoozeDurationValue);
 
     _remainingTimeTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       setState(() {
