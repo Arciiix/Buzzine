@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:buzzine/components/simple_loading_dialog.dart';
 import 'package:buzzine/components/temperature_widget.dart';
 import 'package:buzzine/components/weather_widget.dart';
 import 'package:buzzine/globalData.dart';
@@ -73,8 +74,16 @@ class _RingingAlarmState extends State<RingingAlarm>
       ));
 
       if (snoozeDuration != null && snoozeDuration != 0) {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (BuildContext context) {
+            return SimpleLoadingDialog("Trwa włączanie drzemki...");
+          },
+        );
         bool didSnooze = await GlobalData.snoozeAlarm(
             widget.ringingAlarm.alarm.id!, snoozeDuration);
+        Navigator.of(context).pop();
         if (didSnooze) {
           Navigator.of(context).pop();
         }
@@ -116,7 +125,15 @@ class _RingingAlarmState extends State<RingingAlarm>
         },
       );
       if (turnOff) {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (BuildContext context) {
+            return SimpleLoadingDialog("Trwa wyłączanie alarmów...");
+          },
+        );
         await GlobalData.cancelAllAlarms();
+        Navigator.of(context).pop();
         Navigator.of(context).pop();
       }
       return false;
@@ -156,7 +173,15 @@ class _RingingAlarmState extends State<RingingAlarm>
       setState(() {
         didMuteAudio = true;
       });
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return SimpleLoadingDialog("Trwa wyciszanie audio...");
+        },
+      );
       bool isAudioMuted = await GlobalData.muteAudio(tempMuteAudioDuration);
+      Navigator.of(context).pop();
       if (!isAudioMuted) {
         showDialog(
             context: context,

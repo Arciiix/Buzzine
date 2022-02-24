@@ -1,4 +1,5 @@
 import 'package:buzzine/components/alarm_card.dart';
+import 'package:buzzine/components/simple_loading_dialog.dart';
 import 'package:buzzine/globalData.dart';
 import 'package:buzzine/screens/alarm_form.dart';
 import 'package:buzzine/types/Alarm.dart';
@@ -27,13 +28,29 @@ class _AlarmListState extends State<AlarmList> {
     ));
 
     if (alarm != null) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return SimpleLoadingDialog("Trwa tworzenie alarmu...");
+        },
+      );
       await GlobalData.addAlarm(alarm.toMap(), selectedAlarm != null);
+      Navigator.of(context).pop();
       await _refreshState.currentState!.show();
     }
   }
 
   void deleteAlarm(Alarm alarmToDelete) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return SimpleLoadingDialog("Trwa usuwanie alarmu...");
+      },
+    );
     await GlobalData.deleteAlarm(alarmToDelete.id ?? "");
+    Navigator.of(context).pop();
     showSnackbar(context, "Usunięto alarm!");
     await _refreshState.currentState!.show();
   }
@@ -147,6 +164,7 @@ class _AlarmListState extends State<AlarmList> {
                                             emergencyAlarmTimeoutSeconds:
                                                 e.emergencyAlarmTimeoutSeconds,
                                             repeat: e.repeat,
+                                            // refresh: () async =>       await _refreshState.currentState!.show()
                                           )))));
                         }),
                   )

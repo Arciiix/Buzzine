@@ -1,3 +1,4 @@
+import 'package:buzzine/components/simple_loading_dialog.dart';
 import 'package:buzzine/components/time_number_picker.dart';
 import 'package:buzzine/globalData.dart';
 import 'package:buzzine/screens/audio_manager.dart';
@@ -86,8 +87,17 @@ class _SleepAsAndroidIntegrationState extends State<SleepAsAndroidIntegration> {
     );
 
     if (confirmed != true) return;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return SimpleLoadingDialog(
+            "Trwa wyłączanie alarmu Sleep as Android...");
+      },
+    );
 
     await GlobalData.toogleSleepAsAndroidCurrentAlarm(false);
+    Navigator.of(context).pop();
 
     //Refresh and re-render
     await refresh();
@@ -180,8 +190,17 @@ class _SleepAsAndroidIntegrationState extends State<SleepAsAndroidIntegration> {
                         Switch(
                           value: _sleepAsAndroidIntegrationStatus.isActive,
                           onChanged: (value) async {
+                            showDialog(
+                              context: context,
+                              barrierDismissible: false,
+                              builder: (BuildContext context) {
+                                return SimpleLoadingDialog(
+                                    "Trwa ${value ? "włączanie" : "wyłączanie"} integracji: Sleep as Android...");
+                              },
+                            );
                             await GlobalData
                                 .toogleSleepAsAndroidIntegrationStatus(value);
+                            Navigator.of(context).pop();
                             await refresh();
                           },
                         )

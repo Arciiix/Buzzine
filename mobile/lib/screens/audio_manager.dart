@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:buzzine/components/simple_loading_dialog.dart';
 import 'package:buzzine/globalData.dart';
 import 'package:buzzine/screens/alarm_list.dart';
 import 'package:buzzine/screens/cut_audio.dart';
@@ -32,7 +33,15 @@ class _AudioManagerState extends State<AudioManager> {
   Timer? _audioPlaybackEndTimer;
 
   void addAudio() async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return SimpleLoadingDialog("Trwa zatrzymywanie podglądu audio...");
+      },
+    );
     await GlobalData.stopAudioPreview();
+    Navigator.of(context).pop();
     await Navigator.of(context).push(
       MaterialPageRoute(builder: (context) => DownloadYouTubeAudio()),
     );
@@ -41,8 +50,16 @@ class _AudioManagerState extends State<AudioManager> {
   }
 
   void deleteAudio(Audio e) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return SimpleLoadingDialog("Trwa usuwanie audio...");
+      },
+    );
     await GlobalData.deleteAudio(e.audioId);
     await GlobalData.getAudios();
+    Navigator.of(context).pop();
     setState(() {
       audios = GlobalData.audios;
     });
@@ -56,14 +73,30 @@ class _AudioManagerState extends State<AudioManager> {
 
   void playPreview(Audio audio) async {
     if (_previewId == audio.audioId) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return SimpleLoadingDialog("Trwa zatrzymywanie podglądu audio...");
+        },
+      );
       await GlobalData.stopAudioPreview();
+      Navigator.of(context).pop();
       setState(() {
         _previewId = '';
         _isPreviewPlaying = false;
         _audioPlaybackEndTimer?.cancel();
       });
     } else {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return SimpleLoadingDialog("Trwa włączanie podglądu audio...");
+        },
+      );
       await GlobalData.previewAudio(audio.audioId);
+      Navigator.of(context).pop();
       setState(() {
         _previewId = audio.audioId;
         _isPreviewPlaying = true;
@@ -104,8 +137,17 @@ class _AudioManagerState extends State<AudioManager> {
                     if (_audioNameTextFieldController.text.isEmpty) {
                       _audioNameTextFieldController.text = audio.filename;
                     }
+                    showDialog(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (BuildContext context) {
+                        return SimpleLoadingDialog(
+                            "Trwa zmiana nazwy audio...");
+                      },
+                    );
                     await GlobalData.changeAudioName(
                         audio.audioId, _audioNameTextFieldController.text);
+                    Navigator.of(context).pop();
                     await _refreshState.currentState!.show();
                     Navigator.of(context).pop();
                   }
@@ -118,7 +160,15 @@ class _AudioManagerState extends State<AudioManager> {
   }
 
   void navigateToAudioCut(Audio audio) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return SimpleLoadingDialog("Trwa zatrzymywanie podglądu audio...");
+      },
+    );
     await GlobalData.stopAudioPreview();
+    Navigator.of(context).pop();
     await Navigator.of(context).push(MaterialPageRoute(
       builder: (context) => CutAudio(audio: audio),
     ));
@@ -127,7 +177,15 @@ class _AudioManagerState extends State<AudioManager> {
   }
 
   void showAlarmsWithAudio(Audio audio) async {
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return SimpleLoadingDialog("Trwa zatrzymywanie podglądu audio...");
+      },
+    );
     await GlobalData.stopAudioPreview();
+    Navigator.of(context).pop();
     bool? showAlarms = await showDialog(
       context: context,
       builder: (BuildContext context) {

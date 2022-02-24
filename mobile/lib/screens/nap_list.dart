@@ -1,4 +1,5 @@
 import 'package:buzzine/components/alarm_card.dart';
+import 'package:buzzine/components/simple_loading_dialog.dart';
 import 'package:buzzine/globalData.dart';
 import 'package:buzzine/screens/alarm_form.dart';
 import 'package:buzzine/types/Alarm.dart';
@@ -45,14 +46,29 @@ class _NapListState extends State<NapList> {
         isActive: false,
       );
 
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return SimpleLoadingDialog("Trwa twozrenie drzemki...");
+        },
+      );
       await GlobalData.addNap(castedNap.toMap(), selectedNap != null);
-
+      Navigator.of(context).pop();
       await _refreshState.currentState!.show();
     }
   }
 
   void deleteNap(Nap napToDelete) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return SimpleLoadingDialog("Trwa usuwanie drzemki...");
+      },
+    );
     await GlobalData.deleteAlarm(napToDelete.id ?? "");
+    Navigator.of(context).pop();
     showSnackbar(context, "Usunięto drzemkę!");
     await _refreshState.currentState!.show();
   }

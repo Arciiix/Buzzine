@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:buzzine/components/simple_loading_dialog.dart';
 import 'package:buzzine/globalData.dart';
 import 'package:buzzine/types/AlarmType.dart';
 import 'package:buzzine/types/Audio.dart';
@@ -121,8 +122,16 @@ class _AlarmCardState extends State<AlarmCard> {
   }
 
   void setIsActive(bool status) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return SimpleLoadingDialog("Trwa zmiana statusu alarmu...");
+      },
+    );
     _updateRemainingTimeTimer?.cancel();
     await GlobalData.changeAlarmStatus(widget.id, status);
+    Navigator.of(context).pop();
     setState(() {
       isActive = status;
       if (isActive && widget.nextInvocation != null) {
@@ -169,8 +178,16 @@ class _AlarmCardState extends State<AlarmCard> {
 
     //It could be either null, so I check it by ==
     if (confirmed == true) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return SimpleLoadingDialog("Trwa anulowanie następnego wywołania...");
+        },
+      );
       DateTime? nextInvocation =
           await GlobalData.cancelNextInvocation(widget.id);
+      Navigator.of(context).pop();
       if (nextInvocation != null) {
         setState(() {
           timeDetailsTextContent = calculateDateTimeDifference(nextInvocation);

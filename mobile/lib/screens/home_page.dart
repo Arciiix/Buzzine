@@ -5,6 +5,7 @@ import 'package:buzzine/components/carousel.dart';
 import 'package:buzzine/components/emergency_device_status.dart';
 import 'package:buzzine/components/logo.dart';
 import 'package:buzzine/components/ping_result_indicator.dart';
+import 'package:buzzine/components/simple_loading_dialog.dart';
 import 'package:buzzine/components/sleep_as_android_integration.dart';
 import 'package:buzzine/components/snooze_card.dart';
 import 'package:buzzine/components/temperature_widget.dart';
@@ -137,7 +138,15 @@ class _HomePageState extends State<HomePage> {
 
     //It could be either null, so I check it by ==
     if (confirmed == true) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return SimpleLoadingDialog("Trwa generowanie hashu kodu QR...");
+        },
+      );
       await GlobalData.generateQRCode();
+      Navigator.of(context).pop();
       setState(() {
         qrCodeHash = GlobalData.qrCodeHash;
       });
@@ -234,9 +243,16 @@ class _HomePageState extends State<HomePage> {
     );
 
     if (confirmed != true) return;
-
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return SimpleLoadingDialog(
+            "Trwa wyłączanie systemu przeciwawaryjnego...");
+      },
+    );
     await GlobalData.turnOffEmergency();
-
+    Navigator.of(context).pop();
     //Refresh and re-render
     await refresh();
     setState(() {});
@@ -743,8 +759,17 @@ class _HomePageState extends State<HomePage> {
                                   ),
                                   EmergencyDeviceStatus(
                                     refreshEmergencyStatus: () async {
+                                      showDialog(
+                                        context: context,
+                                        barrierDismissible: false,
+                                        builder: (BuildContext context) {
+                                          return SimpleLoadingDialog(
+                                              "Trwa pobieranie statusu systemu przeciwawaryjnego...");
+                                        },
+                                      );
                                       EmergencyStatus newEmergencyStatus =
                                           await GlobalData.getEmergencyStatus();
+                                      Navigator.of(context).pop();
                                       setState(() {
                                         emergencyStatus:
                                         newEmergencyStatus;

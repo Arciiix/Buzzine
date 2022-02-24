@@ -1,5 +1,6 @@
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:buzzine/components/number_vertical_picker.dart';
+import 'package:buzzine/components/simple_loading_dialog.dart';
 import 'package:buzzine/globalData.dart';
 import 'package:buzzine/screens/select_on_map.dart';
 import 'package:buzzine/utils/formatting.dart';
@@ -156,7 +157,16 @@ class _SettingsState extends State<Settings> {
   }
 
   Future<void> toogleNotifications(bool isTurnedOn) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return SimpleLoadingDialog(
+            "Trwa ${isTurnedOn ? "włączanie" : "wyłączanie"} powiadomień...");
+      },
+    );
     await GlobalData.toogleNotifications(isTurnedOn, _notificationsToken!);
+    Navigator.of(context).pop();
     setState(() {
       _isMessagingEnabled = !_isMessagingEnabled!;
     });
@@ -184,7 +194,16 @@ class _SettingsState extends State<Settings> {
     );
 
     if (confirmed == true) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return SimpleLoadingDialog(
+              "Trwa wysyłanie testowego powiadomienia...");
+        },
+      );
       await GlobalData.sendTestNotification(_notificationsToken!);
+      Navigator.of(context).pop();
     }
   }
 

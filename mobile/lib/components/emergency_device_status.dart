@@ -1,3 +1,4 @@
+import 'package:buzzine/components/simple_loading_dialog.dart';
 import 'package:buzzine/globalData.dart';
 import 'package:flutter/material.dart';
 
@@ -17,12 +18,30 @@ class _EmergencyDeviceStatusState extends State<EmergencyDeviceStatus> {
   bool _isError = false;
 
   void toogleEmergency(bool isOn) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return SimpleLoadingDialog(
+            "Trwa ${isOn ? "włączanie" : "wyłączanie"} systemu alarmowego...");
+      },
+    );
     await GlobalData.toogleEmergency(isOn);
+    Navigator.of(context).pop();
     await refreshEmergencyData();
   }
 
   void toogleEmergencyDevice(bool isOn) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return SimpleLoadingDialog(
+            "Trwa ${isOn ? "włączanie" : "wyłączanie"} urządzenia systemu alarmowego...");
+      },
+    );
     await GlobalData.toogleEmergencyDevice(isOn);
+    Navigator.of(context).pop();
     await refreshEmergencyData();
   }
 

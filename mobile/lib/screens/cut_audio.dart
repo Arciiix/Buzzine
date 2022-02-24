@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:buzzine/components/simple_loading_dialog.dart';
 import 'package:buzzine/components/time_number_picker.dart';
 import 'package:buzzine/globalData.dart';
 import 'package:buzzine/types/Audio.dart';
@@ -90,7 +91,15 @@ class _CutAudioState extends State<CutAudio> {
   }
 
   Future<bool> stopPreview() async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return SimpleLoadingDialog("Trwa zatrzymywanie podglądu audio...");
+      },
+    );
     await GlobalData.stopAudioPreview();
+    Navigator.of(context).pop();
     setState(() {
       _isPreviewPlaying = false;
       _previewCleaner?.cancel();
