@@ -302,7 +302,7 @@ class _RingingAlarmState extends State<RingingAlarm>
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: const [
                               Icon(Icons.delete, color: Colors.white),
-                              Text("Usuń",
+                              Text("Wyłącz",
                                   style: TextStyle(color: Colors.white))
                             ])),
                   ],
