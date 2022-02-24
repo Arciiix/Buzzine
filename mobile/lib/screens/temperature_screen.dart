@@ -139,6 +139,16 @@ class _TemperatureScreenState extends State<TemperatureScreen> {
                 },
                 child: Scaffold(
                     appBar: AppBar(title: const Text("Temperatura")),
+                    floatingActionButton:
+                        _currentSelectedDate.year != DateTime.now().year ||
+                                _currentSelectedDate.month !=
+                                    DateTime.now().month ||
+                                _currentSelectedDate.day != DateTime.now().day
+                            ? FloatingActionButton(
+                                child: const Icon(Icons.calendar_today),
+                                onPressed: () async =>
+                                    getTemperatureDataForDate(DateTime.now()))
+                            : null,
                     body: Column(
                       children: [
                         Expanded(
