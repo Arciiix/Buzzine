@@ -1,9 +1,8 @@
 import childProcess from "child_process";
-import AlarmsAudioModel from "../models/AlarmsAudio";
-import AudioNameMappingModel from "../models/AudioNameMapping";
 import logger from "./logger";
 import fs from "fs";
 import path from "path";
+import db from "./db";
 
 class PlayAudio {
   filename: string;
@@ -84,18 +83,18 @@ async function getAlarmAudio(
       audioId: "default",
       friendlyName: "Default audio",
     };
-  let audio: any = await AlarmsAudioModel.findOne({
+  let audio: any = await db.alarmsAudios.findFirst({
     where: { alarmId: alarmId },
-    include: AudioNameMappingModel,
+    include: { AudioNameMappings: true },
   });
 
   return audio
     ? {
-        filename: audio.AudioNameMapping.filename,
+        filename: audio.AudioNameMappings.filename,
         audioId: audio.audioId,
         friendlyName:
-          audio.AudioNameMapping.friendlyName ??
-          audio.AudioNameMapping.filename,
+          audio.AudioNameMappings.friendlyName ??
+          audio.AudioNameMappings.filename,
       }
     : {
         filename: "default.mp3",
@@ -107,7 +106,7 @@ async function getAlarmAudio(
 async function changeAlarmSound(alarmId: string, audioId?: string) {
   if (audioId) {
     //Check if sound exists
-    let sound = await AudioNameMappingModel.findOne({
+    let sound = await db.audioNameMappings.findFirst({
       where: { audioId: audioId },
     });
     if (!sound) {
@@ -122,20 +121,21 @@ async function changeAlarmSound(alarmId: string, audioId?: string) {
   }
 
   //If alarm doesn't exist in the audio database yet, create it
-  let alarm: any = await AlarmsAudioModel.findOne({
-    where: { alarmId: alarmId },
-  });
-  if (alarm) {
-    alarm.audioId = audioId;
-    await alarm.save();
-  } else {
-    alarm = await AlarmsAudioModel.create({
+  let returnObj = await db.alarmsAudios.upsert({
+    where: {
+      alarmId: alarmId,
+    },
+    update: {
+      audioId: audioId,
+    },
+    create: {
       alarmId: alarmId,
       audioId: audioId,
-    });
-  }
+    },
+  });
+
   logger.info(`Successfully changed alarm ${alarmId} audio to ${audioId}`);
-  return alarm;
+  return returnObj;
 }
 
 async function deleteSound(
@@ -146,7 +146,7 @@ async function deleteSound(
   }
 
   //Check if sound exists
-  let soundObj: any = await AudioNameMappingModel.findOne({
+  let soundObj = await db.audioNameMappings.findFirst({
     where: { audioId: audioId },
   });
   if (!soundObj) {
@@ -154,14 +154,14 @@ async function deleteSound(
   }
 
   //Delete all the relations - if alarm has this sound set as its sound
-  let alarmsWithTheSound: any = await AlarmsAudioModel.findAll({
+  let alarmsWithTheSound: any = await db.alarmsAudios.findMany({
     where: { audioId: audioId },
   });
   for await (const alarm of alarmsWithTheSound) {
     await changeAlarmSound(alarm.alarmId);
   }
 
-  await soundObj.destroy();
+  await db.audioNameMappings.delete({ where: { audioId: audioId } });
 
   //Delete the actual file
   fs.unlinkSync(path.join(__dirname, "..", "audio", soundObj.filename));
@@ -183,7 +183,7 @@ function getAudioDurationFromFile(filename: string): Promise<number> {
           reject(stderr);
         } else {
           let jsonOutput: any = JSON.parse(stdout);
-          resolve(jsonOutput.format.duration);
+          resolve(parseFloat(jsonOutput.format.duration));
         }
       }
     );

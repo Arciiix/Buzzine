@@ -228,9 +228,7 @@ async function fetchAlarmsAudio(response): Promise<any> {
         response[response.indexOf(element)].sound = {
           audioId: audiosRes[audioIndex].audioId,
           filename: audiosRes[audioIndex].filename,
-          friendlyName:
-            audiosRes[audioIndex]?.AudioNameMapping?.friendlyName ??
-            element.filename,
+          friendlyName: audiosRes[audioIndex]?.friendlyName ?? element.filename,
         };
       }
     });

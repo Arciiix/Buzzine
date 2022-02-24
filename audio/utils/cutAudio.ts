@@ -1,25 +1,30 @@
 import fs from "fs";
 import childProcess from "child_process";
-import AudioNameMappingModel from "../models/AudioNameMapping";
 import logger from "./logger";
 import { getAudioDurationFromFile } from "./playAudio";
+import db from "./db";
 
 async function cutAudio(
   audioId: string,
   start?: number,
   end?: number
 ): Promise<{ error: boolean; errorCode?: string }> {
-  let audioObj: any = await AudioNameMappingModel.findOne({
+  let audioObj: any = await db.audioNameMappings.findFirst({
     where: { audioId },
   });
   if (!audioObj) return { error: true, errorCode: "WRONG_AUDIO_ID" };
   let filename = audioObj.filename;
   let cutResponse = await cutAudioFile(filename, start, end, audioObj.duration);
   if (!cutResponse.error) {
-    audioObj.duration = cutResponse.response.duration;
-    //If it was a YouTube audio, it's not the whole video anymore, so clear the id
-    audioObj.youtubeID = null;
-    await audioObj.save();
+    await db.audioNameMappings.update({
+      where: {
+        audioId,
+      },
+      data: {
+        duration: cutResponse.response.duration,
+        youtubeID: null,
+      },
+    });
   }
   return cutResponse;
 }
@@ -100,7 +105,7 @@ async function previewCut(
   errorCode?: string;
   response?: { duration: number };
 }> {
-  let audioObj: any = await AudioNameMappingModel.findOne({
+  let audioObj: any = await db.audioNameMappings.findFirst({
     where: { audioId },
   });
   if (!audioObj) return { error: true, errorCode: "WRONG_AUDIO_ID" };

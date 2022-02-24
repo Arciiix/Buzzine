@@ -69,9 +69,14 @@ sleepAsAndroidRouter.put("/toogleStatus", async (req, res) => {
     return;
   }
 
-  let dbIntegrationInstance: any = await getSleepAsAndroidIntegrationDBObject();
-  dbIntegrationInstance.isActive = req.body.isActive;
-  await dbIntegrationInstance.save();
+  await db.integrationStatuses.update({
+    where: {
+      name: "Sleep_as_Android",
+    },
+    data: {
+      isActive: req.body.isActive,
+    },
+  });
 
   logger.info(
     `[SLEEP AS ANDROID] Set Sleep as Android integration status to ${req.body.isActive}`
@@ -109,8 +114,14 @@ sleepAsAndroidRouter.put(
     let oldConfig = { ...dbIntegrationInstance.config };
     oldConfig.emergencyAlarmTimeoutSeconds =
       req.body.emergencyAlarmTimeoutSeconds;
-    dbIntegrationInstance.config = oldConfig;
-    await dbIntegrationInstance.save();
+    await db.integrationStatuses.update({
+      where: {
+        name: "Sleep_as_Android",
+      },
+      data: {
+        config: JSON.stringify(oldConfig),
+      },
+    });
 
     logger.info(
       `[SLEEP AS ANDROID] Set Sleep as Android emergencyAlarmTimeoutSeconds to ${req.body.emergencyAlarmTimeoutSeconds}`
@@ -171,8 +182,14 @@ sleepAsAndroidRouter.put("/changeDelay", async (req, res) => {
   //Do it this way to avoid unexisting config error
   let oldConfig = { ...dbIntegrationInstance.config };
   oldConfig.delay = req.body.delay;
-  dbIntegrationInstance.config = oldConfig;
-  await dbIntegrationInstance.save();
+  await db.integrationStatuses.update({
+    where: {
+      name: "Sleep_as_Android",
+    },
+    data: {
+      config: JSON.stringify(oldConfig),
+    },
+  });
 
   logger.info(
     `[SLEEP AS ANDROID] Set Sleep as Android delay to ${req.body.delay}`

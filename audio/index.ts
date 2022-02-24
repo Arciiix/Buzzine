@@ -3,7 +3,7 @@ import express from "express";
 import bodyParser from "body-parser";
 import dotenv from "dotenv";
 import logger, { logHTTPEndpoints } from "./utils/logger";
-import { initDatabase } from "./utils/db";
+import db, { initDatabase } from "./utils/db";
 import PlaySound, {
   changeAlarmSound,
   deleteSound,
@@ -12,8 +12,6 @@ import PlaySound, {
 } from "./utils/playAudio";
 import fs from "fs";
 import path from "path";
-import AudioNameMappingModel from "./models/AudioNameMapping";
-import AlarmsAudioModel from "./models/AlarmsAudio";
 import {
   downloadFromYouTube,
   getYouTubeVideoInfo,
@@ -96,7 +94,7 @@ app.get("/", async (req, res) => {
   res.send({
     error: false,
     currentAPIVersion: "v1",
-    totalSounds: await AudioNameMappingModel.count(),
+    totalSounds: await db.alarmsAudios.count(),
   });
 });
 
@@ -143,7 +141,7 @@ api.put("/muteAudio", async (req, res) => {
 });
 
 api.get("/getSoundList", async (req, res) => {
-  let soundList = await AudioNameMappingModel.findAll();
+  let soundList = await db.audioNameMappings.findMany({});
   res.send({ error: false, data: soundList });
 });
 
@@ -157,15 +155,18 @@ api.get("/getAlarmSound", async (req, res) => {
 });
 
 api.get("/getAlarmSoundList", async (req, res) => {
-  let soundList: any[] = await AlarmsAudioModel.findAll({
-    include: AudioNameMappingModel,
+  let soundList = await db.alarmsAudios.findMany({
+    include: {
+      AudioNameMappings: true,
+    },
   });
   res.send({
     error: false,
     data: soundList.map((e: any) => {
       let newElem = { ...JSON.parse(JSON.stringify(e)) };
-      newElem.filename = e.AudioNameMapping.filename;
-      newElem.duration = e.AudioNameMapping.duration;
+      newElem.filename = e.AudioNameMappings.filename;
+      newElem.duration = e.AudioNameMappings.duration;
+      newElem.friendlyName = e.AudioNameMappings.friendlyName;
       return newElem;
     }),
   });
@@ -188,23 +189,24 @@ api.put("/updateAudio", async (req, res) => {
     return;
   }
 
-  let audioInstance: any = await AudioNameMappingModel.findOne({
+  let updateObj: any = {};
+
+  let audioInstance: any = await db.audioNameMappings.findFirst({
     where: { audioId: req.body.audioId },
   });
+
   if (!audioInstance) {
     res.status(404).send({ error: true, errorCode: "WRONG_AUDIO_ID" });
     return;
   } else {
     if (req.body.friendlyName) {
-      audioInstance.friendlyName = req.body.friendlyName;
+      updateObj.friendlyName = req.body.friendlyName;
     }
     if (req.body.filename) {
       let audioPath = path.join(__dirname, "audio", req.body.filename);
       if (fs.existsSync(audioPath)) {
-        audioInstance.filename = req.body.filename;
-        audioInstance.duration = await getAudioDurationFromFile(
-          req.body.filename
-        );
+        updateObj.filename = req.body.filename;
+        updateObj.duration = await getAudioDurationFromFile(req.body.filename);
       } else {
         res
           .status(404)
@@ -213,7 +215,12 @@ api.put("/updateAudio", async (req, res) => {
       }
     }
 
-    await audioInstance.save();
+    await db.audioNameMappings.update({
+      where: {
+        audioId: req.body.audioId,
+      },
+      data: updateObj,
+    });
 
     res.send({ error: false });
   }
@@ -261,7 +268,7 @@ api.delete("/deleteSound", async (req, res) => {
   }
 
   //Check if sound exists
-  let soundObj: any = await AudioNameMappingModel.findOne({
+  let soundObj: any = await db.audioNameMappings.findFirst({
     where: { audioId: req.body.audioId },
   });
   if (!soundObj) {
@@ -336,8 +343,8 @@ api.get("/previewAudio", async (req, res) => {
     return;
   }
 
-  let audioInstance: any = await AudioNameMappingModel.findOne({
-    where: { audioId: req.query.audioId },
+  let audioInstance: any = await db.audioNameMappings.findFirst({
+    where: { audioId: req.query.audioId as string },
   });
 
   if (!audioInstance) {
@@ -485,8 +492,8 @@ api.get("/previewCut", async (req, res) => {
   } else {
     res.status(200);
 
-    let audioInstance: any = await AudioNameMappingModel.findOne({
-      where: { audioId: req.query.audioId },
+    let audioInstance: any = await db.audioNameMappings.findFirst({
+      where: { audioId: req.query.audioId as string },
     });
 
     if (!audioInstance) {
@@ -536,16 +543,18 @@ async function init() {
   await initDatabase();
 
   //Add the default audio to the table if it doesn't exist yet
-  let defaultAudioObj = await AudioNameMappingModel.findOne({
+  let defaultAudioObj = await db.audioNameMappings.findFirst({
     where: { audioId: "default" },
   });
   if (!defaultAudioObj) {
     let defaultAudioDuration = await getAudioDurationFromFile("default.mp3");
-    await AudioNameMappingModel.create({
-      audioId: "default",
-      filename: "default.mp3",
-      friendlyName: "Default audio",
-      duration: defaultAudioDuration,
+    await db.audioNameMappings.create({
+      data: {
+        audioId: "default",
+        filename: "default.mp3",
+        friendlyName: "Default audio",
+        duration: defaultAudioDuration,
+      },
     });
   }
 }
