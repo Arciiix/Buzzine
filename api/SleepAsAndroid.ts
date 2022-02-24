@@ -6,8 +6,8 @@ import {
   SLEEP_AS_ANDROID_MUTE_AFTER,
   toogleEmergencyDevice,
 } from ".";
-import IntegrationStatusModel from "./models/IntegrationStatus.model";
 import TrackingAdapter from "./trackingAdapter";
+import db from "./utils/db";
 import logger from "./utils/logger";
 
 const sleepAsAndroidRouter = express.Router();
@@ -250,11 +250,13 @@ async function getStatus(): Promise<boolean> {
 async function initSleepAsAndroidIntegration() {
   let dbIntegrationInstance: any = await getSleepAsAndroidIntegrationDBObject();
   if (!dbIntegrationInstance) {
-    dbIntegrationInstance = await IntegrationStatusModel.create({
-      name: "Sleep_as_Android",
-      isActive: false,
-      config: {
-        emergencyAlarmTimeoutSeconds: SLEEP_AS_ANDROID_MUTE_AFTER,
+    dbIntegrationInstance = await db.integrationStatuses.create({
+      data: {
+        name: "Sleep_as_Android",
+        isActive: false,
+        config: JSON.stringify({
+          emergencyAlarmTimeoutSeconds: SLEEP_AS_ANDROID_MUTE_AFTER,
+        }),
       },
     });
   }
@@ -262,7 +264,7 @@ async function initSleepAsAndroidIntegration() {
 }
 
 async function getSleepAsAndroidIntegrationDBObject(): Promise<any> {
-  return await IntegrationStatusModel.findOne({
+  return await db.integrationStatuses.findFirst({
     where: {
       name: "Sleep_as_Android",
     },

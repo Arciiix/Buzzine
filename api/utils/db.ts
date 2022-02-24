@@ -1,22 +1,11 @@
-import { Sequelize } from "sequelize";
+import { PrismaClient } from "@prisma/client";
 import logger from "./logger";
 
-const db = new Sequelize({
-  dialect: "sqlite",
-  storage: "./buzzineAPI.db",
-  logging: (msg) => logger.debug(msg),
-});
+const db = new PrismaClient();
 
 async function initDatabase() {
-  try {
-    await db.authenticate();
-    logger.info(`Connected to the API database`);
-    // await db.sync({ force: true });
-    await db.sync();
-  } catch (err) {
-    logger.error(`Cannot connect to the database`, err);
-    throw err;
-  }
+  await db.$connect();
+  logger.info(`Connected to the database`);
 }
 
 export default db;

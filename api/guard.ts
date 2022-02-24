@@ -1,9 +1,9 @@
 import express from "express";
 import crypto from "crypto";
-import QRCodeModel from "./models/QRCode.model";
 import QRCode from "qrcode";
 import path from "path";
 import logger from "./utils/logger";
+import db from "./utils/db";
 
 const guardRouter = express.Router();
 
@@ -60,17 +60,21 @@ async function generateQRCode(): Promise<string> {
   let generatedHash = crypto.randomBytes(16).toString("hex");
 
   //Remove the old QR codes
-  await QRCodeModel.destroy({ where: {} });
+  await db.qRCodes.deleteMany({});
 
-  await QRCodeModel.create({
-    hash: generatedHash,
+  await db.qRCodes.create({
+    data: { hash: generatedHash },
   });
   currentQRCodeHash = generatedHash;
   logger.info(`[GUARD] Generated new QR code with hash ${generatedHash}`);
   return generatedHash;
 }
 async function getCurrentQRCodeHash(): Promise<string> {
-  let hash: any = await QRCodeModel.findOne({ order: [["createdAt", "DESC"]] });
+  let hash: any = await db.qRCodes.findFirst({
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
   if (!hash) {
     await generateQRCode();
   } else {

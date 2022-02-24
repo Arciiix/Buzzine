@@ -2,7 +2,6 @@ import express from "express";
 import logger from "./utils/logger";
 import firebaseAdmin from "firebase-admin";
 import fs from "fs";
-import FirebaseNotificationTokenModel from "./models/FirebaseNotificationToken.model";
 import { socket } from ".";
 import {
   MessagingDevicesResponse,
@@ -11,6 +10,7 @@ import {
 } from "firebase-admin/lib/messaging/messaging-api";
 import TrackingAdapter from "./trackingAdapter";
 import { addZero } from "./utils/formatting";
+import db from "./utils/db";
 
 const notificationsRouter = express.Router();
 
@@ -177,7 +177,7 @@ class NotificationService {
   }
 
   async fetchTokens() {
-    let dbQueryResult: any = await FirebaseNotificationTokenModel.findAll();
+    let dbQueryResult: any = await db.firebaseNotificationTokens.findMany({});
     this.tokens = dbQueryResult.map((e) => e.token);
     return this.tokens;
   }
@@ -211,13 +211,17 @@ notificationsRouter.put("/toogleNotifications", async (req, res) => {
   }
 
   if (req.body.isTurnedOn) {
-    await FirebaseNotificationTokenModel.findOrCreate({
+    await db.firebaseNotificationTokens.upsert({
       where: {
+        token: req.body.token,
+      },
+      update: {},
+      create: {
         token: req.body.token,
       },
     });
   } else {
-    await FirebaseNotificationTokenModel.destroy({
+    await db.firebaseNotificationTokens.delete({
       where: { token: req.body.token },
     });
   }
@@ -236,8 +240,8 @@ notificationsRouter.get("/checkIfTokenExists", async (req, res) => {
     return;
   }
 
-  let token = await FirebaseNotificationTokenModel.findOne({
-    where: { token: req.query.token },
+  let token = await db.firebaseNotificationTokens.findFirst({
+    where: { token: req.query.token as string },
   });
 
   if (!token) {

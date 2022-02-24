@@ -1,0 +1,25 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:../buzzineAPI.db"
+}
+
+model FirebaseNotificationTokens {
+  token String @id
+}
+
+model IntegrationStatuses {
+  id       Int     @id @default(autoincrement())
+  name     String
+  isActive Boolean @default(false)
+  config   String //JSON
+}
+
+model QRCodes {
+  id        Int      @id @default(autoincrement())
+  hash      String
+  createdAt DateTime @default(now())
+}
