@@ -1,0 +1,14 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:../buzzineAdapter.db"
+}
+
+model Temperatures {
+  id        Int      @id @default(autoincrement())
+  timestamp DateTime
+  value     Float
+}

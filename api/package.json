@@ -26,7 +26,6 @@
     "firebase-admin": "^10.0.2",
     "prisma": "^3.10.0",
     "qrcode": "^1.5.0",
-    "sequelize": "^7.0.0-alpha.4",
     "socket.io": "^4.4.0",
     "socket.io-client": "^4.4.0",
     "sqlite3": "^5.0.2",

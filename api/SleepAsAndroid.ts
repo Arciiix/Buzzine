@@ -264,11 +264,13 @@ async function initSleepAsAndroidIntegration() {
 }
 
 async function getSleepAsAndroidIntegrationDBObject(): Promise<any> {
-  return await db.integrationStatuses.findFirst({
+  let obj = await db.integrationStatuses.findFirst({
     where: {
       name: "Sleep_as_Android",
     },
   });
+  obj.config = JSON.parse(obj.config);
+  return obj;
 }
 
 interface IRingingStats {

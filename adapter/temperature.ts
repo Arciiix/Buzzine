@@ -1,9 +1,7 @@
 import axios from "axios";
 import { TASMOTA_URL } from "./constants";
 import logger from "./logger";
-import TemperatureModel from "./models/Temperature";
 import db from "./db";
-import { Op } from "sequelize";
 
 async function fetchTemperature(): Promise<number> {
   try {
@@ -25,9 +23,11 @@ async function fetchTemperature(): Promise<number> {
 async function saveTemperature(): Promise<void> {
   let insideTemperature = await fetchTemperature();
   if (insideTemperature) {
-    await TemperatureModel.create({
-      timestamp: new Date(),
-      value: insideTemperature,
+    await db.temperatures.create({
+      data: {
+        timestamp: new Date(),
+        value: insideTemperature,
+      },
     });
     logger.info(`Added the temperature to the database`);
   } else {
@@ -64,34 +64,34 @@ async function calculateTemperatureDataForDay(
   endDate.setMinutes(59);
   endDate.setSeconds(59);
 
-  let data: any = await TemperatureModel.findOne({
-    attributes: [
-      [db.fn("MIN", db.col("value")), "minTemp"],
-      [db.fn("MAX", db.col("value")), "maxTemp"],
-      [db.fn("AVG", db.col("value")), "averageTemp"],
-    ],
+  let data = await db.temperatures.aggregate({
+    _avg: {
+      value: true,
+    },
+    _min: {
+      value: true,
+    },
+    _max: {
+      value: true,
+    },
     where: {
-      timestamp: {
-        [Op.between]: [day, endDate],
-      },
+      AND: [{ timestamp: { gt: day } }, { timestamp: { lt: endDate } }],
     },
   });
 
-  let allTempraturesThisDay: any = await TemperatureModel.findAll({
+  let allTempraturesThisDay = await db.temperatures.findMany({
     where: {
-      timestamp: {
-        [Op.between]: [day, endDate],
-      },
+      AND: [{ timestamp: { gt: day } }, { timestamp: { lt: endDate } }],
     },
   });
 
   let temperatureData: ITemperatureData = {
-    min: data.dataValues.minTemp,
-    max: data.dataValues.maxTemp,
-    average: data.dataValues.averageTemp,
-    range: Math.abs(data.dataValues.maxTemp - data.dataValues.minTemp),
+    min: data._min.value,
+    max: data._max.value,
+    average: data._avg.value,
+    range: Math.abs(data._max.value - data._min.value),
     averageOffsetPercent: await calculateTemperatureOffset(
-      data.dataValues.averageTemp,
+      data._avg.value,
       day
     ),
     temperatures: allTempraturesThisDay.map((e): ITemperatureRecord => {
@@ -115,18 +115,22 @@ async function calculateTemperatureOffset(temperature: number, month: Date) {
     59,
     59
   );
-  let data: any = await TemperatureModel.findOne({
-    attributes: [[db.fn("AVG", db.col("value")), "averageTemp"]],
+  let data = await db.temperatures.aggregate({
+    _avg: {
+      value: true,
+    },
+    _min: {
+      value: true,
+    },
+    _max: {
+      value: true,
+    },
     where: {
-      timestamp: {
-        [Op.between]: [month, endDate],
-      },
+      AND: [{ timestamp: { gt: month } }, { timestamp: { lt: endDate } }],
     },
   });
 
-  return (
-    (temperature - data.dataValues.averageTemp) / data.dataValues.averageTemp
-  );
+  return (temperature - data._avg.value) / data._avg.value;
 }
 
 interface ITemperatureRecord {
@@ -140,7 +144,7 @@ interface ITemperatureData {
   max: number;
   range: number;
   averageOffsetPercent: number;
-  temperatures: ITemperatureRecord;
+  temperatures: ITemperatureRecord[];
 }
 
 type ICurrentTemperatureData = ITemperatureData & {

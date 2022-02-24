@@ -22,8 +22,6 @@ import {
   TASMOTA_URL,
   TEMPERATURE_CRONJOB,
 } from "./constants";
-import TemperatureModel from "./models/Temperature";
-
 let heartbeatsJob: schedule.Job, temperaturesJob: schedule.Job;
 let isProtectionTurnedOn = true;
 
