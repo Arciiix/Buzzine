@@ -9,6 +9,7 @@ import 'package:buzzine/components/simple_loading_dialog.dart';
 import 'package:buzzine/components/sleep_as_android_integration.dart';
 import 'package:buzzine/components/snooze_card.dart';
 import 'package:buzzine/components/temperature_widget.dart';
+import 'package:buzzine/components/tracking_entry_widget.dart';
 import 'package:buzzine/components/weather_widget.dart';
 import 'package:buzzine/globalData.dart';
 import 'package:buzzine/screens/alarm_list.dart';
@@ -29,6 +30,7 @@ import 'package:buzzine/types/Nap.dart';
 import 'package:buzzine/types/PingResult.dart';
 import 'package:buzzine/types/RingingAlarmEntity.dart';
 import 'package:buzzine/types/Snooze.dart';
+import 'package:buzzine/types/TrackingEntry.dart';
 import 'package:buzzine/types/YouTubeVideoInfo.dart';
 import 'package:buzzine/utils/formatting.dart';
 import 'package:buzzine/utils/show_snackbar.dart';
@@ -665,6 +667,8 @@ class _HomePageState extends State<HomePage> {
                                           ]
                                         : [],
                                   ),
+                                  Section("📈 Sen"),
+                                  TrackingEntryWidget(),
                                   Section("🎵 Audio"),
                                   InkWell(
                                       onTap: navigateToAudioManager,

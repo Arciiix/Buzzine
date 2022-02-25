@@ -10,8 +10,10 @@ import 'package:buzzine/types/RingingAlarmEntity.dart';
 import 'package:buzzine/types/SleepAsAndroidIntegrationStatus.dart';
 import 'package:buzzine/types/Snooze.dart';
 import 'package:buzzine/types/TemperatureData.dart';
+import 'package:buzzine/types/TrackingEntry.dart';
 import 'package:buzzine/types/Weather.dart';
 import 'package:buzzine/types/YouTubeVideoInfo.dart';
+import 'package:buzzine/utils/formatting.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:buzzine/types/Alarm.dart';
@@ -44,6 +46,8 @@ class GlobalData {
   static RangeValues temperatureRange = RangeValues(19, 24);
 
   static late SleepAsAndroidIntegrationStatus sleepAsAndroidIntegrationStatus;
+
+  static late TrackingEntry latestTrackingEntry;
 
   static late Constants constants;
   static late EmergencyStatus emergencyStatus;
@@ -89,6 +93,9 @@ class GlobalData {
     if (onProgress != null) onProgress("Status integracji: Sleep as Android");
     await getSleepAsAndroidIntegrationStatus();
     print("Got Sleep as Android integration status");
+    if (onProgress != null) onProgress("Dane najnowszego snu");
+    await getLatestTrackingEntry();
+    print("Got latest tracking entry data");
     if (onProgress != null) onProgress("Wersja aplikacji");
     await getAppVersion();
     print("Got app version");
@@ -1133,6 +1140,119 @@ class GlobalData {
     if (response.statusCode != 200 || decodedResponse['error'] == true) {
       throw APIException(
           "Błąd podczas ${isActive ? "włączania" : "wyłączania"} bieżącego alarmu Sleep as Android. Status code: ${response.statusCode}, response: ${response.body}");
+    }
+  }
+
+  static Future<TrackingEntry> getLatestTrackingEntry() async {
+    var response = await http.get(Uri.parse("$serverIP/v1/tracking/getLatest"));
+    var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
+
+    if (response.statusCode != 200 || decodedResponse['error'] == true) {
+      throw APIException(
+          "Błąd podczas pobierania najnowszego snu. Status code: ${response.statusCode}, response: ${response.body}");
+    } else {
+      var entryData = decodedResponse['response'];
+      TrackingEntry entry = TrackingEntry(
+        date: DateTime.parse(entryData['date']),
+        bedTime: DateTime.tryParse(entryData['bedtime'] ?? ""),
+        sleepTime: DateTime.tryParse(entryData['sleepTime'] ?? ""),
+        firstAlarmTime: DateTime.tryParse(entryData['firstAlarmTime'] ?? ""),
+        wakeUpTime: DateTime.tryParse(entryData['wakeUpTime'] ?? ""),
+        getUpTime: DateTime.tryParse(entryData['getUpTime'] ?? ""),
+        rate: entryData['rate'],
+      );
+
+      List<TrackingVersionHistory>? versionHistory =
+          await getTrackingVersionHistoryForDate(entry.date!);
+      entry.versionHistory = versionHistory;
+
+      GlobalData.latestTrackingEntry = entry;
+      return entry;
+    }
+  }
+
+  static Future<List<TrackingVersionHistory>?> getTrackingVersionHistoryForDate(
+      DateTime date) async {
+    Map<String, String> requestData = {
+      'date': date.toIso8601String(),
+    };
+
+    var response = await http.get(
+      Uri.parse("$serverIP/v1/tracking/getVersionHistoryForDate")
+          .replace(queryParameters: requestData),
+    );
+    var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
+
+    if (response.statusCode != 200 || decodedResponse['error'] == true) {
+      throw APIException(
+          "Błąd podczas pobierania historii wersji dla daty ${dateToDateTimeString(date)}. Status code: ${response.statusCode}, response: ${response.body}");
+    } else {
+      List versionHistory = decodedResponse['response'];
+      return versionHistory.map((e) {
+        return TrackingVersionHistory(
+            timestamp: DateTime.parse(e['timestamp']),
+            fieldName: TrackingFieldName.values.firstWhere((elem) =>
+                elem.toString() == "TrackingFieldName." + e['fieldName']),
+            value: e['value']);
+      }).toList();
+    }
+  }
+
+  static Future<List<TrackingEntry>> getTrackingEntriesForDay(
+      DateTime day) async {
+    Map<String, String> requestData = {
+      'day': day.toIso8601String(),
+    };
+
+    var response = await http.get(
+      Uri.parse("$serverIP/v1/tracking/getDataForDay")
+          .replace(queryParameters: requestData),
+    );
+    var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
+
+    if (response.statusCode != 200 || decodedResponse['error'] == true) {
+      throw APIException(
+          "Błąd podczas pobierania danych snu dla daty ${dateToDateTimeString(day)}. Status code: ${response.statusCode}, response: ${response.body}");
+    } else {
+      List entryData = decodedResponse['response'];
+      List<TrackingEntry> entries = [];
+      for (var e in entryData) {
+        TrackingEntry entry = TrackingEntry(
+          date: DateTime.parse(e['date']),
+          bedTime: DateTime.tryParse(e['bedTime'] ?? ""),
+          sleepTime: DateTime.tryParse(e['sleepTime'] ?? ""),
+          firstAlarmTime: DateTime.tryParse(e['firstAlarmTime'] ?? ""),
+          wakeUpTime: DateTime.tryParse(e['wakeUpTime'] ?? ""),
+          getUpTime: DateTime.tryParse(e['getUpTime'] ?? ""),
+          rate: e['rate'],
+        );
+
+        List<TrackingVersionHistory>? versionHistory =
+            await getTrackingVersionHistoryForDate(entry.date!);
+        entry.versionHistory = versionHistory;
+        entries.add(entry);
+      }
+
+      return entries;
+    }
+  }
+
+  static Future<void> updateTrackingEntry(
+      DateTime date, Map updateObject) async {
+    Map requestData = {
+      'date': date.toIso8601String(),
+      'updateObject': updateObject
+    };
+
+    var response = await http.put(
+        Uri.parse("$serverIP/v1/tracking/updateDataForDate"),
+        body: json.encode(requestData),
+        headers: {"Content-Type": "application/json"});
+    var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
+
+    if (response.statusCode != 200 || decodedResponse['error'] == true) {
+      throw APIException(
+          "Błąd podczas aktualizowania danych snu. Status code: ${response.statusCode}, response: ${response.body}");
     }
   }
 }

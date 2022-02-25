@@ -71,7 +71,7 @@ api.get("/getLatest", async (req, res) => {
 
   if (!latest) {
     logger.info(
-      "There's no object for the latest date, so creating an empty one"
+      "There's no object for the latest date, so create an empty one"
     );
     latest = await db.trackingEntry.create({
       data: {
@@ -109,12 +109,24 @@ api.put("/updateDataForDate", async (req, res) => {
   }
 
   let updateObject: ITrackingEntryObject = {
-    bedTime: req.body.updateObject.bedTime,
-    sleepTime: req.body.updateObject.sleepTime,
-    firstAlarmTime: req.body.updateObject.firstAlarmTime,
-    wakeUpTime: req.body.updateObject.wakeUpTime,
-    getUpTime: req.body.updateObject.getUpTime,
-    rate: req.body.updateObject.rate,
+    bedTime: req.body.updateObject.bedTime
+      ? new Date(req.body.updateObject.bedTime)
+      : undefined,
+    sleepTime: req.body.updateObject.sleepTime
+      ? new Date(req.body.updateObject.sleepTime)
+      : undefined,
+    firstAlarmTime: req.body.updateObject.firstAlarmTime
+      ? new Date(req.body.updateObject.firstAlarmTime)
+      : undefined,
+    wakeUpTime: req.body.updateObject.wakeUpTime
+      ? new Date(req.body.updateObject.wakeUpTime)
+      : undefined,
+    getUpTime: req.body.updateObject.getUpTime
+      ? new Date(req.body.updateObject.getUpTime)
+      : undefined,
+    rate: req.body.updateObject.rate
+      ? parseInt(req.body.updateObject.rate)
+      : undefined,
   };
 
   let dbObject = await db.trackingEntry.upsert({
@@ -201,14 +213,25 @@ api.put("/updateDataForLatestIfDoesntExist", async (req, res) => {
   }
 
   let updateObject: ITrackingEntryObject = {
-    bedTime: req.body.updateObject.bedTime,
-    sleepTime: req.body.updateObject.sleepTime,
-    firstAlarmTime: req.body.updateObject.firstAlarmTime,
-    wakeUpTime: req.body.updateObject.wakeUpTime,
-    getUpTime: req.body.updateObject.getUpTime,
-    rate: req.body.updateObject.rate,
+    bedTime: req.body.updateObject.bedTime
+      ? new Date(req.body.updateObject.bedTime)
+      : undefined,
+    sleepTime: req.body.updateObject.sleepTime
+      ? new Date(req.body.updateObject.sleepTime)
+      : undefined,
+    firstAlarmTime: req.body.updateObject.firstAlarmTime
+      ? new Date(req.body.updateObject.firstAlarmTime)
+      : undefined,
+    wakeUpTime: req.body.updateObject.wakeUpTime
+      ? new Date(req.body.updateObject.wakeUpTime)
+      : undefined,
+    getUpTime: req.body.updateObject.getUpTime
+      ? new Date(req.body.updateObject.getUpTime)
+      : undefined,
+    rate: req.body.updateObject.rate
+      ? parseInt(req.body.updateObject.rate)
+      : undefined,
   };
-
   let dbObject = await db.trackingEntry.upsert({
     where: {
       date: date,

@@ -45,9 +45,9 @@ String dateToDateTimeString(DateTime date) {
   return "${addZero(date.hour)}:${addZero(date.minute)} ${addZero(date.day)}.${addZero(date.month)}.${date.year}";
 }
 
-String dateToTimeString(DateTime date) {
+String dateToTimeString(DateTime date, {bool? excludeSeconds}) {
   date = date.toLocal();
-  return "${addZero(date.hour)}:${addZero(date.minute)}:${addZero(date.second)}";
+  return "${addZero(date.hour)}:${addZero(date.minute)}${excludeSeconds == true ? "" : ":" + addZero(date.second)}";
 }
 
 int getFirstDecimalPlaceOfNumber(double value) {
