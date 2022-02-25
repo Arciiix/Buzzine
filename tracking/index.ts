@@ -83,6 +83,21 @@ api.get("/getLatest", async (req, res) => {
   res.send({ error: false, response: latest });
 });
 
+api.get("/getVersionHistoryForDate", async (req, res) => {
+  if (!req.query.date || isNaN(new Date(req.query.date as string)?.getTime())) {
+    res.status(400).send({ error: true, errorCode: "WRONG_DATE" });
+    return;
+  }
+
+  let versionHistory = await db.trackingVersionHistory.findMany({
+    where: {
+      date: new Date(req.query.date as string),
+    },
+  });
+
+  res.send({ error: false, response: versionHistory });
+});
+
 api.put("/updateDataForDate", async (req, res) => {
   if (!req.body.date || isNaN(new Date(req.body.date)?.getTime())) {
     res.status(400).send({ error: true, errorCode: "WRONG_DATE" });
