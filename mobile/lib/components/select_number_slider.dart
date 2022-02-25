@@ -20,7 +20,14 @@ class SelectNumberSlider extends StatefulWidget {
 }
 
 class _SelectNumberSliderState extends State<SelectNumberSlider> {
-  int val = 0;
+  late int val;
+  @override
+  void initState() {
+    setState(() {
+      val = widget.init;
+    });
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {

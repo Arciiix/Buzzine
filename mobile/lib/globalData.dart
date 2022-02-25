@@ -1154,7 +1154,7 @@ class GlobalData {
       var entryData = decodedResponse['response'];
       TrackingEntry entry = TrackingEntry(
         date: DateTime.parse(entryData['date']),
-        bedTime: DateTime.tryParse(entryData['bedtime'] ?? ""),
+        bedTime: DateTime.tryParse(entryData['bedTime'] ?? ""),
         sleepTime: DateTime.tryParse(entryData['sleepTime'] ?? ""),
         firstAlarmTime: DateTime.tryParse(entryData['firstAlarmTime'] ?? ""),
         wakeUpTime: DateTime.tryParse(entryData['wakeUpTime'] ?? ""),
@@ -1257,7 +1257,8 @@ class GlobalData {
   }
 
   static Future<void> deleteTrackingEntry(DateTime date) async {
-    var response = await http.delete(Uri.parse("$serverIP/v1/tracking/deleteEntry"),
+    var response = await http.delete(
+        Uri.parse("$serverIP/v1/tracking/deleteEntry"),
         body: json.encode({'date': date.toIso8601String()}),
         headers: {"Content-Type": "application/json"});
     var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
@@ -1267,5 +1268,4 @@ class GlobalData {
           "Błąd podczas usuwania snu z ${dateToDateTimeString(date)}. Status code: ${response.statusCode}, response: ${response.body}");
     }
   }
-  
 }

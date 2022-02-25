@@ -32,11 +32,14 @@ class _TrackingScreenState extends State<TrackingScreen> {
 
     setState(() {
       _entries = data;
-      _selectedDate = day;
+      _selectedDate = day.toLocal();
     });
   }
 
-  Future<void> updateEntry(DateTime date, Map dataToUpdate) async {
+  Future<void> updateEntry(
+    DateTime date,
+    Map dataToUpdate,
+  ) async {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -182,6 +185,22 @@ class _TrackingScreenState extends State<TrackingScreen> {
     await refresh();
   }
 
+  Future<void> addEntry() async {
+    DateTime? date = await askForTime();
+
+    if (date != null) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return SimpleLoadingDialog("Trwa tworzenie snu...");
+        },
+      );
+      await updateEntry(date, {});
+      Navigator.of(context).pop();
+    }
+  }
+
   Future<void> refresh() async {
     await _refreshState.currentState!.show();
   }
@@ -227,13 +246,8 @@ class _TrackingScreenState extends State<TrackingScreen> {
               appBar: AppBar(
                 title: Text("Sen"),
               ),
-              floatingActionButton: _selectedDate.year != DateTime.now().year ||
-                      _selectedDate.month != DateTime.now().month ||
-                      _selectedDate.day != DateTime.now().day
-                  ? FloatingActionButton(
-                      child: const Icon(Icons.calendar_today),
-                      onPressed: () async => getDataForDay(DateTime.now()))
-                  : null,
+              floatingActionButton: FloatingActionButton(
+                  child: const Icon(Icons.add), onPressed: addEntry),
               body: RefreshIndicator(
                 key: _refreshState,
                 onRefresh: () async {
@@ -257,6 +271,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
                         Expanded(
                           child: TextButton(
                             onPressed: selectDate,
+                            onLongPress: () => getDataForDay(DateTime.now()),
                             child: Text(dateToDateString(_selectedDate)),
                           ),
                         ),
@@ -280,27 +295,9 @@ class _TrackingScreenState extends State<TrackingScreen> {
                               itemBuilder: (context, index) {
                                 return Column(
                                   children: [
-                                    Dismissible(
-                                      key: Key(_entries[index]
-                                          .date!
-                                          .toIso8601String()),
-                                      background: Container(
-                                        padding: const EdgeInsets.all(4),
-                                        color: Colors.red,
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.end,
-                                          mainAxisSize: MainAxisSize.max,
-                                          children: const [
-                                            Icon(Icons.delete),
-                                            Text("Usuń")
-                                          ],
-                                        ),
-                                      ),
-                                      direction: DismissDirection.endToStart,
-                                      confirmDismiss:
-                                          (DismissDirection direction) async {
-                                        return await showDialog(
+                                    InkWell(
+                                      onLongPress: () async {
+                                        bool? confirmDelete = await showDialog(
                                           context: context,
                                           builder: (BuildContext context) {
                                             return AlertDialog(
@@ -323,13 +320,18 @@ class _TrackingScreenState extends State<TrackingScreen> {
                                             );
                                           },
                                         );
-                                      },
-                                      onDismissed: (direction) async =>
+
+                                        if (confirmDelete == true) {
                                           await deleteEntry(
-                                              _entries[index].date!),
-                                      child: Text(
-                                        "${_entries[index].date!.hour == 0 && _entries[index].date!.minute == 0 ? dateToDateString(_entries[index].date!) : dateToDateTimeString(_entries[index].date!)}",
-                                        style: const TextStyle(fontSize: 24),
+                                              _entries[index].date!);
+                                        }
+                                      },
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: Text(
+                                          "${_entries[index].date!.hour == 0 && _entries[index].date!.minute == 0 ? dateToDateString(_entries[index].date!) : dateToDateTimeString(_entries[index].date!)}",
+                                          style: const TextStyle(fontSize: 24),
+                                        ),
                                       ),
                                     ),
                                     ListTile(
@@ -380,7 +382,9 @@ class _TrackingScreenState extends State<TrackingScreen> {
                                                     if (selectedHistoricalEntry !=
                                                         null) {
                                                       await updateEntry(
-                                                          _entries[index].date!,
+                                                          _entries[index]
+                                                              .date!
+                                                              .toLocal(),
                                                           TrackingEntry(
                                                                   bedTime: DateTime.parse(
                                                                       selectedHistoricalEntry
@@ -441,7 +445,9 @@ class _TrackingScreenState extends State<TrackingScreen> {
                                                     if (selectedHistoricalEntry !=
                                                         null) {
                                                       await updateEntry(
-                                                          _entries[index].date!,
+                                                          _entries[index]
+                                                              .date!
+                                                              .toLocal(),
                                                           TrackingEntry(
                                                                   sleepTime: DateTime.parse(
                                                                       selectedHistoricalEntry
@@ -504,7 +510,9 @@ class _TrackingScreenState extends State<TrackingScreen> {
                                                     if (selectedHistoricalEntry !=
                                                         null) {
                                                       await updateEntry(
-                                                          _entries[index].date!,
+                                                          _entries[index]
+                                                              .date!
+                                                              .toLocal(),
                                                           TrackingEntry(
                                                                   firstAlarmTime:
                                                                       DateTime.parse(
@@ -566,7 +574,9 @@ class _TrackingScreenState extends State<TrackingScreen> {
                                                     if (selectedHistoricalEntry !=
                                                         null) {
                                                       await updateEntry(
-                                                          _entries[index].date!,
+                                                          _entries[index]
+                                                              .date!
+                                                              .toLocal(),
                                                           TrackingEntry(
                                                                   wakeUpTime: DateTime.parse(
                                                                       selectedHistoricalEntry
@@ -627,7 +637,9 @@ class _TrackingScreenState extends State<TrackingScreen> {
                                                     if (selectedHistoricalEntry !=
                                                         null) {
                                                       await updateEntry(
-                                                          _entries[index].date!,
+                                                          _entries[index]
+                                                              .date!
+                                                              .toLocal(),
                                                           TrackingEntry(
                                                                   getUpTime: DateTime.parse(
                                                                       selectedHistoricalEntry
@@ -643,7 +655,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
                                     ListTile(
                                       title: const Text("Ocena"),
                                       onTap: () async {
-                                        int rate = 0;
+                                        int rate = 1;
                                         bool? change = await showDialog(
                                           context: context,
                                           builder: (BuildContext context) {
@@ -651,7 +663,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
                                               title:
                                                   const Text("Wybierz ocenę"),
                                               content: SelectNumberSlider(
-                                                min: 0,
+                                                min: 1,
                                                 max: 10,
                                                 divisions: 10,
                                                 init: rate,
@@ -716,7 +728,9 @@ class _TrackingScreenState extends State<TrackingScreen> {
                                                     if (selectedHistoricalEntry !=
                                                         null) {
                                                       await updateEntry(
-                                                          _entries[index].date!,
+                                                          _entries[index]
+                                                              .date!
+                                                              .toLocal(),
                                                           TrackingEntry(
                                                                   rate: DateTime.parse(
                                                                           selectedHistoricalEntry
