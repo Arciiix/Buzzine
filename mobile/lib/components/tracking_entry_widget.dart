@@ -24,7 +24,9 @@ class _TrackingEntryWidgetState extends State<TrackingEntryWidget> {
 
   Future<void> navigateToTrackingScreen() async {
     await Navigator.of(context).push(MaterialPageRoute(
-      builder: (context) => TrackingScreen(),
+      builder: (context) => TrackingScreen(
+        initDate: _currentEntry.date!,
+      ),
     ));
 
     setState(() {

@@ -172,6 +172,31 @@ api.put("/updateDataForDate", async (req, res) => {
   });
 });
 
+api.delete("/deleteEntry", async (req, res) => {
+  if (!req.body.date || isNaN(new Date(req.body.date)?.getTime())) {
+    res.status(400).send({ error: true, errorCode: "WRONG_DATE" });
+    return;
+  }
+
+  //Check if record exists
+  let record = await db.trackingEntry.findFirst({
+    where: { date: new Date(req.body.date) },
+  });
+  if (!record) {
+    res.status(404).send({ error: true, errorCode: "NOT_FOUND" });
+    return;
+  }
+
+  //First of all, delete all relations, so all version history of the given entry
+  await db.trackingVersionHistory.deleteMany({
+    where: { date: new Date(req.body.date) },
+  });
+
+  await db.trackingEntry.delete({ where: { date: new Date(req.body.date) } });
+
+  res.send({ error: false });
+});
+
 api.put("/updateDataForLatestIfDoesntExist", async (req, res) => {
   if (!req.body.updateObject || typeof req.body.updateObject !== "object") {
     res.status(400).send({ error: true, errorCode: "WRONG_UPDATE_OBJECT" });

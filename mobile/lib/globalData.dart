@@ -1255,4 +1255,17 @@ class GlobalData {
           "Błąd podczas aktualizowania danych snu. Status code: ${response.statusCode}, response: ${response.body}");
     }
   }
+
+  static Future<void> deleteTrackingEntry(DateTime date) async {
+    var response = await http.delete(Uri.parse("$serverIP/v1/tracking/deleteEntry"),
+        body: json.encode({'date': date.toIso8601String()}),
+        headers: {"Content-Type": "application/json"});
+    var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
+
+    if (response.statusCode != 200 || decodedResponse['error'] == true) {
+      throw APIException(
+          "Błąd podczas usuwania snu z ${dateToDateTimeString(date)}. Status code: ${response.statusCode}, response: ${response.body}");
+    }
+  }
+  
 }
