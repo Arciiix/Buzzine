@@ -56,16 +56,15 @@ Buzzine is built on the modular application design - every unit of it is split i
 
 #### API
 
-| Name                        | Default value                                     | Description                                                                                                                                | Unit    |
-| --------------------------- | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | ------- |
-| PORT                        | 1111                                              | A port the API will run on                                                                                                                 |         |
-| CORE_URL                    | http://localhost:3333 (to be changed with Docker) | Used for socket.io connection                                                                                                              |         |
-| AUDIO_URL                   | http://localhost:7777 (to be changed with Docker) | Used for communication                                                                                                                     |         |
-| OPEN_WEATHER_MAP_API_KEY    |                                                   | OpenWeatherMap API key used for the weather information                                                                                    |         |
-| ADAPTER_URL                 | http://localhost:2222 (to be changed with Docker) | Used for emergency requests                                                                                                                |         |
-| SLEEP_AS_ANDROID_MUTE_AFTER | 10                                                | The Sleep as Android alarm will mute itself after that time if no user action is performed                                                 | minutes |
-| TRACKING_URL                | http://localhost:4444 (to be changed with Docker) | Used for saving sleep data                                                                                                                 |         |
-| TRACKER_DAY_START           | 20:00                                             | The tracker next day will start at that time. Generally it's the latest you would ever wake up and the earliest you would ever go to sleep | HH:mm   |
+| Name                        | Default value                                     | Description                                                                                | Unit    |
+| --------------------------- | ------------------------------------------------- | ------------------------------------------------------------------------------------------ | ------- |
+| PORT                        | 1111                                              | A port the API will run on                                                                 |         |
+| CORE_URL                    | http://localhost:3333 (to be changed with Docker) | Used for socket.io connection                                                              |         |
+| AUDIO_URL                   | http://localhost:7777 (to be changed with Docker) | Used for communication                                                                     |         |
+| OPEN_WEATHER_MAP_API_KEY    |                                                   | OpenWeatherMap API key used for the weather information                                    |         |
+| ADAPTER_URL                 | http://localhost:2222 (to be changed with Docker) | Used for emergency requests                                                                |         |
+| SLEEP_AS_ANDROID_MUTE_AFTER | 10                                                | The Sleep as Android alarm will mute itself after that time if no user action is performed | minutes |
+| TRACKING_URL                | http://localhost:4444 (to be changed with Docker) | Used for saving sleep data                                                                 |         |
 
 #### Audio
 
@@ -88,7 +87,8 @@ Buzzine is built on the modular application design - every unit of it is split i
 
 #### Tracking
 
-| Name                     | Default value | Description                                                                               | Unit |
-| ------------------------ | ------------- | ----------------------------------------------------------------------------------------- | ---- |
-| PORT                     | 4444          | A port the app will run on.                                                               |      |
-| VERSION_HISTORY_MAX_DAYS | 7             | The version history of given tracking entity will delete itself after that amount of days | days |
+| Name                     | Default value | Description                                                                                                                                | Unit  |
+| ------------------------ | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | ----- |
+| PORT                     | 4444          | A port the app will run on.                                                                                                                |       |
+| VERSION_HISTORY_MAX_DAYS | 7             | The version history of given tracking entity will delete itself after that amount of days                                                  | days  |
+| TRACKER_DAY_START        | 20:00         | The tracker next day will start at that time. Generally it's the latest you would ever wake up and the earliest you would ever go to sleep | HH:mm |

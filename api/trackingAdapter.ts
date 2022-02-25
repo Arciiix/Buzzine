@@ -1,5 +1,5 @@
 import axios from "axios";
-import { TRACKER_DAY_START, TRACKING_URL } from ".";
+import { TRACKING_URL } from ".";
 import { sendCustomNotification } from "./notifications";
 import { dateTimeToDateOnly } from "./utils/formatting";
 import logger from "./utils/logger";
@@ -9,24 +9,11 @@ class TrackingAdapter {
     data: ITrackingEntryObject,
     notifyUser?: boolean
   ) {
-    let day = new Date();
-
-    //If the date if after the tracker day start, add a one whole day to it
-    if (
-      day.getHours() * 60 + day.getMinutes() >
-      TRACKER_DAY_START.hour * 60 + TRACKER_DAY_START.minute
-    ) {
-      day.setDate(day.getDate() + 1);
-    }
-
-    day = dateTimeToDateOnly(day);
-
     try {
       //Associate the alarm with given sound
       let response = await axios.put(
-        `${TRACKING_URL}/v1/updateDataForLatestOrDateIfDoesntExist`,
+        `${TRACKING_URL}/v1/updateDataForLatestIfDoesntExist`,
         {
-          date: day,
           updateObject: data,
         }
       );
@@ -52,7 +39,7 @@ class TrackingAdapter {
         }
       }
       logger.info(
-        `Updated tracking data (if they didn't exist) for day ${day}: ${JSON.stringify(
+        `Updated tracking data (if they didn't exist) for the latest: ${JSON.stringify(
           data
         )}`
       );
@@ -60,7 +47,7 @@ class TrackingAdapter {
       logger.error(
         `Error when trying to update tracking data if they didn't exist (${JSON.stringify(
           data
-        )}) for day ${day}. ${JSON.stringify(
+        )}) for the latest: ${JSON.stringify(
           err?.response?.data ?? ""
         )} with status ${err?.response?.status}`
       );
