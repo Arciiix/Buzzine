@@ -192,7 +192,7 @@ class _NapListState extends State<NapList> {
                         }),
                   )
                 : const Center(
-                    child: Text("Brak alarmów!",
+                    child: Text("Brak drzemek!",
                         style: TextStyle(fontSize: 32, color: Colors.white)))));
   }
 }
