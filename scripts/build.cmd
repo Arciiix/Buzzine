@@ -29,4 +29,11 @@ call npm install
 echo Adapter - building...
 call npm run build
 
+cd ..
+cd tracking
+echo Tracking - installing packages...
+call npm install
+echo Tracking - building...
+call npm run build
+
 pause

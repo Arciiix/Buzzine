@@ -18,6 +18,8 @@ xcopy %directory%\audio\emergency.wav %directory%\audio\dist\emergency.wav /w /f
 
 echo Current service: adapter
 
+echo Current service: tracking
+
 echo Remember to create the google-services.json on mobile and firebaseServiceAccountKey.json on API!
 
 pause

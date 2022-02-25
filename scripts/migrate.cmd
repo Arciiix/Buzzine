@@ -39,4 +39,10 @@ xcopy %old%\adapter\dist\.env* %new%\adapter\dist\.env* /w /f /s /e /i
 echo Database (file)
 xcopy %old%\adapter\dist\buzzineAdapter.db %new%\adapter\dist\buzzineAdapter.db /w /f /s /e /i
 
+echo Current service: tracking
+echo ENV (file)
+xcopy %old%\tracking\dist\.env* %new%\tracking\dist\.env* /w /f /s /e /i
+echo Database (file)
+xcopy %old%\tracking\dist\buzzineTracking.db %new%\tracking\dist\buzzineTracking.db /w /f /s /e /i
+
 pause

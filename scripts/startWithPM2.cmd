@@ -29,6 +29,13 @@ cd adapter
 cd dist
 call pm2 start index.js --name buzzine-adapter
 
+cd ..
+cd ..
+echo Starting tracking...
+cd tracking
+cd dist
+call pm2 start index.js --name buzzine-tracking
+
 echo Saving...
 call pm2 save
 
