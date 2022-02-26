@@ -17,8 +17,6 @@ import {
 } from "./utils/versionHistory";
 import schedule, { Job } from "node-schedule";
 
-let statsJob: Job;
-
 const app = express();
 const api = express.Router();
 
