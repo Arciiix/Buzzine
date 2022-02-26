@@ -10,7 +10,7 @@ import {
 } from "firebase-admin/lib/messaging/messaging-api";
 import TrackingAdapter from "./trackingAdapter";
 import { addZero } from "./utils/formatting";
-import db from "./utils/db";
+import FirebaseNotificationTokenModel from "./models/FirebaseNotificationToken.model";
 
 const notificationsRouter = express.Router();
 
@@ -177,7 +177,7 @@ class NotificationService {
   }
 
   async fetchTokens() {
-    let dbQueryResult: any = await db.firebaseNotificationTokens.findMany({});
+    let dbQueryResult: any = await FirebaseNotificationTokenModel.findAll();
     this.tokens = dbQueryResult.map((e) => e.token);
     return this.tokens;
   }
@@ -211,17 +211,13 @@ notificationsRouter.put("/toogleNotifications", async (req, res) => {
   }
 
   if (req.body.isTurnedOn) {
-    await db.firebaseNotificationTokens.upsert({
+    await FirebaseNotificationTokenModel.findOrCreate({
       where: {
-        token: req.body.token,
-      },
-      update: {},
-      create: {
         token: req.body.token,
       },
     });
   } else {
-    await db.firebaseNotificationTokens.delete({
+    await FirebaseNotificationTokenModel.destroy({
       where: { token: req.body.token },
     });
   }
@@ -240,8 +236,8 @@ notificationsRouter.get("/checkIfTokenExists", async (req, res) => {
     return;
   }
 
-  let token = await db.firebaseNotificationTokens.findFirst({
-    where: { token: req.query.token as string },
+  let token = await FirebaseNotificationTokenModel.findOne({
+    where: { token: req.query.token },
   });
 
   if (!token) {

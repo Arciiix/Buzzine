@@ -7,7 +7,7 @@ import {
   toogleEmergencyDevice,
 } from ".";
 import TrackingAdapter from "./trackingAdapter";
-import db from "./utils/db";
+import IntegrationStatusModel from "./models/IntegrationStatus.model";
 import logger from "./utils/logger";
 
 const sleepAsAndroidRouter = express.Router();
@@ -69,14 +69,9 @@ sleepAsAndroidRouter.put("/toogleStatus", async (req, res) => {
     return;
   }
 
-  await db.integrationStatuses.update({
-    where: {
-      name: "Sleep_as_Android",
-    },
-    data: {
-      isActive: req.body.isActive,
-    },
-  });
+  let dbIntegrationInstance: any = await getSleepAsAndroidIntegrationDBObject();
+  dbIntegrationInstance.isActive = req.body.isActive;
+  await dbIntegrationInstance.save();
 
   logger.info(
     `[SLEEP AS ANDROID] Set Sleep as Android integration status to ${req.body.isActive}`
@@ -114,14 +109,8 @@ sleepAsAndroidRouter.put(
     let oldConfig = { ...dbIntegrationInstance.config };
     oldConfig.emergencyAlarmTimeoutSeconds =
       req.body.emergencyAlarmTimeoutSeconds;
-    await db.integrationStatuses.update({
-      where: {
-        name: "Sleep_as_Android",
-      },
-      data: {
-        config: JSON.stringify(oldConfig),
-      },
-    });
+    dbIntegrationInstance.config = oldConfig;
+    await dbIntegrationInstance.save();
 
     logger.info(
       `[SLEEP AS ANDROID] Set Sleep as Android emergencyAlarmTimeoutSeconds to ${req.body.emergencyAlarmTimeoutSeconds}`
@@ -182,14 +171,8 @@ sleepAsAndroidRouter.put("/changeDelay", async (req, res) => {
   //Do it this way to avoid unexisting config error
   let oldConfig = { ...dbIntegrationInstance.config };
   oldConfig.delay = req.body.delay;
-  await db.integrationStatuses.update({
-    where: {
-      name: "Sleep_as_Android",
-    },
-    data: {
-      config: JSON.stringify(oldConfig),
-    },
-  });
+  dbIntegrationInstance.config = oldConfig;
+  await dbIntegrationInstance.save();
 
   logger.info(
     `[SLEEP AS ANDROID] Set Sleep as Android delay to ${req.body.delay}`
@@ -267,13 +250,11 @@ async function getStatus(): Promise<boolean> {
 async function initSleepAsAndroidIntegration() {
   let dbIntegrationInstance: any = await getSleepAsAndroidIntegrationDBObject();
   if (!dbIntegrationInstance) {
-    dbIntegrationInstance = await db.integrationStatuses.create({
-      data: {
-        name: "Sleep_as_Android",
-        isActive: false,
-        config: JSON.stringify({
-          emergencyAlarmTimeoutSeconds: SLEEP_AS_ANDROID_MUTE_AFTER,
-        }),
+    dbIntegrationInstance = await IntegrationStatusModel.create({
+      name: "Sleep_as_Android",
+      isActive: false,
+      config: {
+        emergencyAlarmTimeoutSeconds: SLEEP_AS_ANDROID_MUTE_AFTER,
       },
     });
   }
@@ -281,13 +262,11 @@ async function initSleepAsAndroidIntegration() {
 }
 
 async function getSleepAsAndroidIntegrationDBObject(): Promise<any> {
-  let obj = await db.integrationStatuses.findFirst({
+  return await IntegrationStatusModel.findOne({
     where: {
       name: "Sleep_as_Android",
     },
   });
-  obj.config = JSON.parse(obj.config);
-  return obj;
 }
 
 interface IRingingStats {

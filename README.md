@@ -40,6 +40,10 @@ Buzzine is built on the modular application design - every unit of it is split i
 4. Adapter is a microservice used for emergency. If you wish to use it, flash ESP8266 with Tasmota and pass its IP adress as an environment variable to the adapter.
 5. Remember to initialize a Firebase project and update the necessary config, such as `google-services.json` on mobile or `firebaseServiceAccountKey.json` on API
 
+## Database
+
+The database used in this project is [`SQLite`](https://www.sqlite.org/index.html) together with [`Sequelize`](https://sequelize.org/) ORM. I migrated to [`Prisma`](https://www.prisma.io/) once (commits [28b742db26efd8fe980b25aeed4d188160f20a69](https://github.com/Arciiix/Buzzine/commit/28b742db26efd8fe980b25aeed4d188160f20a69), [c6c3af4a963db09db625f1aba38d672d6c730547](https://github.com/Arciiix/Buzzine/commit/c6c3af4a963db09db625f1aba38d672d6c730547), [ee03827ad40600000b88309ac15f435a345897ad](https://github.com/Arciiix/Buzzine/commit/ee03827ad40600000b88309ac15f435a345897ad)), but when deploying the app, it seemed that **Prisma** is much slower than **Sequelize** on my production machine.
+
 ### Environment variables
 
 #### Core
