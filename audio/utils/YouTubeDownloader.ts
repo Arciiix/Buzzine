@@ -4,7 +4,7 @@ import shortUUID from "short-uuid";
 import path from "path";
 import logger from "./logger";
 import { getAudioDurationFromFile } from "./playAudio";
-import db from "./db";
+import AudioNameMappingModel from "../models/AudioNameMapping";
 
 async function downloadFromYouTube(url): Promise<{
   error: boolean;
@@ -19,7 +19,7 @@ async function downloadFromYouTube(url): Promise<{
 
   try {
     let id = await ytdl.getURLVideoID(url);
-    let dbEntity = await db.audioNameMappings.findFirst({
+    let dbEntity = await AudioNameMappingModel.findOne({
       where: { youtubeID: id },
     });
     if (dbEntity) {
@@ -67,12 +67,10 @@ async function downloadFromYouTube(url): Promise<{
       ytdlObj.on("info", async (data) => {
         let name =
           data?.videoDetails?.title + " by " + data?.videoDetails?.author?.name;
-        await db.audioNameMappings.create({
-          data: {
-            filename: newFileId + ".mp3",
-            friendlyName: name,
-            youtubeID: await ytdl.getURLVideoID(url),
-          },
+        await AudioNameMappingModel.create({
+          filename: newFileId + ".mp3",
+          friendlyName: name,
+          youtubeID: await ytdl.getURLVideoID(url),
         });
 
         logger.info(
@@ -84,31 +82,23 @@ async function downloadFromYouTube(url): Promise<{
 
       ytdlObj.on("finish", async (data) => {
         //If the YouTube audio was allowed to be downloaded, there wasn't any audio with the same youtubeId before, so find the latest object with that filename from the database
-        let databaseObj: any = await db.audioNameMappings.findFirst({
+        let databaseObj: any = await AudioNameMappingModel.findOne({
           where: {
             filename: newFileId + ".mp3",
             youtubeID: await ytdl.getURLVideoID(url),
           },
-          orderBy: [
-            {
-              createdAt: "desc",
-            },
-          ],
+          order: [["createdAt", "DESC"]],
         });
 
-        let resultObj = await db.audioNameMappings.update({
-          where: {
-            audioId: databaseObj.audioId,
-          },
-          data: {
-            duration: await getAudioDurationFromFile(newFileId + ".mp3"),
-          },
-        });
+        databaseObj.duration = await getAudioDurationFromFile(
+          newFileId + ".mp3"
+        );
+        await databaseObj.save();
 
         logger.info(
           `Updated the duration for YouTube video ${await ytdl.getURLVideoID(
             url
-          )} to ${resultObj.duration}`
+          )} to ${databaseObj.duration}`
         );
 
         resolve({ error: false, statusCode: 201 });
