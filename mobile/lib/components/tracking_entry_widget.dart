@@ -63,162 +63,202 @@ class _TrackingEntryWidgetState extends State<TrackingEntryWidget> {
                   padding: const EdgeInsets.all(8.0),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         mainAxisSize: MainAxisSize.max,
                         children: [
-                          Column(
-                            children: [
-                              Row(
-                                children: const [
-                                  Padding(
-                                    padding: EdgeInsets.all(2),
-                                    child: Icon(Icons.bed, size: 16),
-                                  ),
-                                  Text("W łóżku",
-                                      style: TextStyle(fontSize: 16))
-                                ],
-                              ),
-                              Text(
-                                  _currentEntry.bedTime == null
-                                      ? "-"
-                                      : dateToTimeString(_currentEntry.bedTime!,
-                                          excludeSeconds: true),
-                                  style: const TextStyle(fontSize: 24))
-                            ],
-                          ),
-                          Column(
-                            children: [
-                              Row(
-                                children: const [
-                                  Padding(
-                                    padding: EdgeInsets.all(2),
-                                    child: Icon(Icons.bedtime, size: 16),
-                                  ),
-                                  Text("Pójście spać",
-                                      style: TextStyle(fontSize: 16))
-                                ],
-                              ),
-                              Text(
-                                  _currentEntry.sleepTime == null
-                                      ? "-"
-                                      : dateToTimeString(
-                                          _currentEntry.sleepTime!,
-                                          excludeSeconds: true),
-                                  style: const TextStyle(fontSize: 24))
-                            ],
-                          )
-                        ],
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        mainAxisSize: MainAxisSize.max,
-                        children: [
-                          Column(
-                            children: [
-                              Row(
-                                children: const [
-                                  Padding(
-                                    padding: EdgeInsets.all(2),
-                                    child: Icon(Icons.alarm, size: 16),
-                                  ),
-                                  Text("Pierwszy budzik",
-                                      style: TextStyle(fontSize: 16))
-                                ],
-                              ),
-                              Text(
-                                  _currentEntry.firstAlarmTime == null
-                                      ? "-"
-                                      : dateToTimeString(
-                                          _currentEntry.firstAlarmTime!,
-                                          excludeSeconds: true),
-                                  style: const TextStyle(fontSize: 24))
-                            ],
-                          ),
-                          Column(
-                            children: [
-                              Row(
-                                children: const [
-                                  Padding(
-                                    padding: EdgeInsets.all(2),
-                                    child: Icon(Icons.timer, size: 16),
-                                  ),
-                                  Text("Obudzenie się",
-                                      style: TextStyle(fontSize: 16))
-                                ],
-                              ),
-                              Text(
-                                  _currentEntry.wakeUpTime == null
-                                      ? "-"
-                                      : dateToTimeString(
-                                          _currentEntry.wakeUpTime!,
-                                          excludeSeconds: true),
-                                  style: const TextStyle(fontSize: 24))
-                            ],
-                          )
-                        ],
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        mainAxisSize: MainAxisSize.max,
-                        children: [
-                          Column(
-                            children: [
-                              Row(
-                                children: const [
-                                  Padding(
-                                    padding: EdgeInsets.all(2),
-                                    child: Icon(Icons.stop, size: 16),
-                                  ),
-                                  Text("Wstanie",
-                                      style: TextStyle(fontSize: 16))
-                                ],
-                              ),
-                              Text(
-                                  _currentEntry.getUpTime == null
-                                      ? "-"
-                                      : dateToTimeString(
-                                          _currentEntry.getUpTime!,
-                                          excludeSeconds: true),
-                                  style: const TextStyle(fontSize: 24))
-                            ],
-                          ),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Row(
-                                children: const [
-                                  Padding(
-                                    padding: EdgeInsets.all(2),
-                                    child: Icon(Icons.star, size: 16),
-                                  ),
-                                  Text("Ocena", style: TextStyle(fontSize: 16))
-                                ],
-                              ),
-                              if (_currentEntry.rate == null)
-                                Text("-")
-                              else
-                                Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
+                          SizedBox(
+                            width:
+                                MediaQuery.of(context).size.width * 0.9 * 0.4,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: const [
                                     Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: SizedBox(
-                                          width: 100,
-                                          child: LinearProgressIndicator(
-                                              value: _currentEntry.rate! / 10)),
+                                      padding: EdgeInsets.all(2),
+                                      child: Icon(Icons.bed, size: 16),
                                     ),
-                                    Text(_currentEntry.rate!.toString())
+                                    Text("W łóżku",
+                                        style: TextStyle(fontSize: 16))
                                   ],
                                 ),
-                            ],
+                                Text(
+                                    _currentEntry.bedTime == null
+                                        ? "-"
+                                        : dateToTimeString(
+                                            _currentEntry.bedTime!,
+                                            excludeSeconds: true),
+                                    style: const TextStyle(fontSize: 24))
+                              ],
+                            ),
+                          ),
+                          SizedBox(
+                            width:
+                                MediaQuery.of(context).size.width * 0.9 * 0.4,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: const [
+                                    Padding(
+                                      padding: EdgeInsets.all(2),
+                                      child: Icon(Icons.bedtime, size: 16),
+                                    ),
+                                    Text("Pójście spać",
+                                        style: TextStyle(fontSize: 16))
+                                  ],
+                                ),
+                                Text(
+                                    _currentEntry.sleepTime == null
+                                        ? "-"
+                                        : dateToTimeString(
+                                            _currentEntry.sleepTime!,
+                                            excludeSeconds: true),
+                                    style: const TextStyle(fontSize: 24))
+                              ],
+                            ),
+                          )
+                        ],
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        mainAxisSize: MainAxisSize.max,
+                        children: [
+                          SizedBox(
+                            width:
+                                MediaQuery.of(context).size.width * 0.9 * 0.4,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: const [
+                                    Padding(
+                                      padding: EdgeInsets.all(2),
+                                      child: Icon(Icons.alarm, size: 16),
+                                    ),
+                                    Text("Pierwszy budzik",
+                                        style: TextStyle(fontSize: 16))
+                                  ],
+                                ),
+                                Text(
+                                    _currentEntry.firstAlarmTime == null
+                                        ? "-"
+                                        : dateToTimeString(
+                                            _currentEntry.firstAlarmTime!,
+                                            excludeSeconds: true),
+                                    style: const TextStyle(fontSize: 24))
+                              ],
+                            ),
+                          ),
+                          SizedBox(
+                            width:
+                                MediaQuery.of(context).size.width * 0.9 * 0.4,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: const [
+                                    Padding(
+                                      padding: EdgeInsets.all(2),
+                                      child: Icon(Icons.timer, size: 16),
+                                    ),
+                                    Text("Obudzenie się",
+                                        style: TextStyle(fontSize: 16))
+                                  ],
+                                ),
+                                Text(
+                                    _currentEntry.wakeUpTime == null
+                                        ? "-"
+                                        : dateToTimeString(
+                                            _currentEntry.wakeUpTime!,
+                                            excludeSeconds: true),
+                                    style: const TextStyle(fontSize: 24))
+                              ],
+                            ),
+                          )
+                        ],
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        mainAxisSize: MainAxisSize.max,
+                        children: [
+                          SizedBox(
+                            width:
+                                MediaQuery.of(context).size.width * 0.9 * 0.4,
+                            child: Column(
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: const [
+                                    Padding(
+                                      padding: EdgeInsets.all(2),
+                                      child: Icon(Icons.stop, size: 16),
+                                    ),
+                                    Text("Wstanie",
+                                        style: TextStyle(fontSize: 16))
+                                  ],
+                                ),
+                                Text(
+                                    _currentEntry.getUpTime == null
+                                        ? "-"
+                                        : dateToTimeString(
+                                            _currentEntry.getUpTime!,
+                                            excludeSeconds: true),
+                                    style: const TextStyle(fontSize: 24))
+                              ],
+                            ),
+                          ),
+                          SizedBox(
+                            width:
+                                MediaQuery.of(context).size.width * 0.9 * 0.4,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: const [
+                                    Padding(
+                                      padding: EdgeInsets.all(2),
+                                      child: Icon(Icons.star, size: 16),
+                                    ),
+                                    Text("Ocena",
+                                        style: TextStyle(fontSize: 16))
+                                  ],
+                                ),
+                                if (_currentEntry.rate == null)
+                                  const Text("-",
+                                      style: TextStyle(fontSize: 24))
+                                else
+                                  Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: [
+                                      Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: SizedBox(
+                                            width: 100,
+                                            child: LinearProgressIndicator(
+                                                value:
+                                                    _currentEntry.rate! / 10)),
+                                      ),
+                                      Text(_currentEntry.rate!.toString())
+                                    ],
+                                  ),
+                              ],
+                            ),
                           )
                         ],
                       ),
                       SizedBox(
-                        height: 80,
+                        height: 100,
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.start,
                           children: [
@@ -236,10 +276,9 @@ class _TrackingEntryWidgetState extends State<TrackingEntryWidget> {
                                 children: _currentEntry.notes == null ||
                                         _currentEntry.notes == " "
                                     ? [
-                                        Text(
-                                          "-",
-                                          textAlign: TextAlign.center,
-                                        ),
+                                        const Text("-",
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(fontSize: 24)),
                                       ]
                                     : [
                                         Flexible(
