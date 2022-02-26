@@ -4,6 +4,7 @@ import logger, { logHTTPEndpoints } from "./logger";
 import axios from "axios";
 import schedule from "node-schedule";
 import { initDatabase } from "./db";
+import TemperatureModel from "./models/Temperature";
 import {
   calculateCurrentTemperatureData,
   calculateTemperatureDataForDay,
