@@ -77,6 +77,10 @@ api.get("/ping", async (req, res) => {
       success: false,
       delay: null,
     },
+    tracking: {
+      success: false,
+      delay: null,
+    },
   };
 
   if (
@@ -146,6 +150,26 @@ api.get("/ping", async (req, res) => {
       }
     } catch (err) {
       logger.error(`Error while pinging the adapter`);
+    }
+
+    resolve();
+  });
+
+  //Reset the now date
+  now = new Date();
+  await new Promise(async (resolve: any, reject) => {
+    //Ping the tracking
+    logger.info("Pinging the tracking...");
+    try {
+      let response = await axios.get(`${TRACKING_URL}/v1/ping`);
+      logger.info(`Pinged the tracking successfully`);
+      services.tracking.success = true;
+      if (response.data.timestamp) {
+        services.tracking.delay =
+          new Date(response.data.timestamp).getTime() - now.getTime();
+      }
+    } catch (err) {
+      logger.error(`Error while pinging the tracking`);
     }
 
     resolve();

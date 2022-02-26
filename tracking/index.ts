@@ -25,6 +25,10 @@ app.use(logHTTPEndpoints);
 app.use("/v1", api);
 api.use("/stats", statsRouter);
 
+api.get("/ping", (req, res) => {
+  res.send({ error: false, timestamp: new Date() });
+});
+
 api.get("/getDataForDay", async (req, res) => {
   if (!req.query.day || isNaN(new Date(req.query.day as string)?.getTime())) {
     res.status(400).send({ error: true, errorCode: "WRONG_DAY" });

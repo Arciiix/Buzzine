@@ -7,9 +7,10 @@ class PingResult {
   ServicePing core;
   ServicePing audio;
   ServicePing adapter;
+  ServicePing tracking;
 
   String toString() {
-    return "API: ${api.success}; core: ${core.success}; audio: ${audio.success}; adapter: ${adapter.success}";
+    return "API: ${api.success}; core: ${core.success}; audio: ${audio.success}; adapter: ${adapter.success}; tracking: ${tracking.success}";
   }
 
   PingResult(
@@ -17,7 +18,8 @@ class PingResult {
       required this.api,
       required this.core,
       required this.audio,
-      required this.adapter});
+      required this.adapter,
+      required this.tracking});
 }
 
 class ServicePing {

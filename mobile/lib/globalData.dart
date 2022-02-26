@@ -971,7 +971,10 @@ class GlobalData {
             delay: responseData['audio']['delay']),
         adapter: ServicePing(
             success: responseData['adapter']['success'],
-            delay: responseData['adapter']['delay']));
+            delay: responseData['adapter']['delay']),
+              tracking: ServicePing(
+            success: responseData['tracking']['success'],
+            delay: responseData['tracking']['delay']));
 
     if (result.error) {
       if (result.api.success && result.core.success && result.audio.success) {

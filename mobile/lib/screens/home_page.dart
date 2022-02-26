@@ -950,6 +950,21 @@ class _HomePageState extends State<HomePage> {
                                                                       .delay,
                                                               serviceName:
                                                                   "adapter",
+                                                            ),
+                                                            PingResultIndicator(
+                                                              isSuccess:
+                                                                  pingResult
+                                                                      ?.tracking
+                                                                      .success,
+                                                              delay: pingResult
+                                                                  ?.tracking
+                                                                  .delay,
+                                                              apiDelay:
+                                                                  pingResult
+                                                                      ?.api
+                                                                      .delay,
+                                                              serviceName:
+                                                                  "tracking",
                                                             )
                                                           ],
                                                         ),
