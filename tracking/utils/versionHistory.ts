@@ -1,28 +1,42 @@
+import { Op } from "sequelize";
 import { ITrackingEntryObject } from "..";
+import TrackingVersionHistoryModel from "../models/TrackingVersionHistory";
 import { VERSION_HISTORY_MAX_DAYS } from "./constants";
-import db from "./db";
-import { toDateString, toDateTimeString } from "./formatting";
+import { toDateTimeString } from "./formatting";
 import logger from "./logger";
 
 async function saveVersionHistory(
+  entryId: string,
   date: Date,
   oldValues: ITrackingEntryObject,
   newValues: ITrackingEntryObject
 ): Promise<void> {
+  let fieldsCounter = 0;
   for await (const [key, value] of Object.entries(newValues)) {
     if (!value) continue;
+    if (
+      key === "updatedAt" ||
+      key === "createdAt" ||
+      key === "entryId" ||
+      key === "date"
+    )
+      continue;
     if (new Date(oldValues[key]).getTime() !== new Date(value).getTime()) {
-      await db.trackingVersionHistory.create({
-        data: {
-          date: date,
-          fieldName: key,
-          value: new Date(value), //To fit the data type - it has to be date. When it comes to the rate for example, it can be stored as a date - because it's convereted to the unix timestamp anyway, so it'll be stored as a number
-        },
+      await TrackingVersionHistoryModel.create({
+        entryId: entryId,
+        date: date,
+        fieldName: key,
+        value: new Date(value), //To fit the data type - it has to be date. When it comes to the rate for example, it can be stored as a date - because it's convereted to the unix timestamp anyway, so it'll be stored as a number
       });
+      fieldsCounter++;
     }
   }
 
-  logger.info(`Saved version history for date ${toDateTimeString(date)}`);
+  logger.info(
+    `Saved version history for ${fieldsCounter} field(s) of date ${toDateTimeString(
+      date
+    )}`
+  );
 }
 
 async function clearOldVersionHistory(): Promise<void> {
@@ -30,10 +44,10 @@ async function clearOldVersionHistory(): Promise<void> {
     new Date().getTime() - VERSION_HISTORY_MAX_DAYS * 1000 * 60 * 60 * 24
   );
 
-  await db.trackingVersionHistory.deleteMany({
+  await TrackingVersionHistoryModel.destroy({
     where: {
       date: {
-        lt: minDate,
+        [Op.lt]: minDate,
       },
     },
   });

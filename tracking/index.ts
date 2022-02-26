@@ -1,4 +1,7 @@
 import express from "express";
+import { Op } from "sequelize";
+import TrackingEntryModel from "./models/TrackingEntry";
+import TrackingVersionHistoryModel from "./models/TrackingVersionHistory";
 import { PORT, TRACKER_DAY_START } from "./utils/constants";
 import db, { initDatabase } from "./utils/db";
 import {
@@ -24,11 +27,11 @@ api.get("/getDataForDay", async (req, res) => {
     return;
   }
 
-  let data = await db.trackingEntry.findMany({
+  let data: any = await TrackingEntryModel.findAll({
     where: {
       date: {
-        gte: dateTimeToDateOnly(new Date(req.query.day as string)),
-        lt: dateTimeToDateOnly(
+        [Op.gte]: dateTimeToDateOnly(new Date(req.query.day as string)),
+        [Op.lt]: dateTimeToDateOnly(
           new Date(
             dateTimeToDateOnly(new Date(req.query.day as string)).getTime() +
               24 * 60 * 60 * 1000
@@ -55,28 +58,22 @@ api.get("/getLatest", async (req, res) => {
 
   date = dateTimeToDateOnly(date);
 
-  let latest = await db.trackingEntry.findFirst({
+  let latest = await TrackingEntryModel.findOne({
     where: {
       date: {
-        gte: date,
-        lt: new Date(date.getTime() + 1000 * 60 * 60 * 24),
+        [Op.gte]: date,
+        [Op.lt]: new Date(date.getTime() + 1000 * 60 * 60 * 24),
       },
     },
-    orderBy: [
-      {
-        date: "desc",
-      },
-    ],
+    order: [["date", "DESC"]],
   });
 
   if (!latest) {
     logger.info(
       "There's no object for the latest date, so create an empty one"
     );
-    latest = await db.trackingEntry.create({
-      data: {
-        date: date,
-      },
+    latest = await TrackingEntryModel.create({
+      date: date,
     });
   }
 
@@ -89,7 +86,7 @@ api.get("/getVersionHistoryForDate", async (req, res) => {
     return;
   }
 
-  let versionHistory = await db.trackingVersionHistory.findMany({
+  let versionHistory = await TrackingVersionHistoryModel.findAll({
     where: {
       date: new Date(req.query.date as string),
     },
@@ -108,38 +105,14 @@ api.put("/updateDataForDate", async (req, res) => {
     return;
   }
 
-  let updateObject: ITrackingEntryObject = {
-    bedTime: req.body.updateObject.bedTime
-      ? new Date(req.body.updateObject.bedTime)
-      : undefined,
-    sleepTime: req.body.updateObject.sleepTime
-      ? new Date(req.body.updateObject.sleepTime)
-      : undefined,
-    firstAlarmTime: req.body.updateObject.firstAlarmTime
-      ? new Date(req.body.updateObject.firstAlarmTime)
-      : undefined,
-    wakeUpTime: req.body.updateObject.wakeUpTime
-      ? new Date(req.body.updateObject.wakeUpTime)
-      : undefined,
-    getUpTime: req.body.updateObject.getUpTime
-      ? new Date(req.body.updateObject.getUpTime)
-      : undefined,
-    rate: req.body.updateObject.rate
-      ? parseInt(req.body.updateObject.rate)
-      : undefined,
-  };
-
-  let dbObject = await db.trackingEntry.upsert({
-    where: {
-      date: new Date(req.body.date),
-    },
-    update: {},
-    create: {
-      date: new Date(req.body.date),
-      ...updateObject,
-    },
+  let dbObject: any = await TrackingEntryModel.findOne({
+    where: { date: new Date(req.body.date) },
   });
-
+  if (!dbObject) {
+    dbObject = await TrackingEntryModel.create({
+      date: new Date(req.body.date),
+    });
+  }
   let oldValues: ITrackingEntryObject = {
     bedTime: dbObject.bedTime,
     sleepTime: dbObject.sleepTime,
@@ -149,15 +122,32 @@ api.put("/updateDataForDate", async (req, res) => {
     rate: dbObject.rate,
   };
 
-  await saveVersionHistory(new Date(req.body.date), oldValues, updateObject);
+  if (req.body.updateObject.bedTime) {
+    dbObject.bedTime = new Date(req.body.updateObject.bedTime);
+  }
+  if (req.body.updateObject.sleepTime) {
+    dbObject.sleepTime = new Date(req.body.updateObject.sleepTime);
+  }
+  if (req.body.updateObject.firstAlarmTime) {
+    dbObject.firstAlarmTime = new Date(req.body.updateObject.firstAlarmTime);
+  }
+  if (req.body.updateObject.wakeUpTime) {
+    dbObject.wakeUpTime = new Date(req.body.updateObject.wakeUpTime);
+  }
+  if (req.body.updateObject.getUpTime) {
+    dbObject.getUpTime = new Date(req.body.updateObject.getUpTime);
+  }
+  if (req.body.updateObject.rate) {
+    dbObject.rate = parseInt(req.body.updateObject.rate);
+  }
+  await dbObject.save();
 
-  await db.trackingEntry.update({
-    where: {
-      date: new Date(req.body.date),
-    },
-    data: updateObject,
-  });
-
+  await saveVersionHistory(
+    dbObject.entryId,
+    new Date(dbObject.date),
+    oldValues,
+    dbObject.dataValues
+  );
   clearOldVersionHistory();
 
   logger.info(
@@ -166,9 +156,7 @@ api.put("/updateDataForDate", async (req, res) => {
 
   res.send({
     error: false,
-    response: await db.trackingEntry.findUnique({
-      where: { date: new Date(req.body.date) },
-    }),
+    response: dbObject,
   });
 });
 
@@ -179,7 +167,7 @@ api.delete("/deleteEntry", async (req, res) => {
   }
 
   //Check if record exists
-  let record = await db.trackingEntry.findFirst({
+  let record = await TrackingEntryModel.findOne({
     where: { date: new Date(req.body.date) },
   });
   if (!record) {
@@ -188,11 +176,13 @@ api.delete("/deleteEntry", async (req, res) => {
   }
 
   //First of all, delete all relations, so all version history of the given entry
-  await db.trackingVersionHistory.deleteMany({
+  await TrackingVersionHistoryModel.destroy({
     where: { date: new Date(req.body.date) },
   });
 
-  await db.trackingEntry.delete({ where: { date: new Date(req.body.date) } });
+  await TrackingEntryModel.destroy({
+    where: { date: new Date(req.body.date) },
+  });
 
   res.send({ error: false });
 });
@@ -214,18 +204,14 @@ api.put("/updateDataForLatestIfDoesntExist", async (req, res) => {
   date = dateTimeToDateOnly(date);
 
   //Find a daytime nap, and if it exists - change the targeted date to it
-  let latest = await db.trackingEntry.findFirst({
+  let latest: any = await TrackingEntryModel.findOne({
     where: {
       date: {
-        gt: date,
-        lt: new Date(date.getTime() + 1000 * 60 * 60 * 24),
+        [Op.gt]: date,
+        [Op.lt]: new Date(date.getTime() + 1000 * 60 * 60 * 24),
       },
     },
-    orderBy: [
-      {
-        date: "desc",
-      },
-    ],
+    order: [["date", "DESC"]],
   });
 
   if (latest) {
@@ -237,36 +223,12 @@ api.put("/updateDataForLatestIfDoesntExist", async (req, res) => {
     date = latest.date;
   }
 
-  let updateObject: ITrackingEntryObject = {
-    bedTime: req.body.updateObject.bedTime
-      ? new Date(req.body.updateObject.bedTime)
-      : undefined,
-    sleepTime: req.body.updateObject.sleepTime
-      ? new Date(req.body.updateObject.sleepTime)
-      : undefined,
-    firstAlarmTime: req.body.updateObject.firstAlarmTime
-      ? new Date(req.body.updateObject.firstAlarmTime)
-      : undefined,
-    wakeUpTime: req.body.updateObject.wakeUpTime
-      ? new Date(req.body.updateObject.wakeUpTime)
-      : undefined,
-    getUpTime: req.body.updateObject.getUpTime
-      ? new Date(req.body.updateObject.getUpTime)
-      : undefined,
-    rate: req.body.updateObject.rate
-      ? parseInt(req.body.updateObject.rate)
-      : undefined,
-  };
-  let dbObject = await db.trackingEntry.upsert({
-    where: {
+  let dbObject: any = await TrackingEntryModel.findOne({ where: { date } });
+  if (!dbObject) {
+    dbObject = await TrackingEntryModel.create({
       date: date,
-    },
-    update: {},
-    create: {
-      date: date,
-      ...updateObject,
-    },
-  });
+    });
+  }
 
   let oldValues: ITrackingEntryObject = {
     bedTime: dbObject.bedTime,
@@ -277,33 +239,26 @@ api.put("/updateDataForLatestIfDoesntExist", async (req, res) => {
     rate: dbObject.rate,
   };
 
-  for await (const [key, value] of Object.entries(updateObject)) {
+  for (const [key, value] of Object.entries(req.body.updateObject)) {
     if (!value) continue;
-    if (
-      !oldValues[key] &&
-      new Date(oldValues[key]).getTime() !== new Date(value).getTime()
-    ) {
-      await db.trackingEntry.update({
-        where: {
-          date: date,
-        },
-        data: {
-          [key]: value,
-        },
-      });
-      await saveVersionHistory(date, oldValues, {
-        [key]: value,
-      });
-    }
+    if (dbObject[key]) continue; //If a field has its own value already
+    dbObject[key] =
+      key === "rate" ? parseInt(value as string) : new Date(value as string);
   }
 
+  await dbObject.save();
+
+  await saveVersionHistory(
+    dbObject.entryId,
+    new Date(dbObject.date),
+    oldValues,
+    dbObject.dataValues
+  );
   clearOldVersionHistory();
 
   res.send({
     error: false,
-    response: await db.trackingEntry.findUnique({
-      where: { date: date },
-    }),
+    response: dbObject,
   });
 });
 

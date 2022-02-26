@@ -130,12 +130,14 @@ class _TrackingScreenState extends State<TrackingScreen> {
                     itemCount: history.length,
                     itemBuilder: (context, index) {
                       return ListTile(
-                          title: Text(isValueTimestamp
-                              ? dateToDateTimeString(
-                                  DateTime.parse(history[index].value))
-                              : DateTime.parse(history[index].value)
-                                  .millisecondsSinceEpoch
-                                  .toString()),
+                          title: Text(history[index].value == null
+                              ? "Brak"
+                              : isValueTimestamp
+                                  ? dateToDateTimeString(
+                                      DateTime.parse(history[index].value))
+                                  : DateTime.parse(history[index].value)
+                                      .millisecondsSinceEpoch
+                                      .toString()),
                           subtitle: Text(
                               dateToDateTimeString(history[index].timestamp)),
                           onTap: () =>

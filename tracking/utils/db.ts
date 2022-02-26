@@ -1,24 +1,24 @@
-import { PrismaClient } from "@prisma/client";
+import { Sequelize } from "sequelize";
+import TrackingEntryModel from "../models/TrackingEntry";
 import logger from "./logger";
 
-const db = new PrismaClient();
+const db = new Sequelize({
+  dialect: "sqlite",
+  storage: "./buzzineTracking.db",
+  // logging: (msg) => logger.debug(msg),
+  logging: (msg) => null,
+});
 
 async function initDatabase() {
-  await db.$connect();
-  logger.info(`Connected to the database`);
-
-  //Logging
-  db.$use(async (params, next) => {
-    const before = Date.now();
-    const result = await next(params);
-    const after = Date.now();
-
-    logger.debug(
-      `Query ${params.model}.${params.action} took ${after - before}ms`
-    );
-
-    return result;
-  });
+  try {
+    await db.authenticate();
+    logger.info(`Connected to the tracking database`);
+    // await db.sync({ force: true });
+    await db.sync();
+  } catch (err) {
+    logger.error(`Cannot connect to the database: `, err);
+    throw err;
+  }
 }
 
 export default db;
