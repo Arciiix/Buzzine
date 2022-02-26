@@ -11,6 +11,7 @@ import 'package:buzzine/types/SleepAsAndroidIntegrationStatus.dart';
 import 'package:buzzine/types/Snooze.dart';
 import 'package:buzzine/types/TemperatureData.dart';
 import 'package:buzzine/types/TrackingEntry.dart';
+import 'package:buzzine/types/TrackingStats.dart';
 import 'package:buzzine/types/Weather.dart';
 import 'package:buzzine/types/YouTubeVideoInfo.dart';
 import 'package:buzzine/utils/formatting.dart';
@@ -48,6 +49,7 @@ class GlobalData {
   static late SleepAsAndroidIntegrationStatus sleepAsAndroidIntegrationStatus;
 
   static late TrackingEntry latestTrackingEntry;
+  static late TrackingStats trackingStats;
 
   static late Constants constants;
   static late EmergencyStatus emergencyStatus;
@@ -96,6 +98,9 @@ class GlobalData {
     if (onProgress != null) onProgress("Dane najnowszego snu");
     await getLatestTrackingEntry();
     print("Got latest tracking entry data");
+    if (onProgress != null) onProgress("Statystyki snu");
+    await getTrackingStats();
+    print("Got tracking stats");
     if (onProgress != null) onProgress("Wersja aplikacji");
     await getAppVersion();
     print("Got app version");
@@ -1268,5 +1273,70 @@ class GlobalData {
       throw APIException(
           "Błąd podczas usuwania snu z ${dateToDateTimeString(date)}. Status code: ${response.statusCode}, response: ${response.body}");
     }
+  }
+
+  static Future<TrackingStats> getTrackingStats() async {
+    var response =
+        await http.get(Uri.parse("$serverIP/v1/tracking/stats/getStats"));
+    var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
+
+    if (response.statusCode != 200 || decodedResponse['error'] == true) {
+      throw APIException(
+          "Błąd podczas pobierania statystyk snu. Status code: ${response.statusCode}, response: ${response.body}");
+    } else {
+      var data = decodedResponse['response'];
+
+      GlobalData.trackingStats = TrackingStats(
+        timestamp: DateTime.parse(data['timestamp']),
+        lifetime: TrackingStatsObject(
+            averageSleepDuration: data['lifetime']['averageSleepDuration'],
+            averageTimeAtBed: data['lifetime']['averageTimeAtBed'],
+            averageAlarmWakeUpProcrastinationTime: data['lifetime']
+                ['averageAlarmWakeUpProcrastinationTime'],
+            averageTimeBeforeGettingUp: data['lifetime']
+                ['averageTimeBeforeGettingUp']),
+        monthly: TrackingStatsObject(
+            averageSleepDuration: data['monthly']['averageSleepDuration'],
+            averageTimeAtBed: data['monthly']['averageTimeAtBed'],
+            averageAlarmWakeUpProcrastinationTime: data['monthly']
+                ['averageAlarmWakeUpProcrastinationTime'],
+            averageTimeBeforeGettingUp: data['monthly']
+                ['averageTimeBeforeGettingUp']),
+      );
+
+      return GlobalData.trackingStats;
+    }
+  }
+
+  static Future<TrackingStats> calculateTrackingStats() async {
+    var response =
+        await http.put(Uri.parse("$serverIP/v1/tracking/stats/calculateStats"));
+    var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
+
+    if (response.statusCode != 200 || decodedResponse['error'] == true) {
+      throw APIException(
+          "Błąd podczas obliczania statystyk snu. Status code: ${response.statusCode}, response: ${response.body}");
+    }
+
+    var data = decodedResponse['response'];
+
+    GlobalData.trackingStats = TrackingStats(
+      timestamp: DateTime.parse(data['timestamp']),
+      lifetime: TrackingStatsObject(
+          averageSleepDuration: data['lifetime']['averageSleepDuration'],
+          averageTimeAtBed: data['lifetime']['averageTimeAtBed'],
+          averageAlarmWakeUpProcrastinationTime: data['lifetime']
+              ['averageAlarmWakeUpProcrastinationTime'],
+          averageTimeBeforeGettingUp: data['lifetime']
+              ['averageTimeBeforeGettingUp']),
+      monthly: TrackingStatsObject(
+          averageSleepDuration: data['monthly']['averageSleepDuration'],
+          averageTimeAtBed: data['monthly']['averageTimeAtBed'],
+          averageAlarmWakeUpProcrastinationTime: data['monthly']
+              ['averageAlarmWakeUpProcrastinationTime'],
+          averageTimeBeforeGettingUp: data['monthly']
+              ['averageTimeBeforeGettingUp']),
+    );
+    return GlobalData.trackingStats;
   }
 }

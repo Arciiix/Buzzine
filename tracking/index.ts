@@ -2,24 +2,30 @@ import express from "express";
 import { Op } from "sequelize";
 import TrackingEntryModel from "./models/TrackingEntry";
 import TrackingVersionHistoryModel from "./models/TrackingVersionHistory";
-import { PORT, TRACKER_DAY_START } from "./utils/constants";
-import db, { initDatabase } from "./utils/db";
+import { PORT, STATS_REFRESH_TIME, TRACKER_DAY_START } from "./utils/constants";
+import { initDatabase } from "./utils/db";
 import {
   dateTimeToDateOnly,
   toDateString,
   toDateTimeString,
 } from "./utils/formatting";
 import logger, { logHTTPEndpoints } from "./utils/logger";
+import Stats, { statsRouter } from "./utils/stats";
 import {
   clearOldVersionHistory,
   saveVersionHistory,
 } from "./utils/versionHistory";
+import schedule, { Job } from "node-schedule";
+
+let statsJob: Job;
 
 const app = express();
 const api = express.Router();
+
 app.use(express.json());
 app.use(logHTTPEndpoints);
 app.use("/v1", api);
+api.use("/stats", statsRouter);
 
 api.get("/getDataForDay", async (req, res) => {
   if (!req.query.day || isNaN(new Date(req.query.day as string)?.getTime())) {
@@ -274,6 +280,12 @@ api.put("/updateDataForLatestIfDoesntExist", async (req, res) => {
 
 async function init() {
   await initDatabase();
+  Stats.calculateStats();
+
+  const statsScheduleRule = new schedule.RecurrenceRule();
+  statsScheduleRule.hour = STATS_REFRESH_TIME.hour;
+  statsScheduleRule.minute = STATS_REFRESH_TIME.minute;
+  schedule.scheduleJob(statsScheduleRule, Stats.calculateStats);
 }
 
 app.listen(PORT, () => {

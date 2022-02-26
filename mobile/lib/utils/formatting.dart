@@ -50,6 +50,10 @@ String dateToTimeString(DateTime date, {bool? excludeSeconds}) {
   return "${addZero(date.hour)}:${addZero(date.minute)}${excludeSeconds == true ? "" : ":" + addZero(date.second)}";
 }
 
+String durationToHHmm(Duration duration) {
+  return "${addZero(duration.inHours)}:${addZero(duration.inMinutes.remainder(60))}";
+}
+
 int getFirstDecimalPlaceOfNumber(double value) {
   return ((double.parse(value.toStringAsFixed(1)) -
               double.parse(value.toStringAsFixed(1)).floor()) *

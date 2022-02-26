@@ -1,7 +1,10 @@
 import 'package:buzzine/globalData.dart';
 import 'package:buzzine/screens/tracking_screen.dart';
+import 'package:buzzine/screens/tracking_stats_screen.dart';
 import 'package:buzzine/types/TrackingEntry.dart';
+import 'package:buzzine/types/TrackingStats.dart';
 import 'package:buzzine/utils/formatting.dart';
+import 'package:buzzine/utils/get_icon_by_offset.dart';
 import 'package:flutter/material.dart';
 
 class TrackingEntryWidget extends StatefulWidget {
@@ -14,6 +17,7 @@ class TrackingEntryWidget extends StatefulWidget {
 class _TrackingEntryWidgetState extends State<TrackingEntryWidget> {
   bool _isLoaded = false;
   late TrackingEntry _currentEntry;
+  late TrackingStats _stats;
 
   Future<void> getLatestEntry() async {
     TrackingEntry latestEntry = await GlobalData.getLatestTrackingEntry();
@@ -38,9 +42,25 @@ class _TrackingEntryWidgetState extends State<TrackingEntryWidget> {
     });
   }
 
+  Future<void> navigateToStatsScreen() async {
+    await Navigator.of(context).push(MaterialPageRoute(
+      builder: (context) => TrackingStatsScreen(),
+    ));
+
+    setState(() => _isLoaded = false);
+    await getLatestEntry();
+    TrackingStats stats = await GlobalData.getTrackingStats();
+    setState(() {
+      _isLoaded = true;
+      _stats:
+      stats;
+    });
+  }
+
   @override
   void initState() {
     getLatestEntry().then((value) => setState(() => _isLoaded = true));
+    _stats = GlobalData.trackingStats;
     super.initState();
   }
 
@@ -290,6 +310,334 @@ class _TrackingEntryWidgetState extends State<TrackingEntryWidget> {
                                         ))
                                       ]),
                           ],
+                        ),
+                      ),
+                      InkWell(
+                        onTap: navigateToStatsScreen,
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Hero(
+                            tag: "TRACKING_STATS",
+                            child: Material(
+                              color: Colors.transparent,
+                              child: Column(
+                                children: [
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    mainAxisSize: MainAxisSize.max,
+                                    children: [
+                                      SizedBox(
+                                        width:
+                                            MediaQuery.of(context).size.width *
+                                                0.9 *
+                                                0.4,
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
+                                          children: [
+                                            Padding(
+                                              padding: EdgeInsets.all(2),
+                                              child: Icon(Icons.local_hotel,
+                                                  size: 24),
+                                            ),
+                                            Text("Długość snu",
+                                                style: TextStyle(fontSize: 16)),
+                                            Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: _currentEntry
+                                                                .sleepTime ==
+                                                            null ||
+                                                        _currentEntry
+                                                                .wakeUpTime ==
+                                                            null
+                                                    ? [
+                                                        Text("-",
+                                                            style:
+                                                                const TextStyle(
+                                                                    fontSize:
+                                                                        24))
+                                                      ]
+                                                    : [
+                                                        Text(
+                                                            durationToHHmm(
+                                                              _currentEntry
+                                                                  .wakeUpTime!
+                                                                  .difference(
+                                                                      _currentEntry
+                                                                          .sleepTime!),
+                                                            ),
+                                                            style:
+                                                                const TextStyle(
+                                                                    fontSize:
+                                                                        24)),
+                                                        Icon(
+                                                            getIconByOffset(((_currentEntry
+                                                                        .wakeUpTime!
+                                                                        .difference(_currentEntry
+                                                                            .sleepTime!)
+                                                                        .inSeconds -
+                                                                    _stats
+                                                                        .monthly
+                                                                        .averageSleepDuration) /
+                                                                _stats.monthly
+                                                                    .averageSleepDuration)),
+                                                            size: 14),
+                                                        Text((((_currentEntry.wakeUpTime!.difference(_currentEntry.sleepTime!).inSeconds -
+                                                                            GlobalData
+                                                                                .trackingStats.monthly.averageSleepDuration) /
+                                                                        GlobalData
+                                                                            .trackingStats
+                                                                            .monthly
+                                                                            .averageSleepDuration) *
+                                                                    100)
+                                                                .floor()
+                                                                .toStringAsFixed(
+                                                                    1) +
+                                                            "%")
+                                                      ]),
+                                          ],
+                                        ),
+                                      ),
+                                      SizedBox(
+                                        width:
+                                            MediaQuery.of(context).size.width *
+                                                0.9 *
+                                                0.4,
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
+                                          children: [
+                                            Padding(
+                                              padding: EdgeInsets.all(2),
+                                              child: Icon(Icons.king_bed,
+                                                  size: 24),
+                                            ),
+                                            Text("Czas w łóżku",
+                                                style: TextStyle(fontSize: 16)),
+                                            Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: _currentEntry
+                                                                .bedTime ==
+                                                            null ||
+                                                        _currentEntry
+                                                                .sleepTime ==
+                                                            null
+                                                    ? [
+                                                        Text("-",
+                                                            style:
+                                                                const TextStyle(
+                                                                    fontSize:
+                                                                        24))
+                                                      ]
+                                                    : [
+                                                        Text(
+                                                            durationToHHmm(
+                                                              _currentEntry
+                                                                  .sleepTime!
+                                                                  .difference(
+                                                                      _currentEntry
+                                                                          .bedTime!),
+                                                            ),
+                                                            style:
+                                                                const TextStyle(
+                                                                    fontSize:
+                                                                        24)),
+                                                        Icon(
+                                                            getIconByOffset(((_currentEntry
+                                                                        .sleepTime!
+                                                                        .difference(_currentEntry
+                                                                            .bedTime!)
+                                                                        .inSeconds -
+                                                                    _stats
+                                                                        .monthly
+                                                                        .averageTimeAtBed) /
+                                                                _stats.monthly
+                                                                    .averageTimeAtBed)),
+                                                            size: 14),
+                                                        Text((((_currentEntry.sleepTime!.difference(_currentEntry.bedTime!).inSeconds -
+                                                                            GlobalData
+                                                                                .trackingStats.monthly.averageTimeAtBed) /
+                                                                        GlobalData
+                                                                            .trackingStats
+                                                                            .monthly
+                                                                            .averageTimeAtBed) *
+                                                                    100)
+                                                                .floor()
+                                                                .toStringAsFixed(
+                                                                    1) +
+                                                            "%")
+                                                      ]),
+                                          ],
+                                        ),
+                                      )
+                                    ],
+                                  ),
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    mainAxisSize: MainAxisSize.max,
+                                    children: [
+                                      SizedBox(
+                                        width:
+                                            MediaQuery.of(context).size.width *
+                                                0.9 *
+                                                0.4,
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
+                                          children: [
+                                            Padding(
+                                              padding: EdgeInsets.all(2),
+                                              child: Icon(Icons.skip_next,
+                                                  size: 24),
+                                            ),
+                                            Text(
+                                              "Przekładanie\nalarmów",
+                                              style: TextStyle(fontSize: 16),
+                                              textAlign: TextAlign.center,
+                                            ),
+                                            Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: _currentEntry
+                                                                .firstAlarmTime ==
+                                                            null ||
+                                                        _currentEntry
+                                                                .wakeUpTime ==
+                                                            null
+                                                    ? [
+                                                        Text("-",
+                                                            style:
+                                                                const TextStyle(
+                                                                    fontSize:
+                                                                        24))
+                                                      ]
+                                                    : [
+                                                        Text(
+                                                            durationToHHmm(
+                                                              _currentEntry
+                                                                  .wakeUpTime!
+                                                                  .difference(
+                                                                      _currentEntry
+                                                                          .firstAlarmTime!),
+                                                            ),
+                                                            style:
+                                                                const TextStyle(
+                                                                    fontSize:
+                                                                        24)),
+                                                        Icon(
+                                                            getIconByOffset(((_currentEntry
+                                                                        .wakeUpTime!
+                                                                        .difference(_currentEntry
+                                                                            .firstAlarmTime!)
+                                                                        .inSeconds -
+                                                                    _stats
+                                                                        .monthly
+                                                                        .averageAlarmWakeUpProcrastinationTime) /
+                                                                _stats.monthly
+                                                                    .averageAlarmWakeUpProcrastinationTime)),
+                                                            size: 14),
+                                                        Text((((_currentEntry.wakeUpTime!.difference(_currentEntry.firstAlarmTime!).inSeconds -
+                                                                            GlobalData
+                                                                                .trackingStats.monthly.averageAlarmWakeUpProcrastinationTime) /
+                                                                        GlobalData
+                                                                            .trackingStats
+                                                                            .monthly
+                                                                            .averageAlarmWakeUpProcrastinationTime) *
+                                                                    100)
+                                                                .floor()
+                                                                .toStringAsFixed(
+                                                                    1) +
+                                                            "%")
+                                                      ]),
+                                          ],
+                                        ),
+                                      ),
+                                      SizedBox(
+                                        width:
+                                            MediaQuery.of(context).size.width *
+                                                0.9 *
+                                                0.4,
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
+                                          children: [
+                                            Padding(
+                                              padding: EdgeInsets.all(2),
+                                              child: Icon(Icons.smartphone,
+                                                  size: 24),
+                                            ),
+                                            Text(
+                                              "Czas po\nobudzeniu się",
+                                              textAlign: TextAlign.center,
+                                              style: TextStyle(fontSize: 16),
+                                            ),
+                                            Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: _currentEntry
+                                                                .wakeUpTime ==
+                                                            null ||
+                                                        _currentEntry
+                                                                .getUpTime ==
+                                                            null
+                                                    ? [
+                                                        Text("-",
+                                                            style:
+                                                                const TextStyle(
+                                                                    fontSize:
+                                                                        24))
+                                                      ]
+                                                    : [
+                                                        Text(
+                                                            durationToHHmm(
+                                                              _currentEntry
+                                                                  .getUpTime!
+                                                                  .difference(
+                                                                      _currentEntry
+                                                                          .wakeUpTime!),
+                                                            ),
+                                                            style:
+                                                                const TextStyle(
+                                                                    fontSize:
+                                                                        24)),
+                                                        Icon(
+                                                            getIconByOffset(((_currentEntry
+                                                                        .getUpTime!
+                                                                        .difference(_currentEntry
+                                                                            .wakeUpTime!)
+                                                                        .inSeconds -
+                                                                    _stats
+                                                                        .monthly
+                                                                        .averageTimeBeforeGettingUp) /
+                                                                _stats.monthly
+                                                                    .averageTimeBeforeGettingUp)),
+                                                            size: 14),
+                                                        Text((((_currentEntry.getUpTime!.difference(_currentEntry.wakeUpTime!).inSeconds -
+                                                                            GlobalData
+                                                                                .trackingStats.monthly.averageTimeBeforeGettingUp) /
+                                                                        GlobalData
+                                                                            .trackingStats
+                                                                            .monthly
+                                                                            .averageTimeBeforeGettingUp) *
+                                                                    100)
+                                                                .floor()
+                                                                .toStringAsFixed(
+                                                                    1) +
+                                                            "%")
+                                                      ]),
+                                          ],
+                                        ),
+                                      )
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
                         ),
                       ),
                       Text(_currentEntry.date!.hour == 0 &&

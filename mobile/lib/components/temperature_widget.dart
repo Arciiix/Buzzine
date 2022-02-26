@@ -1,5 +1,6 @@
 import 'package:buzzine/globalData.dart';
 import 'package:buzzine/types/TemperatureData.dart';
+import 'package:buzzine/utils/get_icon_by_offset.dart';
 import "package:flutter/material.dart";
 
 class TemperatureWidget extends StatefulWidget {
@@ -241,15 +242,5 @@ class TemperatureStatsWidget extends StatelessWidget {
             ),
           ),
         ));
-  }
-}
-
-IconData getIconByOffset(double offset) {
-  if (offset < 0) {
-    return Icons.arrow_downward;
-  } else if (offset > 0) {
-    return Icons.arrow_upward;
-  } else {
-    return Icons.import_export;
   }
 }
