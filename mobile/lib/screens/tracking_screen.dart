@@ -114,6 +114,9 @@ class _TrackingScreenState extends State<TrackingScreen> {
 
   Future<TrackingVersionHistory?> showVersionHistory(
       List<TrackingVersionHistory> history, bool isValueTimestamp) async {
+    //Sort the history by timestamp
+    history.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+
     return await showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -135,9 +138,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
                               : isValueTimestamp
                                   ? dateToDateTimeString(
                                       DateTime.parse(history[index].value))
-                                  : DateTime.parse(history[index].value)
-                                      .millisecondsSinceEpoch
-                                      .toString()),
+                                  : history[index].value.toString()),
                           subtitle: Text(
                               dateToDateTimeString(history[index].timestamp)),
                           onTap: () =>
@@ -657,7 +658,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
                                     ListTile(
                                       title: const Text("Ocena"),
                                       onTap: () async {
-                                        int rate = 1;
+                                        int rate = _entries[index].rate ?? 1;
                                         bool? change = await showDialog(
                                           context: context,
                                           builder: (BuildContext context) {
@@ -734,11 +735,121 @@ class _TrackingScreenState extends State<TrackingScreen> {
                                                               .date!
                                                               .toLocal(),
                                                           TrackingEntry(
-                                                                  rate: DateTime.parse(
-                                                                          selectedHistoricalEntry
-                                                                              .value)
-                                                                      .millisecondsSinceEpoch
-                                                                      .floor())
+                                                                  rate: int.tryParse(
+                                                                      selectedHistoricalEntry
+                                                                          .value))
+                                                              .toMapWithoutDate());
+                                                    }
+                                                  }
+                                                : null,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    ListTile(
+                                      title: const Text("Notka"),
+                                      onTap: () async {
+                                        TextEditingController _notesController =
+                                            TextEditingController();
+                                        _notesController.text =
+                                            _entries[index].notes == null ||
+                                                    _entries[index].notes == " "
+                                                ? ""
+                                                : _entries[index].notes!;
+                                        bool? change = await showDialog(
+                                          context: context,
+                                          builder: (BuildContext context) {
+                                            return AlertDialog(
+                                              title: const Text("Notka"),
+                                              content: TextField(
+                                                controller: _notesController,
+                                                textCapitalization:
+                                                    TextCapitalization
+                                                        .sentences,
+                                                decoration: InputDecoration(
+                                                    hintText: "Wpisz uwagi",
+                                                    suffix: IconButton(
+                                                      icon: const Icon(
+                                                          Icons.clear),
+                                                      onPressed: () =>
+                                                          _notesController
+                                                              .text = "",
+                                                    )),
+                                                maxLines: null,
+                                                keyboardType:
+                                                    TextInputType.multiline,
+                                              ),
+                                              actions: <Widget>[
+                                                TextButton(
+                                                  onPressed: () =>
+                                                      Navigator.of(context)
+                                                          .pop(false),
+                                                  child: const Text("Anuluj"),
+                                                ),
+                                                TextButton(
+                                                    onPressed: () =>
+                                                        Navigator.of(context)
+                                                            .pop(true),
+                                                    child:
+                                                        const Text("Zapisz")),
+                                              ],
+                                            );
+                                          },
+                                        );
+                                        if (change == true) {
+                                          await updateEntry(
+                                              _entries[index].date!,
+                                              TrackingEntry(
+                                                      notes: _notesController
+                                                              .text.isEmpty
+                                                          ? " "
+                                                          : _notesController
+                                                              .text)
+                                                  .toMapWithoutDate());
+                                        }
+                                      },
+                                      subtitle: Text(
+                                        _entries[index].notes == null ||
+                                                _entries[index].notes == " "
+                                            ? "Brak"
+                                            : _entries[index].notes!,
+                                      ),
+                                      trailing: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          IconButton(
+                                            icon: const Icon(Icons.history),
+                                            onPressed: _entries[index]
+                                                        .versionHistory!
+                                                        .where((e) =>
+                                                            e.fieldName ==
+                                                            TrackingFieldName
+                                                                .notes)
+                                                        .length >
+                                                    0
+                                                ? () async {
+                                                    TrackingVersionHistory?
+                                                        selectedHistoricalEntry =
+                                                        await showVersionHistory(
+                                                            _entries[index]
+                                                                .versionHistory!
+                                                                .where((e) =>
+                                                                    e.fieldName ==
+                                                                    TrackingFieldName
+                                                                        .notes)
+                                                                .toList(),
+                                                            false);
+
+                                                    if (selectedHistoricalEntry !=
+                                                        null) {
+                                                      await updateEntry(
+                                                          _entries[index]
+                                                              .date!
+                                                              .toLocal(),
+                                                          TrackingEntry(
+                                                                  notes:
+                                                                      selectedHistoricalEntry
+                                                                          .value)
                                                               .toMapWithoutDate());
                                                     }
                                                   }

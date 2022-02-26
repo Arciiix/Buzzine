@@ -6,6 +6,7 @@ class TrackingEntry {
   DateTime? wakeUpTime;
   DateTime? getUpTime;
   int? rate;
+  String? notes;
 
   List<TrackingVersionHistory>? versionHistory;
 
@@ -16,7 +17,8 @@ class TrackingEntry {
       'firstAlarmTime': firstAlarmTime?.toIso8601String(),
       'wakeUpTime': wakeUpTime?.toIso8601String(),
       'getUpTime': getUpTime?.toIso8601String(),
-      'rate': rate
+      'rate': rate,
+      'notes': notes
     };
   }
 
@@ -28,6 +30,7 @@ class TrackingEntry {
       this.wakeUpTime,
       this.getUpTime,
       this.rate,
+      this.notes,
       this.versionHistory});
 }
 
@@ -46,5 +49,6 @@ enum TrackingFieldName {
   firstAlarmTime,
   wakeUpTime,
   getUpTime,
-  rate
+  rate,
+  notes
 }

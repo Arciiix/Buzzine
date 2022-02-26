@@ -120,6 +120,7 @@ api.put("/updateDataForDate", async (req, res) => {
     wakeUpTime: dbObject.wakeUpTime,
     getUpTime: dbObject.getUpTime,
     rate: dbObject.rate,
+    notes: dbObject.notes,
   };
 
   if (req.body.updateObject.bedTime) {
@@ -139,6 +140,9 @@ api.put("/updateDataForDate", async (req, res) => {
   }
   if (req.body.updateObject.rate) {
     dbObject.rate = parseInt(req.body.updateObject.rate);
+  }
+  if (req.body.updateObject.notes) {
+    dbObject.notes = req.body.updateObject.notes.toString();
   }
   await dbObject.save();
 
@@ -237,13 +241,19 @@ api.put("/updateDataForLatestIfDoesntExist", async (req, res) => {
     wakeUpTime: dbObject.wakeUpTime,
     getUpTime: dbObject.getUpTime,
     rate: dbObject.rate,
+    notes: dbObject.notes,
   };
 
   for (const [key, value] of Object.entries(req.body.updateObject)) {
     if (!value) continue;
     if (dbObject[key]) continue; //If a field has its own value already
-    dbObject[key] =
-      key === "rate" ? parseInt(value as string) : new Date(value as string);
+    if (key === "rate") {
+      dbObject[key] = parseInt(value as string);
+    } else if (key === "notes") {
+      dbObject[key] = value.toString();
+    } else {
+      dbObject[key] = new Date(value as string);
+    }
   }
 
   await dbObject.save();
@@ -279,6 +289,7 @@ interface ITrackingEntryObject {
   wakeUpTime?: Date;
   getUpTime?: Date;
   rate?: number;
+  notes?: string;
 }
 
 export { ITrackingEntryObject };

@@ -30,7 +30,7 @@ const TrackingVersionHistoryModel = db.define("TrackingVersionHistory", {
   },
   value: {
     allowNull: true,
-    type: DataTypes.DATE,
+    type: DataTypes.STRING,
   },
 });
 

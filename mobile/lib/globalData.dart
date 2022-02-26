@@ -1160,6 +1160,7 @@ class GlobalData {
         wakeUpTime: DateTime.tryParse(entryData['wakeUpTime'] ?? ""),
         getUpTime: DateTime.tryParse(entryData['getUpTime'] ?? ""),
         rate: entryData['rate'],
+        notes: entryData['notes'],
       );
 
       List<TrackingVersionHistory>? versionHistory =
@@ -1218,14 +1219,14 @@ class GlobalData {
       List<TrackingEntry> entries = [];
       for (var e in entryData) {
         TrackingEntry entry = TrackingEntry(
-          date: DateTime.parse(e['date']),
-          bedTime: DateTime.tryParse(e['bedTime'] ?? ""),
-          sleepTime: DateTime.tryParse(e['sleepTime'] ?? ""),
-          firstAlarmTime: DateTime.tryParse(e['firstAlarmTime'] ?? ""),
-          wakeUpTime: DateTime.tryParse(e['wakeUpTime'] ?? ""),
-          getUpTime: DateTime.tryParse(e['getUpTime'] ?? ""),
-          rate: e['rate'],
-        );
+            date: DateTime.parse(e['date']),
+            bedTime: DateTime.tryParse(e['bedTime'] ?? ""),
+            sleepTime: DateTime.tryParse(e['sleepTime'] ?? ""),
+            firstAlarmTime: DateTime.tryParse(e['firstAlarmTime'] ?? ""),
+            wakeUpTime: DateTime.tryParse(e['wakeUpTime'] ?? ""),
+            getUpTime: DateTime.tryParse(e['getUpTime'] ?? ""),
+            rate: e['rate'],
+            notes: e['notes']);
 
         List<TrackingVersionHistory>? versionHistory =
             await getTrackingVersionHistoryForDate(entry.date!);

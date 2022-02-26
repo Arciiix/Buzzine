@@ -369,6 +369,7 @@ class _AlarmCardState extends State<AlarmCard> {
               ],
             ),
             Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 const Icon(Icons.subject),
                 Flexible(
@@ -376,6 +377,7 @@ class _AlarmCardState extends State<AlarmCard> {
                   widget.notes ?? "Brak",
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
                 )),
               ],
             ),

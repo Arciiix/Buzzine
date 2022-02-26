@@ -38,6 +38,10 @@ const TrackingEntryModel = db.define("TrackingEntry", {
     allowNull: true,
     type: DataTypes.INTEGER,
   },
+  notes: {
+    allowNull: true,
+    type: DataTypes.STRING,
+  },
 });
 
 export default TrackingEntryModel;

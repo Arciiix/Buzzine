@@ -21,12 +21,18 @@ async function saveVersionHistory(
       key === "date"
     )
       continue;
-    if (new Date(oldValues[key]).getTime() !== new Date(value).getTime()) {
+    let safeValue;
+    if (value instanceof Date) {
+      safeValue = value.toISOString();
+    } else {
+      safeValue = value.toString();
+    }
+    if (oldValues[key] !== safeValue) {
       await TrackingVersionHistoryModel.create({
         entryId: entryId,
         date: date,
         fieldName: key,
-        value: new Date(value), //To fit the data type - it has to be date. When it comes to the rate for example, it can be stored as a date - because it's convereted to the unix timestamp anyway, so it'll be stored as a number
+        value: safeValue,
       });
       fieldsCounter++;
     }

@@ -797,7 +797,8 @@ class _AlarmFormState extends State<AlarmForm> {
                           padding: const EdgeInsets.symmetric(horizontal: 4),
                           child: TextFormField(
                             controller: _notesController,
-                            maxLines: 2,
+                            keyboardType: TextInputType.multiline,
+                            maxLines: null,
                             textCapitalization: TextCapitalization.sentences,
                             decoration:
                                 const InputDecoration(hintText: "Notatki"),
