@@ -122,10 +122,12 @@ class Stats {
     if (isNaN(averageTimeBeforeGettingUp)) averageTimeBeforeGettingUp = 0;
 
     return {
-      averageSleepDuration,
-      averageTimeAtBed,
-      averageAlarmWakeUpProcrastinationTime,
-      averageTimeBeforeGettingUp,
+      averageSleepDuration: Math.floor(averageSleepDuration),
+      averageTimeAtBed: Math.floor(averageTimeAtBed),
+      averageAlarmWakeUpProcrastinationTime: Math.floor(
+        averageAlarmWakeUpProcrastinationTime
+      ),
+      averageTimeBeforeGettingUp: Math.floor(averageTimeBeforeGettingUp),
     };
   }
 

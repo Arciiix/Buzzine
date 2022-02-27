@@ -972,7 +972,7 @@ class GlobalData {
         adapter: ServicePing(
             success: responseData['adapter']['success'],
             delay: responseData['adapter']['delay']),
-              tracking: ServicePing(
+        tracking: ServicePing(
             success: responseData['tracking']['success'],
             delay: responseData['tracking']['delay']));
 
