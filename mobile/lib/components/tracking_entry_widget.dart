@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:buzzine/globalData.dart';
 import 'package:buzzine/screens/tracking_screen.dart';
 import 'package:buzzine/screens/tracking_stats_screen.dart';
@@ -374,24 +376,45 @@ class _TrackingEntryWidgetState extends State<TrackingEntryWidget> {
                                                                         24)),
                                                         Icon(
                                                             getIconByOffset(((_currentEntry
-                                                                        .wakeUpTime!
-                                                                        .difference(_currentEntry
+                                                                    .wakeUpTime!
+                                                                    .difference(
+                                                                        _currentEntry
                                                                             .sleepTime!)
-                                                                        .inSeconds -
-                                                                    _stats
-                                                                        .monthly
-                                                                        .averageSleepDuration) /
-                                                                _stats.monthly
-                                                                    .averageSleepDuration)),
-                                                            size: 14),
-                                                        Text((((_currentEntry.wakeUpTime!.difference(_currentEntry.sleepTime!).inSeconds -
-                                                                            GlobalData
-                                                                                .trackingStats.monthly.averageSleepDuration) /
-                                                                        GlobalData
-                                                                            .trackingStats
+                                                                    .inSeconds -
+                                                                (_currentEntry
+                                                                            .isNap!
+                                                                        ? _stats
                                                                             .monthly
-                                                                            .averageSleepDuration) *
-                                                                    100)
+                                                                            .nap
+                                                                            .averageSleepDuration
+                                                                        : _stats
+                                                                            .monthly
+                                                                            .alarm
+                                                                            .averageSleepDuration) /
+                                                                    max(
+                                                                        (_currentEntry.isNap!
+                                                                            ? _stats.monthly.nap.averageSleepDuration
+                                                                            : _stats.monthly.alarm.averageSleepDuration),
+                                                                        1)))),
+                                                            size: 14),
+                                                        Text(((((_currentEntry
+                                                                            .wakeUpTime!
+                                                                            .difference(_currentEntry
+                                                                                .sleepTime!)
+                                                                            .inSeconds -
+                                                                        (_currentEntry.isNap!
+                                                                            ? _stats
+                                                                                .monthly.nap.averageSleepDuration
+                                                                            : _stats
+                                                                                .monthly.alarm.averageSleepDuration)) /
+                                                                    max(
+                                                                        (_currentEntry.isNap!
+                                                                            ? _stats
+                                                                                .monthly.nap.averageSleepDuration
+                                                                            : _stats
+                                                                                .monthly.alarm.averageSleepDuration),
+                                                                        1) *
+                                                                    100)))
                                                                 .floor()
                                                                 .toStringAsFixed(
                                                                     1) +
@@ -451,23 +474,35 @@ class _TrackingEntryWidgetState extends State<TrackingEntryWidget> {
                                                                         .difference(_currentEntry
                                                                             .bedTime!)
                                                                         .inSeconds -
-                                                                    _stats
-                                                                        .monthly
-                                                                        .averageTimeAtBed) /
-                                                                _stats.monthly
-                                                                    .averageTimeAtBed)),
+                                                                    (_currentEntry.isNap!
+                                                                        ? _stats
+                                                                            .monthly
+                                                                            .nap
+                                                                            .averageTimeAtBed
+                                                                        : _stats
+                                                                            .monthly
+                                                                            .alarm
+                                                                            .averageTimeAtBed)) /
+                                                                max(
+                                                                    (_currentEntry.isNap!
+                                                                        ? _stats
+                                                                            .monthly
+                                                                            .nap
+                                                                            .averageTimeAtBed
+                                                                        : _stats
+                                                                            .monthly
+                                                                            .alarm
+                                                                            .averageTimeAtBed),
+                                                                    1))),
                                                             size: 14),
                                                         Text((((_currentEntry.sleepTime!.difference(_currentEntry.bedTime!).inSeconds -
-                                                                            GlobalData
-                                                                                .trackingStats.monthly.averageTimeAtBed) /
-                                                                        GlobalData
-                                                                            .trackingStats
-                                                                            .monthly
-                                                                            .averageTimeAtBed) *
+                                                                            (_currentEntry.isNap!
+                                                                                ? _stats.monthly.nap.averageTimeAtBed
+                                                                                : _stats.monthly.alarm.averageTimeAtBed)) /
+                                                                        max((_currentEntry.isNap! ? _stats.monthly.nap.averageTimeAtBed : _stats.monthly.alarm.averageTimeAtBed), 1)) *
                                                                     100)
                                                                 .floor()
-                                                                .toStringAsFixed(
-                                                                    1) +
+                                                                .toStringAsFixed(1) +
                                                             "%")
                                                       ]),
                                           ],
@@ -534,23 +569,35 @@ class _TrackingEntryWidgetState extends State<TrackingEntryWidget> {
                                                                         .difference(_currentEntry
                                                                             .firstAlarmTime!)
                                                                         .inSeconds -
-                                                                    _stats
-                                                                        .monthly
-                                                                        .averageAlarmWakeUpProcrastinationTime) /
-                                                                _stats.monthly
-                                                                    .averageAlarmWakeUpProcrastinationTime)),
+                                                                    (_currentEntry.isNap!
+                                                                        ? _stats
+                                                                            .monthly
+                                                                            .nap
+                                                                            .averageAlarmWakeUpProcrastinationTime
+                                                                        : _stats
+                                                                            .monthly
+                                                                            .alarm
+                                                                            .averageAlarmWakeUpProcrastinationTime)) /
+                                                                max(
+                                                                    (_currentEntry.isNap!
+                                                                        ? _stats
+                                                                            .monthly
+                                                                            .nap
+                                                                            .averageAlarmWakeUpProcrastinationTime
+                                                                        : _stats
+                                                                            .monthly
+                                                                            .alarm
+                                                                            .averageAlarmWakeUpProcrastinationTime),
+                                                                    1))),
                                                             size: 14),
                                                         Text((((_currentEntry.wakeUpTime!.difference(_currentEntry.firstAlarmTime!).inSeconds -
-                                                                            GlobalData
-                                                                                .trackingStats.monthly.averageAlarmWakeUpProcrastinationTime) /
-                                                                        GlobalData
-                                                                            .trackingStats
-                                                                            .monthly
-                                                                            .averageAlarmWakeUpProcrastinationTime) *
+                                                                            (_currentEntry.isNap!
+                                                                                ? _stats.monthly.nap.averageAlarmWakeUpProcrastinationTime
+                                                                                : _stats.monthly.alarm.averageAlarmWakeUpProcrastinationTime)) /
+                                                                        max((_currentEntry.isNap! ? _stats.monthly.nap.averageAlarmWakeUpProcrastinationTime : _stats.monthly.alarm.averageAlarmWakeUpProcrastinationTime), 1)) *
                                                                     100)
                                                                 .floor()
-                                                                .toStringAsFixed(
-                                                                    1) +
+                                                                .toStringAsFixed(1) +
                                                             "%")
                                                       ]),
                                           ],
@@ -610,23 +657,35 @@ class _TrackingEntryWidgetState extends State<TrackingEntryWidget> {
                                                                         .difference(_currentEntry
                                                                             .wakeUpTime!)
                                                                         .inSeconds -
-                                                                    _stats
-                                                                        .monthly
-                                                                        .averageTimeBeforeGettingUp) /
-                                                                _stats.monthly
-                                                                    .averageTimeBeforeGettingUp)),
+                                                                    (_currentEntry.isNap!
+                                                                        ? _stats
+                                                                            .monthly
+                                                                            .nap
+                                                                            .averageTimeBeforeGettingUp
+                                                                        : _stats
+                                                                            .monthly
+                                                                            .alarm
+                                                                            .averageTimeBeforeGettingUp)) /
+                                                                max(
+                                                                    (_currentEntry.isNap!
+                                                                        ? _stats
+                                                                            .monthly
+                                                                            .nap
+                                                                            .averageTimeBeforeGettingUp
+                                                                        : _stats
+                                                                            .monthly
+                                                                            .alarm
+                                                                            .averageTimeBeforeGettingUp),
+                                                                    1))),
                                                             size: 14),
                                                         Text((((_currentEntry.getUpTime!.difference(_currentEntry.wakeUpTime!).inSeconds -
-                                                                            GlobalData
-                                                                                .trackingStats.monthly.averageTimeBeforeGettingUp) /
-                                                                        GlobalData
-                                                                            .trackingStats
-                                                                            .monthly
-                                                                            .averageTimeBeforeGettingUp) *
+                                                                            (_currentEntry.isNap!
+                                                                                ? _stats.monthly.nap.averageTimeBeforeGettingUp
+                                                                                : _stats.monthly.alarm.averageTimeBeforeGettingUp)) /
+                                                                        max((_currentEntry.isNap! ? _stats.monthly.nap.averageTimeBeforeGettingUp : _stats.monthly.alarm.averageTimeBeforeGettingUp), 1)) *
                                                                     100)
                                                                 .floor()
-                                                                .toStringAsFixed(
-                                                                    1) +
+                                                                .toStringAsFixed(1) +
                                                             "%")
                                                       ]),
                                           ],

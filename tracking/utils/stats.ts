@@ -1,6 +1,7 @@
 import express from "express";
 import { Op } from "sequelize";
 import TrackingEntryModel from "../models/TrackingEntry";
+import { dateTimeToDateOnly } from "./formatting";
 import logger from "./logger";
 
 const statsRouter = express.Router();
@@ -19,8 +20,8 @@ statsRouter.put("/calculateStats", (req, res) => {
 });
 
 class Stats {
-  static lifetimeStats: IStatsObject;
-  static monthlyStats: IStatsObject;
+  static lifetimeStats: IStatsDetails;
+  static monthlyStats: IStatsDetails;
   static calculationTimestamp?: Date;
 
   static async calculateStats() {
@@ -64,56 +65,86 @@ class Stats {
     return this;
   }
 
-  static calculateForElements(elements: any[]): IStatsObject {
-    let sleepDuration: IAverageCalculation = { sum: 0, count: 0 };
-    let timeAtBed: IAverageCalculation = { sum: 0, count: 0 };
-    let alarmWakeUpProcrastinationTime: IAverageCalculation = {
-      sum: 0,
-      count: 0,
+  static calculateForElements(elements: any[]): IStatsDetails {
+    let sleepDuration: IAverageCalculation = {
+      alarm: { sum: 0, count: 0 },
+      nap: { sum: 0, count: 0 },
     };
-    let timeBeforeGettingUp: IAverageCalculation = { sum: 0, count: 0 };
+
+    let timeAtBed: IAverageCalculation = {
+      alarm: { sum: 0, count: 0 },
+      nap: { sum: 0, count: 0 },
+    };
+
+    let alarmWakeUpProcrastinationTime: IAverageCalculation = {
+      alarm: { sum: 0, count: 0 },
+      nap: { sum: 0, count: 0 },
+    };
+
+    let timeBeforeGettingUp: IAverageCalculation = {
+      alarm: { sum: 0, count: 0 },
+      nap: { sum: 0, count: 0 },
+    };
 
     for (const element of elements) {
+      let isWholeDay =
+        dateTimeToDateOnly(new Date(element.date)).getTime() ===
+        new Date(element.date).getTime();
+
       //Sleep duration
       if (element.sleepTime && element.wakeUpTime) {
-        sleepDuration.sum += Math.floor(
+        sleepDuration[isWholeDay ? "alarm" : "nap"].sum += Math.floor(
           (element.wakeUpTime.getTime() - element.sleepTime.getTime()) / 1000
         );
-        sleepDuration.count++;
+        sleepDuration[isWholeDay ? "alarm" : "nap"].count++;
       }
 
       //Time at bed
       if (element.bedTime && element.sleepTime) {
-        timeAtBed.sum += Math.floor(
+        timeAtBed[isWholeDay ? "alarm" : "nap"].sum += Math.floor(
           (element.sleepTime.getTime() - element.bedTime.getTime()) / 1000
         );
-        timeAtBed.count++;
+        timeAtBed[isWholeDay ? "alarm" : "nap"].count++;
       }
 
       //Procrastination time after alarm
       if (element.firstAlarmTime && element.wakeUpTime) {
-        alarmWakeUpProcrastinationTime.sum += Math.floor(
-          (element.wakeUpTime.getTime() - element.firstAlarmTime.getTime()) /
-            1000
-        );
-        alarmWakeUpProcrastinationTime.count++;
+        alarmWakeUpProcrastinationTime[isWholeDay ? "alarm" : "nap"].sum +=
+          Math.floor(
+            (element.wakeUpTime.getTime() - element.firstAlarmTime.getTime()) /
+              1000
+          );
+        alarmWakeUpProcrastinationTime[isWholeDay ? "alarm" : "nap"].count++;
       }
 
       //Time after the alarm before getting up
       if (element.wakeUpTime && element.getUpTime) {
-        timeBeforeGettingUp.sum += Math.floor(
+        timeBeforeGettingUp[isWholeDay ? "alarm" : "nap"].sum += Math.floor(
           (element.getUpTime.getTime() - element.wakeUpTime.getTime()) / 1000
         );
-        timeBeforeGettingUp.count++;
+        timeBeforeGettingUp[isWholeDay ? "alarm" : "nap"].count++;
       }
     }
 
-    let averageSleepDuration = sleepDuration.sum / sleepDuration.count;
-    let averageTimeAtBed = timeAtBed.sum / timeAtBed.count;
+    let averageSleepDuration =
+      sleepDuration.alarm.sum / sleepDuration.alarm.count;
+    let averageSleepDurationNap =
+      sleepDuration.nap.sum / sleepDuration.nap.count;
+
+    let averageTimeAtBed = timeAtBed.alarm.sum / timeAtBed.alarm.count;
+    let averageTimeAtBedNap = timeAtBed.nap.sum / timeAtBed.nap.count;
+
     let averageAlarmWakeUpProcrastinationTime =
-      alarmWakeUpProcrastinationTime.sum / alarmWakeUpProcrastinationTime.count;
+      alarmWakeUpProcrastinationTime.alarm.sum /
+      alarmWakeUpProcrastinationTime.alarm.count;
+    let averageAlarmWakeUpProcrastinationTimeNap =
+      alarmWakeUpProcrastinationTime.nap.sum /
+      alarmWakeUpProcrastinationTime.nap.count;
+
     let averageTimeBeforeGettingUp =
-      timeBeforeGettingUp.sum / timeBeforeGettingUp.count;
+      timeBeforeGettingUp.alarm.sum / timeBeforeGettingUp.alarm.count;
+    let averageTimeBeforeGettingUpNap =
+      timeBeforeGettingUp.nap.sum / timeBeforeGettingUp.nap.count;
 
     if (isNaN(averageSleepDuration)) averageSleepDuration = 0;
     if (isNaN(averageTimeAtBed)) averageTimeAtBed = 0;
@@ -121,13 +152,29 @@ class Stats {
       averageAlarmWakeUpProcrastinationTime = 0;
     if (isNaN(averageTimeBeforeGettingUp)) averageTimeBeforeGettingUp = 0;
 
+    if (isNaN(averageSleepDurationNap)) averageSleepDurationNap = 0;
+    if (isNaN(averageTimeAtBedNap)) averageTimeAtBedNap = 0;
+    if (isNaN(averageAlarmWakeUpProcrastinationTimeNap))
+      averageAlarmWakeUpProcrastinationTimeNap = 0;
+    if (isNaN(averageTimeBeforeGettingUpNap)) averageTimeBeforeGettingUpNap = 0;
+
     return {
-      averageSleepDuration: Math.floor(averageSleepDuration),
-      averageTimeAtBed: Math.floor(averageTimeAtBed),
-      averageAlarmWakeUpProcrastinationTime: Math.floor(
-        averageAlarmWakeUpProcrastinationTime
-      ),
-      averageTimeBeforeGettingUp: Math.floor(averageTimeBeforeGettingUp),
+      alarm: {
+        averageSleepDuration: Math.floor(averageSleepDuration),
+        averageTimeAtBed: Math.floor(averageTimeAtBed),
+        averageAlarmWakeUpProcrastinationTime: Math.floor(
+          averageAlarmWakeUpProcrastinationTime
+        ),
+        averageTimeBeforeGettingUp: Math.floor(averageTimeBeforeGettingUp),
+      },
+      nap: {
+        averageSleepDuration: Math.floor(averageSleepDurationNap),
+        averageTimeAtBed: Math.floor(averageTimeAtBedNap),
+        averageAlarmWakeUpProcrastinationTime: Math.floor(
+          averageAlarmWakeUpProcrastinationTimeNap
+        ),
+        averageTimeBeforeGettingUp: Math.floor(averageTimeBeforeGettingUpNap),
+      },
     };
   }
 
@@ -141,8 +188,8 @@ class Stats {
 }
 
 interface IAverageCalculation {
-  sum: number;
-  count: number;
+  alarm: { sum: number; count: number };
+  nap: { sum: number; count: number };
 }
 interface IStatsObject {
   averageSleepDuration?: number;
@@ -150,9 +197,13 @@ interface IStatsObject {
   averageAlarmWakeUpProcrastinationTime?: number;
   averageTimeBeforeGettingUp?: number;
 }
+interface IStatsDetails {
+  alarm: IStatsObject;
+  nap: IStatsObject;
+}
 interface IStats {
-  lifetime: IStatsObject;
-  monthly: IStatsObject;
+  lifetime: IStatsDetails;
+  monthly: IStatsDetails;
   timestamp: Date;
 }
 

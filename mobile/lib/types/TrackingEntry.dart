@@ -7,6 +7,7 @@ class TrackingEntry {
   DateTime? getUpTime;
   int? rate;
   String? notes;
+  bool? isNap;
 
   List<TrackingVersionHistory>? versionHistory;
 
@@ -31,7 +32,8 @@ class TrackingEntry {
       this.getUpTime,
       this.rate,
       this.notes,
-      this.versionHistory});
+      this.versionHistory,
+      this.isNap});
 }
 
 class TrackingVersionHistory {

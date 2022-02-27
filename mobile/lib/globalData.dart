@@ -1161,15 +1161,16 @@ class GlobalData {
     } else {
       var entryData = decodedResponse['response'];
       TrackingEntry entry = TrackingEntry(
-        date: DateTime.parse(entryData['date']),
-        bedTime: DateTime.tryParse(entryData['bedTime'] ?? ""),
-        sleepTime: DateTime.tryParse(entryData['sleepTime'] ?? ""),
-        firstAlarmTime: DateTime.tryParse(entryData['firstAlarmTime'] ?? ""),
-        wakeUpTime: DateTime.tryParse(entryData['wakeUpTime'] ?? ""),
-        getUpTime: DateTime.tryParse(entryData['getUpTime'] ?? ""),
-        rate: entryData['rate'],
-        notes: entryData['notes'],
-      );
+          date: DateTime.parse(entryData['date']),
+          bedTime: DateTime.tryParse(entryData['bedTime'] ?? ""),
+          sleepTime: DateTime.tryParse(entryData['sleepTime'] ?? ""),
+          firstAlarmTime: DateTime.tryParse(entryData['firstAlarmTime'] ?? ""),
+          wakeUpTime: DateTime.tryParse(entryData['wakeUpTime'] ?? ""),
+          getUpTime: DateTime.tryParse(entryData['getUpTime'] ?? ""),
+          rate: entryData['rate'],
+          notes: entryData['notes'],
+          isNap: DateTime.parse(entryData['date']).hour != 0 &&
+              DateTime.parse(entryData['date']).minute != 0);
 
       List<TrackingVersionHistory>? versionHistory =
           await getTrackingVersionHistoryForDate(entry.date!);
@@ -1234,7 +1235,9 @@ class GlobalData {
             wakeUpTime: DateTime.tryParse(e['wakeUpTime'] ?? ""),
             getUpTime: DateTime.tryParse(e['getUpTime'] ?? ""),
             rate: e['rate'],
-            notes: e['notes']);
+            notes: e['notes'],
+            isNap: DateTime.parse(e['date']).hour != 0 &&
+                DateTime.parse(e['date']).minute != 0);
 
         List<TrackingVersionHistory>? versionHistory =
             await getTrackingVersionHistoryForDate(entry.date!);
@@ -1291,20 +1294,40 @@ class GlobalData {
 
       GlobalData.trackingStats = TrackingStats(
         timestamp: DateTime.parse(data['timestamp']),
-        lifetime: TrackingStatsObject(
-            averageSleepDuration: data['lifetime']['averageSleepDuration'],
-            averageTimeAtBed: data['lifetime']['averageTimeAtBed'],
-            averageAlarmWakeUpProcrastinationTime: data['lifetime']
-                ['averageAlarmWakeUpProcrastinationTime'],
-            averageTimeBeforeGettingUp: data['lifetime']
-                ['averageTimeBeforeGettingUp']),
-        monthly: TrackingStatsObject(
-            averageSleepDuration: data['monthly']['averageSleepDuration'],
-            averageTimeAtBed: data['monthly']['averageTimeAtBed'],
-            averageAlarmWakeUpProcrastinationTime: data['monthly']
-                ['averageAlarmWakeUpProcrastinationTime'],
-            averageTimeBeforeGettingUp: data['monthly']
-                ['averageTimeBeforeGettingUp']),
+        lifetime: TrackingStatsDetails(
+            alarm: TrackingStatsObject(
+                averageSleepDuration: data['lifetime']['alarm']
+                    ['averageSleepDuration'],
+                averageTimeAtBed: data['lifetime']['alarm']['averageTimeAtBed'],
+                averageAlarmWakeUpProcrastinationTime: data['lifetime']['alarm']
+                    ['averageAlarmWakeUpProcrastinationTime'],
+                averageTimeBeforeGettingUp: data['lifetime']['alarm']
+                    ['averageTimeBeforeGettingUp']),
+            nap: TrackingStatsObject(
+                averageSleepDuration: data['lifetime']['nap']
+                    ['averageSleepDuration'],
+                averageTimeAtBed: data['lifetime']['nap']['averageTimeAtBed'],
+                averageAlarmWakeUpProcrastinationTime: data['lifetime']['nap']
+                    ['averageAlarmWakeUpProcrastinationTime'],
+                averageTimeBeforeGettingUp: data['lifetime']['nap']
+                    ['averageTimeBeforeGettingUp'])),
+        monthly: TrackingStatsDetails(
+            alarm: TrackingStatsObject(
+                averageSleepDuration: data['monthly']['alarm']
+                    ['averageSleepDuration'],
+                averageTimeAtBed: data['monthly']['alarm']['averageTimeAtBed'],
+                averageAlarmWakeUpProcrastinationTime: data['monthly']['alarm']
+                    ['averageAlarmWakeUpProcrastinationTime'],
+                averageTimeBeforeGettingUp: data['monthly']['alarm']
+                    ['averageTimeBeforeGettingUp']),
+            nap: TrackingStatsObject(
+                averageSleepDuration: data['monthly']['nap']
+                    ['averageSleepDuration'],
+                averageTimeAtBed: data['monthly']['nap']['averageTimeAtBed'],
+                averageAlarmWakeUpProcrastinationTime: data['monthly']['nap']
+                    ['averageAlarmWakeUpProcrastinationTime'],
+                averageTimeBeforeGettingUp: data['monthly']['nap']
+                    ['averageTimeBeforeGettingUp'])),
       );
 
       return GlobalData.trackingStats;
@@ -1325,20 +1348,40 @@ class GlobalData {
 
     GlobalData.trackingStats = TrackingStats(
       timestamp: DateTime.parse(data['timestamp']),
-      lifetime: TrackingStatsObject(
-          averageSleepDuration: data['lifetime']['averageSleepDuration'],
-          averageTimeAtBed: data['lifetime']['averageTimeAtBed'],
-          averageAlarmWakeUpProcrastinationTime: data['lifetime']
-              ['averageAlarmWakeUpProcrastinationTime'],
-          averageTimeBeforeGettingUp: data['lifetime']
-              ['averageTimeBeforeGettingUp']),
-      monthly: TrackingStatsObject(
-          averageSleepDuration: data['monthly']['averageSleepDuration'],
-          averageTimeAtBed: data['monthly']['averageTimeAtBed'],
-          averageAlarmWakeUpProcrastinationTime: data['monthly']
-              ['averageAlarmWakeUpProcrastinationTime'],
-          averageTimeBeforeGettingUp: data['monthly']
-              ['averageTimeBeforeGettingUp']),
+      lifetime: TrackingStatsDetails(
+          alarm: TrackingStatsObject(
+              averageSleepDuration: data['lifetime']['alarm']
+                  ['averageSleepDuration'],
+              averageTimeAtBed: data['lifetime']['alarm']['averageTimeAtBed'],
+              averageAlarmWakeUpProcrastinationTime: data['lifetime']['alarm']
+                  ['averageAlarmWakeUpProcrastinationTime'],
+              averageTimeBeforeGettingUp: data['lifetime']['alarm']
+                  ['averageTimeBeforeGettingUp']),
+          nap: TrackingStatsObject(
+              averageSleepDuration: data['lifetime']['nap']
+                  ['averageSleepDuration'],
+              averageTimeAtBed: data['lifetime']['nap']['averageTimeAtBed'],
+              averageAlarmWakeUpProcrastinationTime: data['lifetime']['nap']
+                  ['averageAlarmWakeUpProcrastinationTime'],
+              averageTimeBeforeGettingUp: data['lifetime']['nap']
+                  ['averageTimeBeforeGettingUp'])),
+      monthly: TrackingStatsDetails(
+          alarm: TrackingStatsObject(
+              averageSleepDuration: data['monthly']['alarm']
+                  ['averageSleepDuration'],
+              averageTimeAtBed: data['monthly']['alarm']['averageTimeAtBed'],
+              averageAlarmWakeUpProcrastinationTime: data['monthly']['alarm']
+                  ['averageAlarmWakeUpProcrastinationTime'],
+              averageTimeBeforeGettingUp: data['monthly']['alarm']
+                  ['averageTimeBeforeGettingUp']),
+          nap: TrackingStatsObject(
+              averageSleepDuration: data['monthly']['nap']
+                  ['averageSleepDuration'],
+              averageTimeAtBed: data['monthly']['nap']['averageTimeAtBed'],
+              averageAlarmWakeUpProcrastinationTime: data['monthly']['nap']
+                  ['averageAlarmWakeUpProcrastinationTime'],
+              averageTimeBeforeGettingUp: data['monthly']['nap']
+                  ['averageTimeBeforeGettingUp'])),
     );
     return GlobalData.trackingStats;
   }

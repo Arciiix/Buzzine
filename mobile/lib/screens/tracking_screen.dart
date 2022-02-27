@@ -57,7 +57,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
     DateTime? datePickerResponse = await showDatePicker(
         context: context,
         initialDate: _selectedDate,
-        lastDate: DateTime.now(),
+        lastDate: DateTime.now().add(const Duration(days: 1)),
         cancelText: "Anuluj",
         confirmText: "Zatwierdź",
         helpText: "Wybierz datę",

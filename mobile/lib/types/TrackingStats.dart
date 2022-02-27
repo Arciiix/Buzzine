@@ -1,10 +1,17 @@
 class TrackingStats {
   DateTime timestamp;
-  TrackingStatsObject lifetime;
-  TrackingStatsObject monthly;
+  TrackingStatsDetails lifetime;
+  TrackingStatsDetails monthly;
 
   TrackingStats(
       {required this.timestamp, required this.lifetime, required this.monthly});
+}
+
+class TrackingStatsDetails {
+  TrackingStatsObject alarm;
+  TrackingStatsObject nap;
+
+  TrackingStatsDetails({required this.alarm, required this.nap});
 }
 
 class TrackingStatsObject {
