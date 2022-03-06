@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:buzzine/components/tracking_stats.dart';
 import 'package:buzzine/globalData.dart';
 import 'package:buzzine/screens/tracking_screen.dart';
 import 'package:buzzine/screens/tracking_stats_screen.dart';
@@ -101,18 +102,13 @@ class _TrackingEntryWidgetState extends State<TrackingEntryWidget> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: const [
-                                    Padding(
-                                      padding: EdgeInsets.all(2),
-                                      child: Icon(Icons.bed, size: 16),
-                                    ),
-                                    Text("W łóżku",
-                                        style: TextStyle(fontSize: 16),
-                                        textAlign: TextAlign.center)
-                                  ],
+                                Padding(
+                                  padding: EdgeInsets.all(2),
+                                  child: Icon(Icons.bed, size: 24),
                                 ),
+                                Text("W łóżku",
+                                    style: TextStyle(fontSize: 16),
+                                    textAlign: TextAlign.center),
                                 Text(
                                     _currentEntry.bedTime == null
                                         ? "-"
@@ -129,18 +125,13 @@ class _TrackingEntryWidgetState extends State<TrackingEntryWidget> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: const [
-                                    Padding(
-                                      padding: EdgeInsets.all(2),
-                                      child: Icon(Icons.bedtime, size: 16),
-                                    ),
-                                    Text("Pójście spać",
-                                        style: TextStyle(fontSize: 16),
-                                        textAlign: TextAlign.center)
-                                  ],
+                                Padding(
+                                  padding: EdgeInsets.all(2),
+                                  child: Icon(Icons.bedtime, size: 24),
                                 ),
+                                Text("Pójście spać",
+                                    style: TextStyle(fontSize: 16),
+                                    textAlign: TextAlign.center),
                                 Text(
                                     _currentEntry.sleepTime == null
                                         ? "-"
@@ -163,18 +154,13 @@ class _TrackingEntryWidgetState extends State<TrackingEntryWidget> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: const [
-                                    Padding(
-                                      padding: EdgeInsets.all(2),
-                                      child: Icon(Icons.alarm, size: 16),
-                                    ),
-                                    Text("Pierwszy budzik",
-                                        style: TextStyle(fontSize: 16),
-                                        textAlign: TextAlign.center)
-                                  ],
+                                Padding(
+                                  padding: EdgeInsets.all(2),
+                                  child: Icon(Icons.alarm, size: 24),
                                 ),
+                                Text("Pierwszy budzik",
+                                    style: TextStyle(fontSize: 16),
+                                    textAlign: TextAlign.center),
                                 Text(
                                     _currentEntry.firstAlarmTime == null
                                         ? "-"
@@ -191,18 +177,13 @@ class _TrackingEntryWidgetState extends State<TrackingEntryWidget> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: const [
-                                    Padding(
-                                      padding: EdgeInsets.all(2),
-                                      child: Icon(Icons.timer, size: 16),
-                                    ),
-                                    Text("Obudzenie się",
-                                        style: TextStyle(fontSize: 16),
-                                        textAlign: TextAlign.center)
-                                  ],
+                                Padding(
+                                  padding: EdgeInsets.all(2),
+                                  child: Icon(Icons.timer, size: 24),
                                 ),
+                                Text("Obudzenie się",
+                                    style: TextStyle(fontSize: 16),
+                                    textAlign: TextAlign.center),
                                 Text(
                                     _currentEntry.wakeUpTime == null
                                         ? "-"
@@ -224,18 +205,13 @@ class _TrackingEntryWidgetState extends State<TrackingEntryWidget> {
                                 MediaQuery.of(context).size.width * 0.9 * 0.4,
                             child: Column(
                               children: [
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: const [
-                                    Padding(
-                                      padding: EdgeInsets.all(2),
-                                      child: Icon(Icons.stop, size: 16),
-                                    ),
-                                    Text("Wstanie",
-                                        style: TextStyle(fontSize: 16),
-                                        textAlign: TextAlign.center)
-                                  ],
+                                Padding(
+                                  padding: EdgeInsets.all(2),
+                                  child: Icon(Icons.stop, size: 24),
                                 ),
+                                Text("Wstanie",
+                                    style: TextStyle(fontSize: 16),
+                                    textAlign: TextAlign.center),
                                 Text(
                                     _currentEntry.getUpTime == null
                                         ? "-"
@@ -252,18 +228,13 @@ class _TrackingEntryWidgetState extends State<TrackingEntryWidget> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: const [
-                                    Padding(
-                                      padding: EdgeInsets.all(2),
-                                      child: Icon(Icons.star, size: 16),
-                                    ),
-                                    Text("Ocena",
-                                        style: TextStyle(fontSize: 16),
-                                        textAlign: TextAlign.center)
-                                  ],
+                                Padding(
+                                  padding: EdgeInsets.all(2),
+                                  child: Icon(Icons.star, size: 24),
                                 ),
+                                Text("Ocena",
+                                    style: TextStyle(fontSize: 16),
+                                    textAlign: TextAlign.center),
                                 if (_currentEntry.rate == null)
                                   const Text("-",
                                       style: TextStyle(fontSize: 24))
@@ -294,15 +265,10 @@ class _TrackingEntryWidgetState extends State<TrackingEntryWidget> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.start,
                           children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Icon(Icons.subject),
-                                const Text("Notka",
-                                    style: TextStyle(fontSize: 16),
-                                    textAlign: TextAlign.center),
-                              ],
-                            ),
+                            const Icon(Icons.subject),
+                            const Text("Notka",
+                                style: TextStyle(fontSize: 24),
+                                textAlign: TextAlign.center),
                             Row(
                                 mainAxisSize: MainAxisSize.max,
                                 mainAxisAlignment: MainAxisAlignment.center,
@@ -326,247 +292,10 @@ class _TrackingEntryWidgetState extends State<TrackingEntryWidget> {
                         ),
                       ),
                       InkWell(
-                        onTap: navigateToStatsScreen,
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Hero(
-                            tag: "TRACKING_STATS",
-                            child: Material(
-                              color: Colors.transparent,
-                              child: Column(
-                                children: [
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    mainAxisSize: MainAxisSize.max,
-                                    children: [
-                                      SizedBox(
-                                        width:
-                                            MediaQuery.of(context).size.width *
-                                                0.9 *
-                                                0.4,
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.center,
-                                          children: [
-                                            Padding(
-                                              padding: EdgeInsets.all(2),
-                                              child: Icon(Icons.local_hotel,
-                                                  size: 24),
-                                            ),
-                                            Text("Długość snu",
-                                                style: TextStyle(fontSize: 16),
-                                                textAlign: TextAlign.center),
-                                            Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                children: _stats
-                                                            .sleepDuration ==
-                                                        null
-                                                    ? [
-                                                        Text("-",
-                                                            style:
-                                                                const TextStyle(
-                                                                    fontSize:
-                                                                        24))
-                                                      ]
-                                                    : [
-                                                        Text(
-                                                            secondsToHHmm(
-                                                              _stats
-                                                                  .sleepDuration!
-                                                                  .value,
-                                                            ),
-                                                            style:
-                                                                const TextStyle(
-                                                                    fontSize:
-                                                                        24)),
-                                                        Icon(
-                                                            _stats
-                                                                .sleepDuration!
-                                                                .getIcon(true),
-                                                            size: 14),
-                                                        Text(_stats
-                                                            .sleepDuration!
-                                                            .getOffset(true))
-                                                      ]),
-                                          ],
-                                        ),
-                                      ),
-                                      SizedBox(
-                                        width:
-                                            MediaQuery.of(context).size.width *
-                                                0.9 *
-                                                0.4,
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.center,
-                                          children: [
-                                            Padding(
-                                              padding: EdgeInsets.all(2),
-                                              child: Icon(Icons.local_hotel,
-                                                  size: 24),
-                                            ),
-                                            Text("Czas w łóżku",
-                                                style: TextStyle(fontSize: 16),
-                                                textAlign: TextAlign.center),
-                                            Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                children: _stats.timeAtBed ==
-                                                        null
-                                                    ? [
-                                                        Text("-",
-                                                            style:
-                                                                const TextStyle(
-                                                                    fontSize:
-                                                                        24))
-                                                      ]
-                                                    : [
-                                                        Text(
-                                                            secondsToHHmm(
-                                                              _stats.timeAtBed!
-                                                                  .value,
-                                                            ),
-                                                            style:
-                                                                const TextStyle(
-                                                                    fontSize:
-                                                                        24)),
-                                                        Icon(
-                                                            _stats.timeAtBed!
-                                                                .getIcon(true),
-                                                            size: 14),
-                                                        Text(_stats.timeAtBed!
-                                                            .getOffset(true))
-                                                      ]),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    mainAxisSize: MainAxisSize.max,
-                                    children: [
-                                      SizedBox(
-                                        width:
-                                            MediaQuery.of(context).size.width *
-                                                0.9 *
-                                                0.4,
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.center,
-                                          children: [
-                                            Padding(
-                                              padding: EdgeInsets.all(2),
-                                              child: Icon(Icons.local_hotel,
-                                                  size: 24),
-                                            ),
-                                            Text("Przekładanie\nalarmów",
-                                                style: TextStyle(fontSize: 16),
-                                                textAlign: TextAlign.center),
-                                            Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                children:
-                                                    _stats.alarmWakeUpProcrastinationTime ==
-                                                            null
-                                                        ? [
-                                                            Text("-",
-                                                                style:
-                                                                    const TextStyle(
-                                                                        fontSize:
-                                                                            24))
-                                                          ]
-                                                        : [
-                                                            Text(
-                                                                secondsToHHmm(
-                                                                  _stats
-                                                                      .alarmWakeUpProcrastinationTime!
-                                                                      .value,
-                                                                ),
-                                                                style:
-                                                                    const TextStyle(
-                                                                        fontSize:
-                                                                            24)),
-                                                            Icon(
-                                                                _stats
-                                                                    .alarmWakeUpProcrastinationTime!
-                                                                    .getIcon(
-                                                                        true),
-                                                                size: 14),
-                                                            Text(_stats
-                                                                .alarmWakeUpProcrastinationTime!
-                                                                .getOffset(
-                                                                    true))
-                                                          ]),
-                                          ],
-                                        ),
-                                      ),
-                                      SizedBox(
-                                        width:
-                                            MediaQuery.of(context).size.width *
-                                                0.9 *
-                                                0.4,
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.center,
-                                          children: [
-                                            Padding(
-                                              padding: EdgeInsets.all(2),
-                                              child: Icon(Icons.local_hotel,
-                                                  size: 24),
-                                            ),
-                                            Text("Czas po\nobudzeniu się",
-                                                style: TextStyle(fontSize: 16),
-                                                textAlign: TextAlign.center),
-                                            Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                children:
-                                                    _stats.timeBeforeGettingUp ==
-                                                            null
-                                                        ? [
-                                                            Text("-",
-                                                                style:
-                                                                    const TextStyle(
-                                                                        fontSize:
-                                                                            24))
-                                                          ]
-                                                        : [
-                                                            Text(
-                                                                secondsToHHmm(
-                                                                  _stats
-                                                                      .timeBeforeGettingUp!
-                                                                      .value,
-                                                                ),
-                                                                style:
-                                                                    const TextStyle(
-                                                                        fontSize:
-                                                                            24)),
-                                                            Icon(
-                                                                _stats
-                                                                    .timeBeforeGettingUp!
-                                                                    .getIcon(
-                                                                        true),
-                                                                size: 14),
-                                                            Text(_stats
-                                                                .timeBeforeGettingUp!
-                                                                .getOffset(
-                                                                    true))
-                                                          ]),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
+                          onTap: navigateToStatsScreen,
+                          child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: TrackingStatsWidget(stats: _stats))),
                       Text(_currentEntry.date!.hour == 0 &&
                               _currentEntry.date!.minute == 0
                           ? dateToDateString(_currentEntry.date!)
