@@ -59,7 +59,9 @@ class _TrackingScreenState extends State<TrackingScreen> {
   Future<void> selectDate() async {
     DateTime? datePickerResponse = await showDatePicker(
         context: context,
-        initialDate: _selectedDate,
+        initialDate: _selectedDate.isAfter(DateTime.now())
+            ? DateTime.now()
+            : _selectedDate,
         lastDate: DateTime.now().add(const Duration(days: 1)),
         cancelText: "Anuluj",
         confirmText: "Zatwierdź",
@@ -79,7 +81,9 @@ class _TrackingScreenState extends State<TrackingScreen> {
   Future<DateTime?> askForTime() async {
     DateTime? datePickerResponse = await showDatePicker(
         context: context,
-        initialDate: _selectedDate,
+        initialDate: _selectedDate.isAfter(DateTime.now())
+            ? DateTime.now()
+            : _selectedDate,
         lastDate: DateTime.now().add(const Duration(days: 1)),
         cancelText: "Anuluj",
         confirmText: "Zatwierdź",
