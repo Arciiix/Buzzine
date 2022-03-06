@@ -343,11 +343,36 @@ class _TrackingScreenState extends State<TrackingScreen> {
                                         DateTime? selectedTime =
                                             await askForTime();
                                         if (selectedTime != null) {
-                                          await updateEntry(
-                                              _entries[index].date!,
-                                              TrackingEntry(
-                                                      bedTime: selectedTime)
-                                                  .toMapWithoutDate());
+                                          if (selectedTime.compareTo(
+                                                  _entries[index].sleepTime ??
+                                                      selectedTime) <=
+                                              0) {
+                                            await updateEntry(
+                                                _entries[index].date!,
+                                                TrackingEntry(
+                                                        bedTime: selectedTime)
+                                                    .toMapWithoutDate());
+                                          } else {
+                                            await showDialog(
+                                              context: context,
+                                              builder: (BuildContext context) {
+                                                return AlertDialog(
+                                                  title: const Text("Błąd"),
+                                                  content: Text(
+                                                      'Czas w łóżku musi być wcześniejszy lub równy czasowi pójścia spać'),
+                                                  actions: <Widget>[
+                                                    TextButton(
+                                                        onPressed: () =>
+                                                            Navigator.of(
+                                                                    context)
+                                                                .pop(),
+                                                        child:
+                                                            const Text("OK")),
+                                                  ],
+                                                );
+                                              },
+                                            );
+                                          }
                                         }
                                       },
                                       subtitle: Text(
@@ -405,12 +430,43 @@ class _TrackingScreenState extends State<TrackingScreen> {
                                       onTap: () async {
                                         DateTime? selectedTime =
                                             await askForTime();
+
                                         if (selectedTime != null) {
-                                          await updateEntry(
-                                              _entries[index].date!,
-                                              TrackingEntry(
-                                                      sleepTime: selectedTime)
-                                                  .toMapWithoutDate());
+                                          if (selectedTime.compareTo(
+                                                      _entries[index].bedTime ??
+                                                          selectedTime) >=
+                                                  0 &&
+                                              selectedTime.compareTo(
+                                                      _entries[index]
+                                                              .wakeUpTime ??
+                                                          selectedTime) <=
+                                                  0) {
+                                            await updateEntry(
+                                                _entries[index].date!,
+                                                TrackingEntry(
+                                                        sleepTime: selectedTime)
+                                                    .toMapWithoutDate());
+                                          } else {
+                                            await showDialog(
+                                              context: context,
+                                              builder: (BuildContext context) {
+                                                return AlertDialog(
+                                                  title: const Text("Błąd"),
+                                                  content: Text(
+                                                      'Czas pójścia spać musi być wcześniejszy od czasu obudzenia oraz późniejszy niż czas w łóżku'),
+                                                  actions: <Widget>[
+                                                    TextButton(
+                                                        onPressed: () =>
+                                                            Navigator.of(
+                                                                    context)
+                                                                .pop(),
+                                                        child:
+                                                            const Text("OK")),
+                                                  ],
+                                                );
+                                              },
+                                            );
+                                          }
                                         }
                                       },
                                       subtitle: Text(
@@ -468,13 +524,45 @@ class _TrackingScreenState extends State<TrackingScreen> {
                                       onTap: () async {
                                         DateTime? selectedTime =
                                             await askForTime();
+
                                         if (selectedTime != null) {
-                                          await updateEntry(
-                                              _entries[index].date!,
-                                              TrackingEntry(
-                                                      firstAlarmTime:
-                                                          selectedTime)
-                                                  .toMapWithoutDate());
+                                          if (selectedTime.compareTo(
+                                                      _entries[index]
+                                                              .wakeUpTime ??
+                                                          selectedTime) <=
+                                                  0 &&
+                                              selectedTime.compareTo(
+                                                      _entries[index]
+                                                              .sleepTime ??
+                                                          selectedTime) >=
+                                                  0) {
+                                            await updateEntry(
+                                                _entries[index].date!,
+                                                TrackingEntry(
+                                                        firstAlarmTime:
+                                                            selectedTime)
+                                                    .toMapWithoutDate());
+                                          } else {
+                                            await showDialog(
+                                              context: context,
+                                              builder: (BuildContext context) {
+                                                return AlertDialog(
+                                                  title: const Text("Błąd"),
+                                                  content: Text(
+                                                      'Czas pierwszego alarmu musi być wcześniejszy lub równy czasowi obudzenia się oraz późniejszy od czasu pójścia spać'),
+                                                  actions: <Widget>[
+                                                    TextButton(
+                                                        onPressed: () =>
+                                                            Navigator.of(
+                                                                    context)
+                                                                .pop(),
+                                                        child:
+                                                            const Text("OK")),
+                                                  ],
+                                                );
+                                              },
+                                            );
+                                          }
                                         }
                                       },
                                       subtitle: Text(_entries[index]
@@ -534,12 +622,45 @@ class _TrackingScreenState extends State<TrackingScreen> {
                                       onTap: () async {
                                         DateTime? selectedTime =
                                             await askForTime();
+
                                         if (selectedTime != null) {
-                                          await updateEntry(
-                                              _entries[index].date!,
-                                              TrackingEntry(
-                                                      wakeUpTime: selectedTime)
-                                                  .toMapWithoutDate());
+                                          if (selectedTime.compareTo(
+                                                      _entries[index]
+                                                              .getUpTime ??
+                                                          selectedTime) <=
+                                                  0 &&
+                                              selectedTime.compareTo(
+                                                      _entries[index]
+                                                              .sleepTime ??
+                                                          selectedTime) >=
+                                                  0) {
+                                            await updateEntry(
+                                                _entries[index].date!,
+                                                TrackingEntry(
+                                                        wakeUpTime:
+                                                            selectedTime)
+                                                    .toMapWithoutDate());
+                                          } else {
+                                            await showDialog(
+                                              context: context,
+                                              builder: (BuildContext context) {
+                                                return AlertDialog(
+                                                  title: const Text("Błąd"),
+                                                  content: Text(
+                                                      'Czas obudzenia się musi być wcześniejszy od wstania oraz późniejszy od czasu pójścia spać'),
+                                                  actions: <Widget>[
+                                                    TextButton(
+                                                        onPressed: () =>
+                                                            Navigator.of(
+                                                                    context)
+                                                                .pop(),
+                                                        child:
+                                                            const Text("OK")),
+                                                  ],
+                                                );
+                                              },
+                                            );
+                                          }
                                         }
                                       },
                                       subtitle: Text(
@@ -597,12 +718,38 @@ class _TrackingScreenState extends State<TrackingScreen> {
                                       onTap: () async {
                                         DateTime? selectedTime =
                                             await askForTime();
+
                                         if (selectedTime != null) {
-                                          await updateEntry(
-                                              _entries[index].date!,
-                                              TrackingEntry(
-                                                      getUpTime: selectedTime)
-                                                  .toMapWithoutDate());
+                                          if (selectedTime.compareTo(
+                                                  _entries[index].wakeUpTime ??
+                                                      selectedTime) >=
+                                              0) {
+                                            await updateEntry(
+                                                _entries[index].date!,
+                                                TrackingEntry(
+                                                        getUpTime: selectedTime)
+                                                    .toMapWithoutDate());
+                                          } else {
+                                            await showDialog(
+                                              context: context,
+                                              builder: (BuildContext context) {
+                                                return AlertDialog(
+                                                  title: const Text("Błąd"),
+                                                  content: Text(
+                                                      'Czas wstania musi być późniejszy lub równy obudzeniu się'),
+                                                  actions: <Widget>[
+                                                    TextButton(
+                                                        onPressed: () =>
+                                                            Navigator.of(
+                                                                    context)
+                                                                .pop(),
+                                                        child:
+                                                            const Text("OK")),
+                                                  ],
+                                                );
+                                              },
+                                            );
+                                          }
                                         }
                                       },
                                       subtitle: Text(
