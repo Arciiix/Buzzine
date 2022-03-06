@@ -833,6 +833,8 @@ class _HomePageState extends State<HomePage> {
                                         mainAxisSize: MainAxisSize.max,
                                         mainAxisAlignment:
                                             MainAxisAlignment.spaceBetween,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
                                         children: [
                                           Column(
                                             mainAxisAlignment:
@@ -845,35 +847,53 @@ class _HomePageState extends State<HomePage> {
                                                     MainAxisAlignment
                                                         .spaceAround,
                                                 children: [
-                                                  Column(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .spaceAround,
-                                                    children: [
-                                                      Text(
-                                                          GlobalData.appVersion,
-                                                          style: TextStyle(
-                                                              fontSize: 32)),
-                                                      const Text(
-                                                          "Wersja aplikacji",
-                                                          style: TextStyle(
-                                                              fontSize: 18)),
-                                                    ],
+                                                  SizedBox(
+                                                    width:
+                                                        MediaQuery.of(context)
+                                                                .size
+                                                                .width *
+                                                            0.9 *
+                                                            0.45,
+                                                    child: Column(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .spaceAround,
+                                                      children: [
+                                                        Text(
+                                                            GlobalData
+                                                                .appVersion,
+                                                            style: TextStyle(
+                                                                fontSize: 32)),
+                                                        const Text(
+                                                            "Wersja aplikacji",
+                                                            style: TextStyle(
+                                                                fontSize: 18)),
+                                                      ],
+                                                    ),
                                                   ),
-                                                  Column(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .spaceAround,
-                                                    children: [
-                                                      Text(
-                                                          GlobalData
-                                                              .appBuildNumber,
-                                                          style: TextStyle(
-                                                              fontSize: 32)),
-                                                      const Text("Numer buildu",
-                                                          style: TextStyle(
-                                                              fontSize: 18)),
-                                                    ],
+                                                  SizedBox(
+                                                    width:
+                                                        MediaQuery.of(context)
+                                                                .size
+                                                                .width *
+                                                            0.9 *
+                                                            0.45,
+                                                    child: Column(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .spaceAround,
+                                                      children: [
+                                                        Text(
+                                                            GlobalData
+                                                                .appBuildNumber,
+                                                            style: TextStyle(
+                                                                fontSize: 32)),
+                                                        const Text(
+                                                            "Numer buildu",
+                                                            style: TextStyle(
+                                                                fontSize: 18)),
+                                                      ],
+                                                    ),
                                                   ),
                                                 ],
                                               ),
@@ -885,119 +905,140 @@ class _HomePageState extends State<HomePage> {
                                                       MainAxisAlignment
                                                           .spaceAround,
                                                   children: [
-                                                    Column(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .spaceAround,
-                                                      children: [
-                                                        Row(
-                                                          mainAxisAlignment:
-                                                              MainAxisAlignment
-                                                                  .center,
-                                                          children: [
-                                                            PingResultIndicator(
-                                                              isSuccess:
-                                                                  pingResult
-                                                                      ?.api
-                                                                      .success,
-                                                              delay: 0,
-                                                              apiDelay:
-                                                                  pingResult
-                                                                      ?.api
-                                                                      .delay,
-                                                              serviceName:
-                                                                  "API",
-                                                            ),
-                                                            PingResultIndicator(
-                                                              isSuccess:
-                                                                  pingResult
-                                                                      ?.core
-                                                                      .success,
-                                                              delay: pingResult
-                                                                  ?.core.delay,
-                                                              apiDelay:
-                                                                  pingResult
-                                                                      ?.api
-                                                                      .delay,
-                                                              serviceName:
-                                                                  "core",
-                                                            ),
-                                                            PingResultIndicator(
-                                                              isSuccess:
-                                                                  pingResult
-                                                                      ?.audio
-                                                                      .success,
-                                                              delay: pingResult
-                                                                  ?.audio.delay,
-                                                              apiDelay:
-                                                                  pingResult
-                                                                      ?.api
-                                                                      .delay,
-                                                              serviceName:
-                                                                  "audio",
-                                                            ),
-                                                            PingResultIndicator(
-                                                              isSuccess:
-                                                                  pingResult
-                                                                      ?.adapter
-                                                                      .success,
-                                                              delay: pingResult
-                                                                  ?.adapter
-                                                                  .delay,
-                                                              apiDelay:
-                                                                  pingResult
-                                                                      ?.api
-                                                                      .delay,
-                                                              serviceName:
-                                                                  "adapter",
-                                                            ),
-                                                            PingResultIndicator(
-                                                              isSuccess:
-                                                                  pingResult
-                                                                      ?.tracking
-                                                                      .success,
-                                                              delay: pingResult
-                                                                  ?.tracking
-                                                                  .delay,
-                                                              apiDelay:
-                                                                  pingResult
-                                                                      ?.api
-                                                                      .delay,
-                                                              serviceName:
-                                                                  "tracking",
-                                                            )
-                                                          ],
-                                                        ),
-                                                        const Text("Status",
-                                                            style: TextStyle(
-                                                                fontSize: 18)),
-                                                      ],
-                                                    ),
-                                                    InkWell(
-                                                      onTap: pingResult?.api
-                                                                  .uptimeText !=
-                                                              null
-                                                          ? displayUptimeAlert
-                                                          : null,
+                                                    SizedBox(
+                                                      width:
+                                                          MediaQuery.of(context)
+                                                                  .size
+                                                                  .width *
+                                                              0.9 *
+                                                              0.45,
                                                       child: Column(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .spaceAround,
                                                         children: [
-                                                          Text(
-                                                              pingResult?.api
-                                                                          .uptimeText !=
-                                                                      null
-                                                                  ? pingResult!
-                                                                      .api
-                                                                      .uptimeText!
-                                                                  : "Czekaj...",
-                                                              style: TextStyle(
-                                                                  fontSize:
-                                                                      28)),
-                                                          const Text(
-                                                              "Czas pracy",
+                                                          Row(
+                                                            mainAxisAlignment:
+                                                                MainAxisAlignment
+                                                                    .center,
+                                                            children: [
+                                                              PingResultIndicator(
+                                                                isSuccess:
+                                                                    pingResult
+                                                                        ?.api
+                                                                        .success,
+                                                                delay: 0,
+                                                                apiDelay:
+                                                                    pingResult
+                                                                        ?.api
+                                                                        .delay,
+                                                                serviceName:
+                                                                    "API",
+                                                              ),
+                                                              PingResultIndicator(
+                                                                isSuccess:
+                                                                    pingResult
+                                                                        ?.core
+                                                                        .success,
+                                                                delay:
+                                                                    pingResult
+                                                                        ?.core
+                                                                        .delay,
+                                                                apiDelay:
+                                                                    pingResult
+                                                                        ?.api
+                                                                        .delay,
+                                                                serviceName:
+                                                                    "core",
+                                                              ),
+                                                              PingResultIndicator(
+                                                                isSuccess:
+                                                                    pingResult
+                                                                        ?.audio
+                                                                        .success,
+                                                                delay:
+                                                                    pingResult
+                                                                        ?.audio
+                                                                        .delay,
+                                                                apiDelay:
+                                                                    pingResult
+                                                                        ?.api
+                                                                        .delay,
+                                                                serviceName:
+                                                                    "audio",
+                                                              ),
+                                                              PingResultIndicator(
+                                                                isSuccess:
+                                                                    pingResult
+                                                                        ?.adapter
+                                                                        .success,
+                                                                delay: pingResult
+                                                                    ?.adapter
+                                                                    .delay,
+                                                                apiDelay:
+                                                                    pingResult
+                                                                        ?.api
+                                                                        .delay,
+                                                                serviceName:
+                                                                    "adapter",
+                                                              ),
+                                                              PingResultIndicator(
+                                                                isSuccess:
+                                                                    pingResult
+                                                                        ?.tracking
+                                                                        .success,
+                                                                delay: pingResult
+                                                                    ?.tracking
+                                                                    .delay,
+                                                                apiDelay:
+                                                                    pingResult
+                                                                        ?.api
+                                                                        .delay,
+                                                                serviceName:
+                                                                    "tracking",
+                                                              )
+                                                            ],
+                                                          ),
+                                                          const Text("Status",
                                                               style: TextStyle(
                                                                   fontSize:
                                                                       18)),
                                                         ],
+                                                      ),
+                                                    ),
+                                                    SizedBox(
+                                                      width:
+                                                          MediaQuery.of(context)
+                                                                  .size
+                                                                  .width *
+                                                              0.9 *
+                                                              0.45,
+                                                      child: InkWell(
+                                                        onTap: pingResult?.api
+                                                                    .uptimeText !=
+                                                                null
+                                                            ? displayUptimeAlert
+                                                            : null,
+                                                        child: Column(
+                                                          children: [
+                                                            Text(
+                                                                pingResult?.api
+                                                                            .uptimeText !=
+                                                                        null
+                                                                    ? pingResult!
+                                                                        .api
+                                                                        .uptimeText!
+                                                                    : "Czekaj...",
+                                                                style: TextStyle(
+                                                                    fontSize:
+                                                                        28)),
+                                                            const Text(
+                                                                "Czas pracy",
+                                                                style: TextStyle(
+                                                                    fontSize:
+                                                                        18)),
+                                                          ],
+                                                        ),
                                                       ),
                                                     ),
                                                   ],
