@@ -30,7 +30,6 @@ import 'package:buzzine/types/Nap.dart';
 import 'package:buzzine/types/PingResult.dart';
 import 'package:buzzine/types/RingingAlarmEntity.dart';
 import 'package:buzzine/types/Snooze.dart';
-import 'package:buzzine/types/TrackingEntry.dart';
 import 'package:buzzine/types/YouTubeVideoInfo.dart';
 import 'package:buzzine/utils/formatting.dart';
 import 'package:buzzine/utils/show_snackbar.dart';
@@ -268,7 +267,8 @@ class _HomePageState extends State<HomePage> {
         builder: (_) => AlertDialog(
               title: const Text("Czas pracy"),
               content: Text(
-                  "Czas pracy to ${pingResult!.api.uptimeText!}. Włączono: ${dateToDateTimeString(DateTime.now().subtract(Duration(seconds: pingResult!.api.uptime!)))}"),
+                  //Remove the last space (using the replaceFirst method and a RegExp)
+                  "Czas pracy to: ${pingResult!.api.uptimeText!.replaceFirst(RegExp(r"\s$"), "")}. Włączono: ${dateToDateTimeString(DateTime.now().subtract(Duration(seconds: pingResult!.api.uptime!)))}"),
               actions: [
                 TextButton(
                     onPressed: () => Navigator.of(context).pop(),

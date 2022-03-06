@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:buzzine/components/tracking_stats.dart';
 import 'package:buzzine/globalData.dart';
 import 'package:buzzine/screens/tracking_screen.dart';
@@ -7,7 +5,6 @@ import 'package:buzzine/screens/tracking_stats_screen.dart';
 import 'package:buzzine/types/TrackingEntry.dart';
 import 'package:buzzine/types/TrackingStats.dart';
 import 'package:buzzine/utils/formatting.dart';
-import 'package:buzzine/utils/get_icon_by_offset.dart';
 import 'package:flutter/material.dart';
 
 class TrackingEntryWidget extends StatefulWidget {
