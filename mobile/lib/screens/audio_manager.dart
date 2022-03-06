@@ -335,7 +335,7 @@ class _AudioManagerState extends State<AudioManager> {
                                 title: Text(e.friendlyName ?? e.filename),
                                 subtitle: Text(e.filename +
                                     '\n' +
-                                    secondsToHHmm(e.duration)),
+                                    secondsTommss(e.duration)),
                                 isThreeLine: true,
                                 trailing: IconButton(
                                     icon: Icon(

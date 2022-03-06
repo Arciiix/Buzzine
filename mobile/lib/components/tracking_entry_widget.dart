@@ -19,12 +19,13 @@ class TrackingEntryWidget extends StatefulWidget {
 class _TrackingEntryWidgetState extends State<TrackingEntryWidget> {
   bool _isLoaded = false;
   late TrackingEntry _currentEntry;
-  late TrackingStats _stats;
+  late TrackingStatsService _stats;
 
   Future<void> getLatestEntry() async {
     TrackingEntry latestEntry = await GlobalData.getLatestTrackingEntry();
     setState(() {
       _currentEntry = latestEntry;
+      _stats = TrackingStatsService.of(latestEntry, GlobalData.trackingStats);
     });
   }
 
@@ -61,8 +62,11 @@ class _TrackingEntryWidgetState extends State<TrackingEntryWidget> {
 
   @override
   void initState() {
-    getLatestEntry().then((value) => setState(() => _isLoaded = true));
-    _stats = GlobalData.trackingStats;
+    getLatestEntry().then((value) => setState(() {
+          _isLoaded = true;
+          _stats =
+              TrackingStatsService.of(_currentEntry, GlobalData.trackingStats);
+        }));
     super.initState();
   }
 
@@ -105,7 +109,8 @@ class _TrackingEntryWidgetState extends State<TrackingEntryWidget> {
                                       child: Icon(Icons.bed, size: 16),
                                     ),
                                     Text("W łóżku",
-                                        style: TextStyle(fontSize: 16))
+                                        style: TextStyle(fontSize: 16),
+                                        textAlign: TextAlign.center)
                                   ],
                                 ),
                                 Text(
@@ -132,7 +137,8 @@ class _TrackingEntryWidgetState extends State<TrackingEntryWidget> {
                                       child: Icon(Icons.bedtime, size: 16),
                                     ),
                                     Text("Pójście spać",
-                                        style: TextStyle(fontSize: 16))
+                                        style: TextStyle(fontSize: 16),
+                                        textAlign: TextAlign.center)
                                   ],
                                 ),
                                 Text(
@@ -165,7 +171,8 @@ class _TrackingEntryWidgetState extends State<TrackingEntryWidget> {
                                       child: Icon(Icons.alarm, size: 16),
                                     ),
                                     Text("Pierwszy budzik",
-                                        style: TextStyle(fontSize: 16))
+                                        style: TextStyle(fontSize: 16),
+                                        textAlign: TextAlign.center)
                                   ],
                                 ),
                                 Text(
@@ -192,7 +199,8 @@ class _TrackingEntryWidgetState extends State<TrackingEntryWidget> {
                                       child: Icon(Icons.timer, size: 16),
                                     ),
                                     Text("Obudzenie się",
-                                        style: TextStyle(fontSize: 16))
+                                        style: TextStyle(fontSize: 16),
+                                        textAlign: TextAlign.center)
                                   ],
                                 ),
                                 Text(
@@ -224,7 +232,8 @@ class _TrackingEntryWidgetState extends State<TrackingEntryWidget> {
                                       child: Icon(Icons.stop, size: 16),
                                     ),
                                     Text("Wstanie",
-                                        style: TextStyle(fontSize: 16))
+                                        style: TextStyle(fontSize: 16),
+                                        textAlign: TextAlign.center)
                                   ],
                                 ),
                                 Text(
@@ -251,7 +260,8 @@ class _TrackingEntryWidgetState extends State<TrackingEntryWidget> {
                                       child: Icon(Icons.star, size: 16),
                                     ),
                                     Text("Ocena",
-                                        style: TextStyle(fontSize: 16))
+                                        style: TextStyle(fontSize: 16),
+                                        textAlign: TextAlign.center)
                                   ],
                                 ),
                                 if (_currentEntry.rate == null)
@@ -289,7 +299,8 @@ class _TrackingEntryWidgetState extends State<TrackingEntryWidget> {
                               children: [
                                 const Icon(Icons.subject),
                                 const Text("Notka",
-                                    style: TextStyle(fontSize: 16)),
+                                    style: TextStyle(fontSize: 16),
+                                    textAlign: TextAlign.center),
                               ],
                             ),
                             Row(
@@ -344,16 +355,14 @@ class _TrackingEntryWidgetState extends State<TrackingEntryWidget> {
                                                   size: 24),
                                             ),
                                             Text("Długość snu",
-                                                style: TextStyle(fontSize: 16)),
+                                                style: TextStyle(fontSize: 16),
+                                                textAlign: TextAlign.center),
                                             Row(
                                                 mainAxisAlignment:
                                                     MainAxisAlignment.center,
-                                                children: _currentEntry
-                                                                .sleepTime ==
-                                                            null ||
-                                                        _currentEntry
-                                                                .wakeUpTime ==
-                                                            null
+                                                children: _stats
+                                                            .sleepDuration ==
+                                                        null
                                                     ? [
                                                         Text("-",
                                                             style:
@@ -363,62 +372,23 @@ class _TrackingEntryWidgetState extends State<TrackingEntryWidget> {
                                                       ]
                                                     : [
                                                         Text(
-                                                            durationToHHmm(
-                                                              _currentEntry
-                                                                  .wakeUpTime!
-                                                                  .difference(
-                                                                      _currentEntry
-                                                                          .sleepTime!),
+                                                            secondsToHHmm(
+                                                              _stats
+                                                                  .sleepDuration!
+                                                                  .value,
                                                             ),
                                                             style:
                                                                 const TextStyle(
                                                                     fontSize:
                                                                         24)),
                                                         Icon(
-                                                            getIconByOffset(((_currentEntry
-                                                                    .wakeUpTime!
-                                                                    .difference(
-                                                                        _currentEntry
-                                                                            .sleepTime!)
-                                                                    .inSeconds -
-                                                                (_currentEntry
-                                                                            .isNap!
-                                                                        ? _stats
-                                                                            .monthly
-                                                                            .nap
-                                                                            .averageSleepDuration
-                                                                        : _stats
-                                                                            .monthly
-                                                                            .alarm
-                                                                            .averageSleepDuration) /
-                                                                    max(
-                                                                        (_currentEntry.isNap!
-                                                                            ? _stats.monthly.nap.averageSleepDuration
-                                                                            : _stats.monthly.alarm.averageSleepDuration),
-                                                                        1)))),
+                                                            _stats
+                                                                .sleepDuration!
+                                                                .getIcon(true),
                                                             size: 14),
-                                                        Text(((((_currentEntry
-                                                                            .wakeUpTime!
-                                                                            .difference(_currentEntry
-                                                                                .sleepTime!)
-                                                                            .inSeconds -
-                                                                        (_currentEntry.isNap!
-                                                                            ? _stats
-                                                                                .monthly.nap.averageSleepDuration
-                                                                            : _stats
-                                                                                .monthly.alarm.averageSleepDuration)) /
-                                                                    max(
-                                                                        (_currentEntry.isNap!
-                                                                            ? _stats
-                                                                                .monthly.nap.averageSleepDuration
-                                                                            : _stats
-                                                                                .monthly.alarm.averageSleepDuration),
-                                                                        1) *
-                                                                    100)))
-                                                                .floor()
-                                                                .toStringAsFixed(
-                                                                    1) +
-                                                            "%")
+                                                        Text(_stats
+                                                            .sleepDuration!
+                                                            .getOffset(true))
                                                       ]),
                                           ],
                                         ),
@@ -434,20 +404,17 @@ class _TrackingEntryWidgetState extends State<TrackingEntryWidget> {
                                           children: [
                                             Padding(
                                               padding: EdgeInsets.all(2),
-                                              child: Icon(Icons.king_bed,
+                                              child: Icon(Icons.local_hotel,
                                                   size: 24),
                                             ),
                                             Text("Czas w łóżku",
-                                                style: TextStyle(fontSize: 16)),
+                                                style: TextStyle(fontSize: 16),
+                                                textAlign: TextAlign.center),
                                             Row(
                                                 mainAxisAlignment:
                                                     MainAxisAlignment.center,
-                                                children: _currentEntry
-                                                                .bedTime ==
-                                                            null ||
-                                                        _currentEntry
-                                                                .sleepTime ==
-                                                            null
+                                                children: _stats.timeAtBed ==
+                                                        null
                                                     ? [
                                                         Text("-",
                                                             style:
@@ -457,57 +424,24 @@ class _TrackingEntryWidgetState extends State<TrackingEntryWidget> {
                                                       ]
                                                     : [
                                                         Text(
-                                                            durationToHHmm(
-                                                              _currentEntry
-                                                                  .sleepTime!
-                                                                  .difference(
-                                                                      _currentEntry
-                                                                          .bedTime!),
+                                                            secondsToHHmm(
+                                                              _stats.timeAtBed!
+                                                                  .value,
                                                             ),
                                                             style:
                                                                 const TextStyle(
                                                                     fontSize:
                                                                         24)),
                                                         Icon(
-                                                            getIconByOffset(((_currentEntry
-                                                                        .sleepTime!
-                                                                        .difference(_currentEntry
-                                                                            .bedTime!)
-                                                                        .inSeconds -
-                                                                    (_currentEntry.isNap!
-                                                                        ? _stats
-                                                                            .monthly
-                                                                            .nap
-                                                                            .averageTimeAtBed
-                                                                        : _stats
-                                                                            .monthly
-                                                                            .alarm
-                                                                            .averageTimeAtBed)) /
-                                                                max(
-                                                                    (_currentEntry.isNap!
-                                                                        ? _stats
-                                                                            .monthly
-                                                                            .nap
-                                                                            .averageTimeAtBed
-                                                                        : _stats
-                                                                            .monthly
-                                                                            .alarm
-                                                                            .averageTimeAtBed),
-                                                                    1))),
+                                                            _stats.timeAtBed!
+                                                                .getIcon(true),
                                                             size: 14),
-                                                        Text((((_currentEntry.sleepTime!.difference(_currentEntry.bedTime!).inSeconds -
-                                                                            (_currentEntry.isNap!
-                                                                                ? _stats.monthly.nap.averageTimeAtBed
-                                                                                : _stats.monthly.alarm.averageTimeAtBed)) /
-                                                                        max((_currentEntry.isNap! ? _stats.monthly.nap.averageTimeAtBed : _stats.monthly.alarm.averageTimeAtBed), 1)) *
-                                                                    100)
-                                                                .floor()
-                                                                .toStringAsFixed(1) +
-                                                            "%")
+                                                        Text(_stats.timeAtBed!
+                                                            .getOffset(true))
                                                       ]),
                                           ],
                                         ),
-                                      )
+                                      ),
                                     ],
                                   ),
                                   Row(
@@ -526,80 +460,47 @@ class _TrackingEntryWidgetState extends State<TrackingEntryWidget> {
                                           children: [
                                             Padding(
                                               padding: EdgeInsets.all(2),
-                                              child: Icon(Icons.skip_next,
+                                              child: Icon(Icons.local_hotel,
                                                   size: 24),
                                             ),
-                                            Text(
-                                              "Przekładanie\nalarmów",
-                                              style: TextStyle(fontSize: 16),
-                                              textAlign: TextAlign.center,
-                                            ),
+                                            Text("Przekładanie\nalarmów",
+                                                style: TextStyle(fontSize: 16),
+                                                textAlign: TextAlign.center),
                                             Row(
                                                 mainAxisAlignment:
                                                     MainAxisAlignment.center,
-                                                children: _currentEntry
-                                                                .firstAlarmTime ==
-                                                            null ||
-                                                        _currentEntry
-                                                                .wakeUpTime ==
+                                                children:
+                                                    _stats.alarmWakeUpProcrastinationTime ==
                                                             null
-                                                    ? [
-                                                        Text("-",
-                                                            style:
-                                                                const TextStyle(
-                                                                    fontSize:
-                                                                        24))
-                                                      ]
-                                                    : [
-                                                        Text(
-                                                            durationToHHmm(
-                                                              _currentEntry
-                                                                  .wakeUpTime!
-                                                                  .difference(
-                                                                      _currentEntry
-                                                                          .firstAlarmTime!),
-                                                            ),
-                                                            style:
-                                                                const TextStyle(
-                                                                    fontSize:
-                                                                        24)),
-                                                        Icon(
-                                                            getIconByOffset(((_currentEntry
-                                                                        .wakeUpTime!
-                                                                        .difference(_currentEntry
-                                                                            .firstAlarmTime!)
-                                                                        .inSeconds -
-                                                                    (_currentEntry.isNap!
-                                                                        ? _stats
-                                                                            .monthly
-                                                                            .nap
-                                                                            .averageAlarmWakeUpProcrastinationTime
-                                                                        : _stats
-                                                                            .monthly
-                                                                            .alarm
-                                                                            .averageAlarmWakeUpProcrastinationTime)) /
-                                                                max(
-                                                                    (_currentEntry.isNap!
-                                                                        ? _stats
-                                                                            .monthly
-                                                                            .nap
-                                                                            .averageAlarmWakeUpProcrastinationTime
-                                                                        : _stats
-                                                                            .monthly
-                                                                            .alarm
-                                                                            .averageAlarmWakeUpProcrastinationTime),
-                                                                    1))),
-                                                            size: 14),
-                                                        Text((((_currentEntry.wakeUpTime!.difference(_currentEntry.firstAlarmTime!).inSeconds -
-                                                                            (_currentEntry.isNap!
-                                                                                ? _stats.monthly.nap.averageAlarmWakeUpProcrastinationTime
-                                                                                : _stats.monthly.alarm.averageAlarmWakeUpProcrastinationTime)) /
-                                                                        max((_currentEntry.isNap! ? _stats.monthly.nap.averageAlarmWakeUpProcrastinationTime : _stats.monthly.alarm.averageAlarmWakeUpProcrastinationTime), 1)) *
-                                                                    100)
-                                                                .floor()
-                                                                .toStringAsFixed(1) +
-                                                            "%")
-                                                      ]),
+                                                        ? [
+                                                            Text("-",
+                                                                style:
+                                                                    const TextStyle(
+                                                                        fontSize:
+                                                                            24))
+                                                          ]
+                                                        : [
+                                                            Text(
+                                                                secondsToHHmm(
+                                                                  _stats
+                                                                      .alarmWakeUpProcrastinationTime!
+                                                                      .value,
+                                                                ),
+                                                                style:
+                                                                    const TextStyle(
+                                                                        fontSize:
+                                                                            24)),
+                                                            Icon(
+                                                                _stats
+                                                                    .alarmWakeUpProcrastinationTime!
+                                                                    .getIcon(
+                                                                        true),
+                                                                size: 14),
+                                                            Text(_stats
+                                                                .alarmWakeUpProcrastinationTime!
+                                                                .getOffset(
+                                                                    true))
+                                                          ]),
                                           ],
                                         ),
                                       ),
@@ -614,83 +515,50 @@ class _TrackingEntryWidgetState extends State<TrackingEntryWidget> {
                                           children: [
                                             Padding(
                                               padding: EdgeInsets.all(2),
-                                              child: Icon(Icons.smartphone,
+                                              child: Icon(Icons.local_hotel,
                                                   size: 24),
                                             ),
-                                            Text(
-                                              "Czas po\nobudzeniu się",
-                                              textAlign: TextAlign.center,
-                                              style: TextStyle(fontSize: 16),
-                                            ),
+                                            Text("Czas po\nobudzeniu się",
+                                                style: TextStyle(fontSize: 16),
+                                                textAlign: TextAlign.center),
                                             Row(
                                                 mainAxisAlignment:
                                                     MainAxisAlignment.center,
-                                                children: _currentEntry
-                                                                .wakeUpTime ==
-                                                            null ||
-                                                        _currentEntry
-                                                                .getUpTime ==
+                                                children:
+                                                    _stats.timeBeforeGettingUp ==
                                                             null
-                                                    ? [
-                                                        Text("-",
-                                                            style:
-                                                                const TextStyle(
-                                                                    fontSize:
-                                                                        24))
-                                                      ]
-                                                    : [
-                                                        Text(
-                                                            durationToHHmm(
-                                                              _currentEntry
-                                                                  .getUpTime!
-                                                                  .difference(
-                                                                      _currentEntry
-                                                                          .wakeUpTime!),
-                                                            ),
-                                                            style:
-                                                                const TextStyle(
-                                                                    fontSize:
-                                                                        24)),
-                                                        Icon(
-                                                            getIconByOffset(((_currentEntry
-                                                                        .getUpTime!
-                                                                        .difference(_currentEntry
-                                                                            .wakeUpTime!)
-                                                                        .inSeconds -
-                                                                    (_currentEntry.isNap!
-                                                                        ? _stats
-                                                                            .monthly
-                                                                            .nap
-                                                                            .averageTimeBeforeGettingUp
-                                                                        : _stats
-                                                                            .monthly
-                                                                            .alarm
-                                                                            .averageTimeBeforeGettingUp)) /
-                                                                max(
-                                                                    (_currentEntry.isNap!
-                                                                        ? _stats
-                                                                            .monthly
-                                                                            .nap
-                                                                            .averageTimeBeforeGettingUp
-                                                                        : _stats
-                                                                            .monthly
-                                                                            .alarm
-                                                                            .averageTimeBeforeGettingUp),
-                                                                    1))),
-                                                            size: 14),
-                                                        Text((((_currentEntry.getUpTime!.difference(_currentEntry.wakeUpTime!).inSeconds -
-                                                                            (_currentEntry.isNap!
-                                                                                ? _stats.monthly.nap.averageTimeBeforeGettingUp
-                                                                                : _stats.monthly.alarm.averageTimeBeforeGettingUp)) /
-                                                                        max((_currentEntry.isNap! ? _stats.monthly.nap.averageTimeBeforeGettingUp : _stats.monthly.alarm.averageTimeBeforeGettingUp), 1)) *
-                                                                    100)
-                                                                .floor()
-                                                                .toStringAsFixed(1) +
-                                                            "%")
-                                                      ]),
+                                                        ? [
+                                                            Text("-",
+                                                                style:
+                                                                    const TextStyle(
+                                                                        fontSize:
+                                                                            24))
+                                                          ]
+                                                        : [
+                                                            Text(
+                                                                secondsToHHmm(
+                                                                  _stats
+                                                                      .timeBeforeGettingUp!
+                                                                      .value,
+                                                                ),
+                                                                style:
+                                                                    const TextStyle(
+                                                                        fontSize:
+                                                                            24)),
+                                                            Icon(
+                                                                _stats
+                                                                    .timeBeforeGettingUp!
+                                                                    .getIcon(
+                                                                        true),
+                                                                size: 14),
+                                                            Text(_stats
+                                                                .timeBeforeGettingUp!
+                                                                .getOffset(
+                                                                    true))
+                                                          ]),
                                           ],
                                         ),
-                                      )
+                                      ),
                                     ],
                                   ),
                                 ],

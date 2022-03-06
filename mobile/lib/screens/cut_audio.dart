@@ -208,7 +208,7 @@ class _CutAudioState extends State<CutAudio> {
                       },
                       child: Padding(
                         padding: const EdgeInsets.all(20),
-                        child: Text(secondsToHHmm(_values.start)),
+                        child: Text(secondsTommss(_values.start)),
                       )),
                   InkWell(
                       onTap: () async {
@@ -229,7 +229,7 @@ class _CutAudioState extends State<CutAudio> {
                       },
                       child: Padding(
                         padding: const EdgeInsets.all(20),
-                        child: Text(secondsToHHmm(_values.end)),
+                        child: Text(secondsTommss(_values.end)),
                       )),
                 ],
               ),
