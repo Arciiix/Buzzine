@@ -6,9 +6,14 @@ class Carousel extends StatefulWidget {
   final List<Widget> children;
   final double? height;
   final Function onSelect;
+  final bool? isNap;
 
   const Carousel(
-      {Key? key, required this.children, this.height, required this.onSelect})
+      {Key? key,
+      required this.children,
+      this.height,
+      required this.onSelect,
+      this.isNap})
       : super(key: key);
 
   @override
@@ -78,13 +83,18 @@ class _CarouselState extends State<Carousel> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                     Text(
-                      "Brak nadchodzących alarmów!",
+                      widget.isNap == true
+                          ? "Brak nadchodzących drzemek!"
+                          : "Brak nadchodzących alarmów!",
                       style: TextStyle(fontSize: 24),
                       textAlign: TextAlign.center,
                     ),
                     TextButton(
                         onPressed: () => widget.onSelect(null),
-                        child: Text("Zarządzaj alarmami",
+                        child: Text(
+                            widget.isNap == true
+                                ? "Zarządzaj drzemkami"
+                                : "Zarządzaj alarmami",
                             style: TextStyle(fontSize: 24)))
                   ]))));
     }

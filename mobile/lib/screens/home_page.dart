@@ -506,6 +506,7 @@ class _HomePageState extends State<HomePage> {
                                                 onSelect: (_) =>
                                                     navigateToRingingAlarm(
                                                         ringingNaps.first),
+                                                isNap: true,
                                                 children: ringingNaps.map((e) {
                                                   return AlarmCard(
                                                       id: e.alarm.id!,
@@ -637,6 +638,7 @@ class _HomePageState extends State<HomePage> {
                                             Carousel(
                                                 height: 360,
                                                 onSelect: handleNapSelect,
+                                                isNap: true,
                                                 children: upcomingNaps.map((e) {
                                                   return AlarmCard(
                                                     alarmType: AlarmType.nap,
