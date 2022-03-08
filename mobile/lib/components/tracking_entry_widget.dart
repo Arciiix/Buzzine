@@ -264,7 +264,7 @@ class _TrackingEntryWidgetState extends State<TrackingEntryWidget> {
                           children: [
                             const Icon(Icons.subject),
                             const Text("Notka",
-                                style: TextStyle(fontSize: 24),
+                                style: TextStyle(fontSize: 16),
                                 textAlign: TextAlign.center),
                             Row(
                                 mainAxisSize: MainAxisSize.max,
