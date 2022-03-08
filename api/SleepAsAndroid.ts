@@ -212,7 +212,7 @@ async function handleSleepAsAndroidWebhook(event, value1?, value2?, value3?) {
       SleepAsAndroidAlarm.onAlarm();
       TrackingAdapter.updateIfDoesNotExistCurrent(
         {
-          firstAlarmTime: new Date(),
+          firstAlarmTime: new Date(new Date().setSeconds(0)),
         },
         true
       );
@@ -224,7 +224,7 @@ async function handleSleepAsAndroidWebhook(event, value1?, value2?, value3?) {
       SleepAsAndroidAlarm.stopTheAlarm();
       TrackingAdapter.updateIfDoesNotExistCurrent(
         {
-          wakeUpTime: new Date(),
+          wakeUpTime: new Date(new Date().setSeconds(0)),
         },
         true
       );
@@ -232,7 +232,7 @@ async function handleSleepAsAndroidWebhook(event, value1?, value2?, value3?) {
     case "sleep_tracking_started":
       TrackingAdapter.updateIfDoesNotExistCurrent(
         {
-          sleepTime: new Date(),
+          sleepTime: new Date(new Date().setSeconds(0)),
         },
         true
       );
