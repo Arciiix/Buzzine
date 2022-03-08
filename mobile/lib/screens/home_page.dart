@@ -59,6 +59,9 @@ class _HomePageState extends State<HomePage> {
   late EmergencyStatus emergencyStatus;
   late StreamSubscription _intentData;
 
+  GlobalKey<TrackingEntryWidgetState> _trackingWidgetKey =
+      GlobalKey<TrackingEntryWidgetState>();
+
   String? _currentLoadingStage = "Inicjalizacja";
 
   GlobalKey<RefreshIndicatorState> _refreshState =
@@ -392,6 +395,9 @@ class _HomePageState extends State<HomePage> {
                         GlobalData.weather = null;
                         await GlobalData.getWeatherData();
                         await GlobalData.getCurrentTemperatureData();
+
+                        //Refetch the tracking widget data
+                        _trackingWidgetKey.currentState?.refresh();
                         //Re-render the screen
                         setState(() {});
                       },
@@ -670,7 +676,7 @@ class _HomePageState extends State<HomePage> {
                                         : [],
                                   ),
                                   Section("📈 Sen"),
-                                  TrackingEntryWidget(),
+                                  TrackingEntryWidget(key: _trackingWidgetKey),
                                   Section("🎵 Audio"),
                                   InkWell(
                                       onTap: navigateToAudioManager,

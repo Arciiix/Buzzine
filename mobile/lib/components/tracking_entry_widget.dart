@@ -11,10 +11,10 @@ class TrackingEntryWidget extends StatefulWidget {
   const TrackingEntryWidget({Key? key}) : super(key: key);
 
   @override
-  _TrackingEntryWidgetState createState() => _TrackingEntryWidgetState();
+  TrackingEntryWidgetState createState() => TrackingEntryWidgetState();
 }
 
-class _TrackingEntryWidgetState extends State<TrackingEntryWidget> {
+class TrackingEntryWidgetState extends State<TrackingEntryWidget> {
   bool _isLoaded = false;
   late TrackingEntry _currentEntry;
   late TrackingStatsService _stats;
@@ -55,6 +55,17 @@ class _TrackingEntryWidgetState extends State<TrackingEntryWidget> {
       _isLoaded = true;
       _stats:
       stats;
+    });
+  }
+
+  Future<void> refresh() async {
+    setState(() {
+      _isLoaded = false;
+    });
+    await getLatestEntry();
+    setState(() {
+      _isLoaded = true;
+      _stats = TrackingStatsService.of(_currentEntry, GlobalData.trackingStats);
     });
   }
 
