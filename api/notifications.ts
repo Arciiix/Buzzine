@@ -247,6 +247,44 @@ notificationsRouter.get("/checkIfTokenExists", async (req, res) => {
   }
 });
 
+notificationsRouter.post("/sendNotification", async (req, res) => {
+  if (
+    !req.body.notificationPayload ||
+    !req.body.notificationPayload.body ||
+    !req.body.notificationPayload.title
+  ) {
+    res
+      .status(400)
+      .send({ error: true, errorCode: "MISSING_NOTIFICATION_PAYLOAD" });
+    return;
+  }
+
+  const notification: NotificationMessagePayload = {
+    body: req.body.notificationPayload.body,
+    color: req.body.notificationPayload.color ?? "#0078f2",
+    sound: req.body.notificationPayload.sound ?? "default",
+    title: `Buzzine - ${req.body.notificationPayload.title}`,
+  };
+
+  let response = await notificationServiceInstance.sendCustomNotification(
+    notification,
+    {
+      token: req.body.token,
+      options: {
+        priority: "high",
+        timeToLive: req.body.timeToLive || 60 * 5, //5 minutes
+      },
+    }
+  );
+
+  logger.info(
+    `Sent notification ${JSON.stringify(req.body.notificationPayload)} to ${
+      req.body.token ? "token " + req.body.token : "all tokens"
+    }`
+  );
+  res.send({ error: false });
+});
+
 function loadFirebaseConfig() {
   if (!fs.existsSync("firebaseServiceAccountKey.json")) {
     logger.error("Missing Firebase configuration file!");

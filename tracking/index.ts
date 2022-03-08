@@ -2,7 +2,12 @@ import express from "express";
 import { Op } from "sequelize";
 import TrackingEntryModel from "./models/TrackingEntry";
 import TrackingVersionHistoryModel from "./models/TrackingVersionHistory";
-import { PORT, STATS_REFRESH_TIME, TRACKER_DAY_START } from "./utils/constants";
+import {
+  API_URL,
+  PORT,
+  STATS_REFRESH_TIME,
+  TRACKER_DAY_START,
+} from "./utils/constants";
 import { initDatabase } from "./utils/db";
 import {
   dateTimeToDateOnly,
@@ -16,6 +21,7 @@ import {
   saveVersionHistory,
 } from "./utils/versionHistory";
 import schedule, { Job } from "node-schedule";
+import axios from "axios";
 
 const app = express();
 const api = express.Router();
@@ -273,6 +279,45 @@ api.put("/updateDataForLatestIfDoesntExist", async (req, res) => {
     dbObject.dataValues
   );
   clearOldVersionHistory();
+
+  //If user updates the sleepTime, check if there's any alarm set for tomorrow, and if there isn't, notify user about that
+  if (req.body.updateObject.sleepTime) {
+    //Get upcoming alarms
+    try {
+      let { data } = await axios.get(`${API_URL}/v1/getUpcomingAlarms`);
+
+      let allAlarms: any[] = [...data.response.alarms, ...data.response.naps];
+      //Check if there's any upcoming element with date which is earlier than (the date variable + 24 hours)
+      if (
+        !allAlarms.find(
+          (e: any) =>
+            new Date(e.invocationDate).getTime() <
+            date.getTime() + 1000 * 60 * 60 * 24
+        )
+      ) {
+        logger.info(
+          "User set the sleepTime but there's no alarm set for tomorrow"
+        );
+
+        await axios.post(`${API_URL}/v1/notifications/sendNotification`, {
+          notificationPayload: {
+            body: "Nie znaleziono żadnego alarmu na jutro!",
+            color: "#eb0546",
+            title: "brak alarmu",
+          },
+        });
+        logger.info(
+          "Notificaton about missing alarm for the next day has been sent"
+        );
+      }
+    } catch (err) {
+      logger.error(
+        `Error while getting upcoming alarms, while trying to notify user if there's no alarm set for the next day: ${err.toString()}; ${JSON.stringify(
+          err?.response?.data ?? ""
+        )} with status ${err?.response?.status}`
+      );
+    }
+  }
 
   res.send({
     error: false,
