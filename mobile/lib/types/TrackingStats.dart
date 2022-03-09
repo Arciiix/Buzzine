@@ -204,9 +204,9 @@ class TrackingValue {
 
   String getOffset(bool monthly) {
     if (monthly) {
-      return this.offsetMonthly.toStringAsFixed(1) + "%";
+      return this.offsetMonthly.toStringAsFixed(0) + "%";
     } else {
-      return this.offsetLifetime.toStringAsFixed(1) + "%";
+      return this.offsetLifetime.toStringAsFixed(0) + "%";
     }
   }
 

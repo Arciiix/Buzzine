@@ -109,7 +109,7 @@ class _TrackingStatsScreenState extends State<TrackingStatsScreen> {
                                                         1)) *
                                                 100)
                                             .floor()
-                                            .toStringAsFixed(1) +
+                                            .toStringAsFixed(0) +
                                         "%")
                                   ],
                                 )
@@ -160,7 +160,7 @@ class _TrackingStatsScreenState extends State<TrackingStatsScreen> {
                                                         1)) *
                                                 100)
                                             .floor()
-                                            .toStringAsFixed(1) +
+                                            .toStringAsFixed(0) +
                                         "%")
                                   ],
                                 )
@@ -226,7 +226,7 @@ class _TrackingStatsScreenState extends State<TrackingStatsScreen> {
                                                         1)) *
                                                 100)
                                             .floor()
-                                            .toStringAsFixed(1) +
+                                            .toStringAsFixed(0) +
                                         "%")
                                   ],
                                 )
@@ -286,7 +286,7 @@ class _TrackingStatsScreenState extends State<TrackingStatsScreen> {
                                                         1)) *
                                                 100)
                                             .floor()
-                                            .toStringAsFixed(1) +
+                                            .toStringAsFixed(0) +
                                         "%")
                                   ],
                                 )
@@ -465,7 +465,7 @@ class _TrackingStatsScreenState extends State<TrackingStatsScreen> {
                                                     1)) *
                                             100)
                                         .floor()
-                                        .toStringAsFixed(1) +
+                                        .toStringAsFixed(0) +
                                     "%")
                               ],
                             )
@@ -517,7 +517,7 @@ class _TrackingStatsScreenState extends State<TrackingStatsScreen> {
                                                     1)) *
                                             100)
                                         .floor()
-                                        .toStringAsFixed(1) +
+                                        .toStringAsFixed(0) +
                                     "%")
                               ],
                             )
@@ -584,7 +584,7 @@ class _TrackingStatsScreenState extends State<TrackingStatsScreen> {
                                                     1)) *
                                             100)
                                         .floor()
-                                        .toStringAsFixed(1) +
+                                        .toStringAsFixed(0) +
                                     "%")
                               ],
                             )
@@ -645,7 +645,7 @@ class _TrackingStatsScreenState extends State<TrackingStatsScreen> {
                                                     1)) *
                                             100)
                                         .floor()
-                                        .toStringAsFixed(1) +
+                                        .toStringAsFixed(0) +
                                     "%")
                               ],
                             )
