@@ -18,6 +18,7 @@ import {
   getYouTubeVideoInfo,
 } from "./utils/YouTubeDownloader";
 import { cutAudio, previewCut } from "./utils/cutAudio";
+import { addFadeEffect, previewFadeEffect } from "./utils/fadeEffects";
 
 //Load environment variables from file
 dotenv.config();
@@ -383,8 +384,8 @@ api.put("/stopAudioPreview", (req, res) => {
   }
 
   setTimeout(() => {
-    //After a timeout because of speaker delay
-    fs.rmSync("./audio/cutPreviews/", { force: true, recursive: true });
+    //After a timeout because of the speaker delay
+    fs.rmSync("./audio/previews/", { force: true, recursive: true });
   }, 500);
 
   logger.info("User has stopped the preview audio playback");
@@ -475,6 +476,15 @@ api.get("/previewCut", async (req, res) => {
     }
   }
 
+  if (audioPreviewTimeout) {
+    clearTimeout(audioPreviewTimeout);
+    audioPreviewTimeout = null;
+  }
+  if (audioPreviewInstance) {
+    audioPreviewInstance.destroy();
+    audioPreviewInstance = null;
+  }
+
   let cutAudioResult = await previewCut(
     req.query.audioId as string,
     parseFloat(req.query.start as string),
@@ -496,24 +506,13 @@ api.get("/previewCut", async (req, res) => {
       return;
     }
 
-    if (audioPreviewTimeout) {
-      clearTimeout(audioPreviewTimeout);
-      audioPreviewTimeout = null;
-    }
-    if (audioPreviewInstance) {
-      audioPreviewInstance.destroy();
-      audioPreviewInstance = null;
-    }
-
-    audioPreviewInstance = new PlaySound(
-      `cutPreviews/${audioInstance.filename}`
-    );
+    audioPreviewInstance = new PlaySound(`previews/${audioInstance.filename}`);
     audioPreviewTimeout = setTimeout(() => {
       audioPreviewInstance.destroy();
       audioPreviewInstance = null;
       logger.info("Stopped the cut-preview audio playback because of timeout");
 
-      fs.rmSync("./audio/cutPreviews/", { force: true, recursive: true });
+      fs.rmSync("./audio/previews/", { force: true, recursive: true });
     }, cutAudioResult.response.duration * 1000);
 
     logger.info(
@@ -522,6 +521,124 @@ api.get("/previewCut", async (req, res) => {
   }
 
   res.send(cutAudioResult);
+});
+
+api.put("/addAudioFadeEffect", async (req, res) => {
+  if (!req.body.audioId) {
+    res.status(400).send({ error: true, errorCode: "MISSING_AUDIO_ID" });
+    logger.warn(`Tried to add audio fade effect but audioId is missing`);
+    return;
+  }
+
+  let fadeInDuration, fadeOutDuration;
+
+  if (req.body.fadeInDuration) {
+    fadeInDuration = parseFloat(req.body.fadeInDuration);
+    if (isNaN(fadeInDuration)) {
+      return res
+        .status(400)
+        .send({ error: true, errorCode: "WRONG_FADE_IN_DURATION" });
+    }
+  }
+  if (req.body.fadeOutDuration) {
+    fadeOutDuration = parseFloat(req.body.fadeOutDuration);
+    if (isNaN(fadeOutDuration)) {
+      return res
+        .status(400)
+        .send({ error: true, errorCode: "WRONG_FADE_OUT_DURATION" });
+    }
+  }
+
+  let fadeResult = await addFadeEffect(
+    req.body.audioId,
+    parseInt(req.body.fadeInDuration),
+    parseInt(req.body.fadeOutDuration)
+  );
+
+  if (fadeResult.error) {
+    res.status(400);
+  } else {
+    res.status(200);
+  }
+
+  res.send(fadeResult);
+});
+
+api.get("/previewAudioFadeEffect", async (req, res) => {
+  if (!req.query.audioId) {
+    res.status(400).send({ error: true, errorCode: "MISSING_AUDIO_ID" });
+    logger.warn(`Tried to preview audio fade effects but audioId is missing`);
+    return;
+  }
+
+  let fadeInDuration, fadeOutDuration;
+
+  if (req.query.fadeInDuration) {
+    fadeInDuration = parseFloat(req.query.fadeInDuration as string);
+    if (isNaN(fadeInDuration)) {
+      return res
+        .status(400)
+        .send({ error: true, errorCode: "WRONG_FADE_IN_DURATION" });
+    }
+  }
+  if (req.query.fadeOutDuration) {
+    fadeOutDuration = parseFloat(req.query.fadeOutDuration as string);
+    if (isNaN(fadeOutDuration)) {
+      return res
+        .status(400)
+        .send({ error: true, errorCode: "WRONG_FADE_OUT_DURATION" });
+    }
+  }
+
+  if (audioPreviewTimeout) {
+    clearTimeout(audioPreviewTimeout);
+    audioPreviewTimeout = null;
+  }
+  if (audioPreviewInstance) {
+    audioPreviewInstance.destroy();
+    audioPreviewInstance = null;
+  }
+
+  let fadeResult = await previewFadeEffect(
+    req.query.audioId as string,
+    parseInt(req.query.fadeInDuration as string),
+    parseInt(req.query.fadeOutDuration as string)
+  );
+
+  if (fadeResult.error) {
+    res.status(400);
+  } else {
+    res.status(200);
+
+    let audioInstance: any = await AudioNameMappingModel.findOne({
+      where: { audioId: req.query.audioId },
+    });
+
+    if (!audioInstance) {
+      res.status(400).send({ error: true, errorCode: "WRONG_AUDIO_ID" });
+      logger.warn(`Tried to preview an unexisting audio ${req.query.audioId}`);
+      return;
+    }
+
+    audioPreviewInstance = new PlaySound(`previews/${audioInstance.filename}`);
+    audioPreviewTimeout = setTimeout(() => {
+      audioPreviewInstance.destroy();
+      audioPreviewInstance = null;
+      logger.info(
+        "Stopped the preview of fade audio effects because of timeout"
+      );
+
+      fs.rmSync("./audio/previews/", { force: true, recursive: true });
+    }, audioInstance.duration * 1000);
+
+    logger.info(
+      `Playing a preview of fade audio effects ${
+        req.query.audioId
+      } - fade in: ${fadeInDuration || 0}s, fade out: ${fadeOutDuration || 0}s`
+    );
+  }
+
+  res.send(fadeResult);
 });
 
 async function init() {

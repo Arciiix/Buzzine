@@ -1,44 +1,46 @@
 import fs from "fs";
 import childProcess from "child_process";
 import logger from "./logger";
-import { getAudioDurationFromFile } from "./playAudio";
 import AudioNameMappingModel from "../models/AudioNameMapping";
 
-async function cutAudio(
+async function addFadeEffect(
   audioId: string,
-  start?: number,
-  end?: number
+  fadeInDuration?: number,
+  fadeOutDuration?: number
 ): Promise<{ error: boolean; errorCode?: string }> {
   let audioObj: any = await AudioNameMappingModel.findOne({
     where: { audioId },
   });
   if (!audioObj) return { error: true, errorCode: "WRONG_AUDIO_ID" };
   let filename = audioObj.filename;
-  let cutResponse = await cutAudioFile(filename, start, end, audioObj.duration);
+  let cutResponse = await applyFadeEffect(
+    filename,
+    fadeInDuration,
+    fadeOutDuration,
+    audioObj.duration
+  );
   if (!cutResponse.error) {
-    audioObj.duration = cutResponse.response.duration;
-    //If it was a YouTube audio, it's not the whole video anymore, so clear the id
+    //If it was a YouTube audio, it's not the exact same video anymore, so clear the id
     audioObj.youtubeID = null;
     await audioObj.save();
   }
   return cutResponse;
 }
 
-async function cutAudioFile(
+async function applyFadeEffect(
   filename: string,
-  start: number,
-  end: number,
+  fadeInDuration: number,
+  fadeOutDuration: number,
   duration: number
 ): Promise<{
   error: boolean;
   errorCode?: string;
-  response?: { duration: number };
 }> {
-  if (end > duration) {
-    return { error: true, errorCode: "WRONG_END_TIME" };
+  if (fadeInDuration >= duration) {
+    return { error: true, errorCode: "WRONG_FADE_IN_DURATION" };
   }
-  if (start < 0) {
-    return { error: true, errorCode: "WRONG_START_TIME" };
+  if (fadeOutDuration >= duration) {
+    return { error: true, errorCode: "WRONG_FADE_OUT_DURATION" };
   }
 
   let filePath = `./audio/${filename}`;
@@ -59,11 +61,28 @@ async function cutAudioFile(
     tempFilePath,
     "-y", //Overwrite
   ];
-  if (start) {
-    params.push(...["-ss", start.toString()]);
+
+  //Fade filters
+  let filters = '"';
+
+  if (fadeInDuration) {
+    filters += `afade=t=in:st=0:d=${parseInt(fadeInDuration.toString()) || 0}`;
   }
-  if (end) {
-    params.push(...["-to", end.toString()]);
+  if (fadeOutDuration) {
+    if (fadeInDuration) {
+      filters += ",";
+    }
+
+    filters += `afade=t=out:st=${
+      duration - (parseInt(fadeOutDuration.toString()) || 0)
+    }:d=${parseInt(fadeOutDuration.toString()) || 0}`;
+  }
+
+  filters += '"';
+
+  if (fadeInDuration || fadeOutDuration) {
+    params.push("-af");
+    params.push(filters);
   }
 
   //The output file
@@ -75,15 +94,20 @@ async function cutAudioFile(
       async (err, stdout, stderr) => {
         if (err) {
           logger.error(
-            `Error while cutting audio ${filename} from ${start}s to ${end}s: ${stderr.toString()}`
+            `Error while trying to add fade effects to audio ${filename} - fade in: ${
+              fadeInDuration || 0
+            }s, fade out: ${fadeOutDuration || 0}s: ${stderr.toString()}`
           );
           reject({ error: true, errorCode: stderr.toString() });
         } else {
           fs.unlinkSync(tempFilePath);
-          logger.info(`Cut audio ${filename} from ${start}s to ${end}s`);
+          logger.info(
+            `Added audio effects to audio ${filename} - fade in: ${
+              fadeInDuration || 0
+            }s, fade out: ${fadeOutDuration || 0}s`
+          );
           resolve({
             error: false,
-            response: { duration: await getAudioDurationFromFile(filename) },
           });
         }
       }
@@ -91,10 +115,10 @@ async function cutAudioFile(
   });
 }
 
-async function previewCut(
+async function previewFadeEffect(
   audioId: string,
-  start?: number,
-  end?: number
+  fadeInDuration?: number,
+  fadeOutDuration?: number
 ): Promise<{
   error: boolean;
   errorCode?: string;
@@ -112,13 +136,13 @@ async function previewCut(
   }
 
   fs.copyFileSync(`./audio/${filename}`, `./audio/previews/${filename}`);
-  let cutResponse = await cutAudioFile(
+  let fadeResponse = await applyFadeEffect(
     `previews/${filename}`,
-    start,
-    end,
+    fadeInDuration,
+    fadeOutDuration,
     audioObj.duration
   );
-  return cutResponse;
+  return fadeResponse;
 }
 
-export { cutAudio, cutAudioFile, previewCut };
+export { addFadeEffect, applyFadeEffect, previewFadeEffect };
