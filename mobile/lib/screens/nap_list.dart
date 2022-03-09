@@ -23,6 +23,9 @@ class _NapListState extends State<NapList> {
   GlobalKey<RefreshIndicatorState> _refreshState =
       GlobalKey<RefreshIndicatorState>();
 
+  bool _isSearching = false;
+  TextEditingController _searchingController = TextEditingController();
+
   void addNap(Nap? selectedNap) async {
     Alarm? nap = await Navigator.of(context).push(MaterialPageRoute(
       builder: (context) =>
@@ -86,7 +89,63 @@ class _NapListState extends State<NapList> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(title: const Text("Drzemki")),
+        appBar: AppBar(
+          title: _isSearching
+              ? TextField(
+                  decoration: const InputDecoration(
+                      labelText: "Wyszukaj drzemkę", border: InputBorder.none),
+                  controller: _searchingController,
+                  autofocus: true,
+                  onChanged: (value) {
+                    List<Nap> _filteredNaps = GlobalData.naps;
+
+                    _filteredNaps = _filteredNaps.where((elem) {
+                      return (elem.name ?? "Drzemka bez nazwy")
+                              .toLowerCase()
+                              .contains(value.toLowerCase()) ||
+                          (elem.notes ?? "")
+                              .toLowerCase()
+                              .contains(value.toLowerCase()) ||
+                          ((elem.sound?.friendlyName ?? elem.sound?.filename) ??
+                                  "")
+                              .toLowerCase()
+                              .contains(value.toLowerCase());
+                    }).toList();
+
+                    if (widget.filter != null) {
+                      _filteredNaps =
+                          _filteredNaps.where(widget.filter!).toList();
+                    }
+
+                    setState(() {
+                      naps = _filteredNaps;
+                    });
+                  },
+                )
+              : const Text("Drzemki"),
+          actions: [
+            _isSearching
+                ? IconButton(
+                    icon: const Icon(Icons.clear),
+                    onPressed: () => setState(() {
+                          _isSearching = false;
+                          _searchingController.text = "";
+
+                          if (widget.filter != null) {
+                            naps =
+                                GlobalData.naps.where(widget.filter!).toList();
+                          } else {
+                            naps = GlobalData.naps;
+                          }
+                        }))
+                : IconButton(
+                    icon: const Icon(Icons.search),
+                    onPressed: () => setState(() {
+                          _isSearching = true;
+                          _searchingController.text = "";
+                        }))
+          ],
+        ),
         floatingActionButton: FloatingActionButton(
           onPressed: () => addNap(null),
           child: const Icon(Icons.add),

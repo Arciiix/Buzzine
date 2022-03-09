@@ -377,7 +377,7 @@ class _AlarmCardState extends State<AlarmCard> {
                   widget.notes ?? "Brak",
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.center,
+                  textAlign: TextAlign.left,
                 )),
               ],
             ),

@@ -159,6 +159,7 @@ api.put("/tempMute", async (req, res) => {
       await axios.get(
         `${TASMOTA_URL}/cm?cmnd=Backlog%20Power${RELAY_INDEX}%200%3BRuleTimer1%20${req.body.duration}`
       );
+      res.send({ error: false });
     } catch (err) {
       logger.error(
         `Error while trying to temp-mute: ${
@@ -166,6 +167,8 @@ api.put("/tempMute", async (req, res) => {
         } with data: ${JSON.stringify(err?.response?.data)}`
       );
     }
+  } else {
+    res.send({ error: false });
   }
 });
 

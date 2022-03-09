@@ -22,6 +22,9 @@ class _AlarmListState extends State<AlarmList> {
   GlobalKey<RefreshIndicatorState> _refreshState =
       GlobalKey<RefreshIndicatorState>();
 
+  bool _isSearching = false;
+  TextEditingController _searchingController = TextEditingController();
+
   void addAlarm(Alarm? selectedAlarm) async {
     Alarm? alarm = await Navigator.of(context).push(MaterialPageRoute(
       builder: (context) => AlarmForm(baseAlarm: selectedAlarm),
@@ -68,7 +71,64 @@ class _AlarmListState extends State<AlarmList> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(title: const Text("Alarmy")),
+        appBar: AppBar(
+          title: _isSearching
+              ? TextField(
+                  decoration: const InputDecoration(
+                      labelText: "Wyszukaj alarm", border: InputBorder.none),
+                  controller: _searchingController,
+                  autofocus: true,
+                  onChanged: (value) {
+                    List<Alarm> _filteredAlarms = GlobalData.alarms;
+
+                    _filteredAlarms = _filteredAlarms.where((elem) {
+                      return (elem.name ?? "Alarm bez nazwy")
+                              .toLowerCase()
+                              .contains(value.toLowerCase()) ||
+                          (elem.notes ?? "")
+                              .toLowerCase()
+                              .contains(value.toLowerCase()) ||
+                          ((elem.sound?.friendlyName ?? elem.sound?.filename) ??
+                                  "")
+                              .toLowerCase()
+                              .contains(value.toLowerCase());
+                    }).toList();
+
+                    if (widget.filter != null) {
+                      _filteredAlarms =
+                          _filteredAlarms.where(widget.filter!).toList();
+                    }
+
+                    setState(() {
+                      alarms = _filteredAlarms;
+                    });
+                  },
+                )
+              : const Text("Alarmy"),
+          actions: [
+            _isSearching
+                ? IconButton(
+                    icon: const Icon(Icons.clear),
+                    onPressed: () => setState(() {
+                          _isSearching = false;
+                          _searchingController.text = "";
+
+                          if (widget.filter != null) {
+                            alarms = GlobalData.alarms
+                                .where(widget.filter!)
+                                .toList();
+                          } else {
+                            alarms = GlobalData.alarms;
+                          }
+                        }))
+                : IconButton(
+                    icon: const Icon(Icons.search),
+                    onPressed: () => setState(() {
+                          _isSearching = true;
+                          _searchingController.text = "";
+                        }))
+          ],
+        ),
         floatingActionButton: FloatingActionButton(
           onPressed: () => addAlarm(null),
           child: const Icon(Icons.add),
