@@ -1385,4 +1385,46 @@ class GlobalData {
     );
     return GlobalData.trackingStats;
   }
+
+  static Future<void> addFadeEffects(
+      String audioId, int fadeInDuration, int fadeOutDuration) async {
+    Map requestData = {
+      'audioId': audioId,
+      'fadeInDuration': fadeInDuration,
+      'fadeOutDuration': fadeOutDuration
+    };
+
+    var response = await http.put(
+        Uri.parse("$serverIP/v1/audio/addAudioFadeEffect"),
+        body: json.encode(requestData),
+        headers: {"Content-Type": "application/json"});
+    var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
+
+    if (response.statusCode != 200 || decodedResponse['error'] == true) {
+      throw APIException(
+          "Błąd podczas dodawania efektów przejścia audio. Status code: ${response.statusCode}, response: ${response.body}");
+    }
+  }
+
+  static Future<void> previewFadeEffect(
+      String audioId, int fadeInDuration, int fadeOutDuration) async {
+    Map<String, String> requestData = {
+      'audioId': audioId,
+      'fadeInDuration': fadeInDuration.toString(),
+      'fadeOutDuration': fadeOutDuration.toString()
+    };
+
+    var response = await http.get(
+      Uri.parse("$serverIP/v1/audio/previewAudioFadeEffect")
+          .replace(queryParameters: requestData),
+    );
+    var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
+
+    if (response.statusCode != 200 || decodedResponse['error'] == true) {
+      if (decodedResponse['errorCode'] != null) {
+        throw APIException(
+            "Błąd podczas podglądu efektów przejścia audio $audioId. Status code: ${response.statusCode}, response: ${response.body}");
+      }
+    }
+  }
 }

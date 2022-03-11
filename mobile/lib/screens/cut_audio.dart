@@ -36,7 +36,7 @@ class _CutAudioState extends State<CutAudio> {
             ),
             TextButton(
                 onPressed: () => Navigator.of(context).pop(true),
-                child: const Text("Wyłącz")),
+                child: const Text("Przytnij")),
           ],
         );
       },

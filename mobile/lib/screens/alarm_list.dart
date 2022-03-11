@@ -40,7 +40,7 @@ class _AlarmListState extends State<AlarmList> {
       );
       await GlobalData.addAlarm(alarm.toMap(), selectedAlarm != null);
       Navigator.of(context).pop();
-      await _refreshState.currentState!.show();
+      await _refreshState.currentState?.show();
     }
   }
 
@@ -55,7 +55,7 @@ class _AlarmListState extends State<AlarmList> {
     await GlobalData.deleteAlarm(alarmToDelete.id ?? "");
     Navigator.of(context).pop();
     showSnackbar(context, "Usunięto alarm!");
-    await _refreshState.currentState!.show();
+    await _refreshState.currentState?.show();
   }
 
   @override
@@ -224,7 +224,7 @@ class _AlarmListState extends State<AlarmList> {
                                             emergencyAlarmTimeoutSeconds:
                                                 e.emergencyAlarmTimeoutSeconds,
                                             repeat: e.repeat,
-                                            // refresh: () async =>       await _refreshState.currentState!.show()
+                                            // refresh: () async =>       await _refreshState.currentState?.show()
                                           )))));
                         }),
                   )

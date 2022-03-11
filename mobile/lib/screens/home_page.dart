@@ -204,7 +204,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> refresh() async {
-    _refreshState.currentState!.show();
+    _refreshState.currentState?.show();
   }
 
   void handleShareIntent(String? value) {

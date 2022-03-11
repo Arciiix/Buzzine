@@ -4,6 +4,7 @@ import 'package:buzzine/globalData.dart';
 import 'package:buzzine/screens/alarm_list.dart';
 import 'package:buzzine/screens/cut_audio.dart';
 import 'package:buzzine/screens/download_YouTube_audio.dart';
+import 'package:buzzine/screens/fade_effect.dart';
 import 'package:buzzine/screens/nap_list.dart';
 import 'package:buzzine/types/Alarm.dart';
 import 'package:buzzine/types/Audio.dart';
@@ -41,12 +42,15 @@ class _AudioManagerState extends State<AudioManager> {
       },
     );
     await GlobalData.stopAudioPreview();
+    setState(() {
+      _isPreviewPlaying = false;
+    });
     Navigator.of(context).pop();
     await Navigator.of(context).push(
       MaterialPageRoute(builder: (context) => DownloadYouTubeAudio()),
     );
 
-    await _refreshState.currentState!.show();
+    await _refreshState.currentState?.show();
   }
 
   void deleteAudio(Audio e) async {
@@ -81,6 +85,9 @@ class _AudioManagerState extends State<AudioManager> {
         },
       );
       await GlobalData.stopAudioPreview();
+      setState(() {
+        _isPreviewPlaying = false;
+      });
       Navigator.of(context).pop();
       setState(() {
         _previewId = '';
@@ -148,7 +155,7 @@ class _AudioManagerState extends State<AudioManager> {
                     await GlobalData.changeAudioName(
                         audio.audioId, _audioNameTextFieldController.text);
                     Navigator.of(context).pop();
-                    await _refreshState.currentState!.show();
+                    await _refreshState.currentState?.show();
                     Navigator.of(context).pop();
                   }
                 },
@@ -159,7 +166,12 @@ class _AudioManagerState extends State<AudioManager> {
     );
   }
 
-  void navigateToAudioCut(Audio audio) async {
+  void navigateToEditScreen(Audio audio) async {
+    Map<String, String> availableOptions = {
+      'cut': 'cut',
+      'fade': 'fade',
+    };
+
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -168,12 +180,63 @@ class _AudioManagerState extends State<AudioManager> {
       },
     );
     await GlobalData.stopAudioPreview();
+    setState(() {
+      _isPreviewPlaying = false;
+    });
     Navigator.of(context).pop();
+
+    String? selectedOption = await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Edytuj audio"),
+          content: Container(
+            height: 100,
+            width: 100,
+            child: Center(
+              child: ListView(
+                children: [
+                  ListTile(
+                    title: const Text("Przytnij"),
+                    onTap: () =>
+                        Navigator.of(context).pop(availableOptions['cut']),
+                  ),
+                  ListTile(
+                    title: const Text("Efekt wejścia i wyjścia"),
+                    onTap: () =>
+                        Navigator.of(context).pop(availableOptions['fade']),
+                  )
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+
+    if (selectedOption == availableOptions['cut']) {
+      await navigateToAudioCut(audio);
+    } else if (selectedOption == availableOptions['fade']) {
+      await navigateToFadeEffectChange(audio);
+    }
+
+    await _refreshState.currentState?.show();
+  }
+
+  Future<void> navigateToAudioCut(Audio audio) async {
     await Navigator.of(context).push(MaterialPageRoute(
       builder: (context) => CutAudio(audio: audio),
     ));
 
-    await _refreshState.currentState!.show();
+    await _refreshState.currentState?.show();
+  }
+
+  Future<void> navigateToFadeEffectChange(Audio audio) async {
+    await Navigator.of(context).push(MaterialPageRoute(
+      builder: (context) => FadeEffect(audio: audio),
+    ));
+
+    await _refreshState.currentState?.show();
   }
 
   void showAlarmsWithAudio(Audio audio) async {
@@ -185,6 +248,9 @@ class _AudioManagerState extends State<AudioManager> {
       },
     );
     await GlobalData.stopAudioPreview();
+    setState(() {
+      _isPreviewPlaying = false;
+    });
     Navigator.of(context).pop();
     bool? showAlarms = await showDialog(
       context: context,
@@ -210,14 +276,14 @@ class _AudioManagerState extends State<AudioManager> {
             AlarmList(filter: (Alarm e) => e.sound?.audioId == audio.audioId),
       ));
 
-      await _refreshState.currentState!.show();
+      await _refreshState.currentState?.show();
     } else if (showAlarms == false) {
       await Navigator.of(context).push(MaterialPageRoute(
         builder: (context) =>
             NapList(filter: (Nap e) => e.sound?.audioId == audio.audioId),
       ));
 
-      await _refreshState.currentState!.show();
+      await _refreshState.currentState?.show();
     }
   }
 
@@ -266,9 +332,9 @@ class _AudioManagerState extends State<AudioManager> {
                                         padding: const EdgeInsets.all(8.0),
                                         child: Row(
                                           children: [
-                                            Icon(Icons.content_cut,
+                                            Icon(Icons.edit,
                                                 color: Colors.white),
-                                            Text("Przytnij",
+                                            Text("Edytuj",
                                                 style: TextStyle(
                                                     color: Colors.white)),
                                           ],
@@ -290,6 +356,7 @@ class _AudioManagerState extends State<AudioManager> {
                                   )),
                               confirmDismiss:
                                   (DismissDirection direction) async {
+                                //Navigate here, not in the onDismissed function - keep the audio list tile, don't destroy it
                                 if (direction == DismissDirection.endToStart) {
                                   return await showDialog(
                                     context: context,
@@ -316,8 +383,7 @@ class _AudioManagerState extends State<AudioManager> {
                                   );
                                 } else if (direction ==
                                     DismissDirection.startToEnd) {
-                                  //Navigate here, not in the onDismissed function - keep the audio list tile, don't destroy it
-                                  navigateToAudioCut(e);
+                                  navigateToEditScreen(e);
                                 }
                               },
                               onDismissed: (DismissDirection direction) {

@@ -218,7 +218,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
   }
 
   Future<void> refresh() async {
-    await _refreshState.currentState!.show();
+    await _refreshState.currentState?.show();
   }
 
   @override

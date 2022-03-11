@@ -101,6 +101,7 @@ class _DownloadYouTubeAudioState extends State<DownloadYouTubeAudio> {
         setState(() {
           _inputController.text = data.text!;
         });
+        getVideoInfo();
       } else {
         showSnackbar(context, "Niepoprawny format linku");
       }

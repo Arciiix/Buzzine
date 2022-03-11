@@ -58,7 +58,7 @@ class _NapListState extends State<NapList> {
       );
       await GlobalData.addNap(castedNap.toMap(), selectedNap != null);
       Navigator.of(context).pop();
-      await _refreshState.currentState!.show();
+      await _refreshState.currentState?.show();
     }
   }
 
@@ -73,7 +73,7 @@ class _NapListState extends State<NapList> {
     await GlobalData.deleteAlarm(napToDelete.id ?? "");
     Navigator.of(context).pop();
     showSnackbar(context, "Usunięto drzemkę!");
-    await _refreshState.currentState!.show();
+    await _refreshState.currentState?.show();
   }
 
   @override
