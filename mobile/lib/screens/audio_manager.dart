@@ -240,7 +240,7 @@ class _AudioManagerState extends State<AudioManager> {
   }
 
   void showAlarmsWithAudio(Audio audio) async {
-    await showDialog(
+    showDialog(
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
