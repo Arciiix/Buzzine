@@ -302,7 +302,7 @@ api.put("/updateDataForLatestIfDoesntExist", async (req, res) => {
         await axios.post(`${API_URL}/v1/notifications/sendNotification`, {
           notificationPayload: {
             body: "Nie znaleziono żadnego alarmu na jutro!",
-            color: "#eb0546",
+            color: "#f1c40f",
             title: "brak alarmu",
           },
         });
