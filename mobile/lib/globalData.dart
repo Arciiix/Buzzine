@@ -45,6 +45,8 @@ class GlobalData {
   static LatLng? homeLocation;
   static int weatherHoursCount = 24;
   static RangeValues temperatureRange = RangeValues(19, 24);
+  static Duration targetSleepDuration = Duration(hours: 7, minutes: 30);
+  static Duration targetFallingAsleepTime = Duration(minutes: 15);
 
   static late SleepAsAndroidIntegrationStatus sleepAsAndroidIntegrationStatus;
 
@@ -122,6 +124,11 @@ class GlobalData {
     temperatureRange = RangeValues(
         (_prefs.getDouble('TEMPERATURE_RANGE_START') ?? 19),
         _prefs.getDouble('TEMPERATURE_RANGE_END') ?? 24);
+
+    targetSleepDuration = Duration(
+        seconds: _prefs.getInt("_SLEEP_DURATION") ?? (60 * 60 * 7.5).floor());
+    targetFallingAsleepTime =
+        Duration(seconds: _prefs.getInt("FALLING_ASLEEP_TIME") ?? 60 * 15);
 
     if (latitude != null && longitude != null) {
       homeLocation = LatLng(latitude, longitude);

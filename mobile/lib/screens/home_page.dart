@@ -7,6 +7,7 @@ import 'package:buzzine/components/logo.dart';
 import 'package:buzzine/components/ping_result_indicator.dart';
 import 'package:buzzine/components/simple_loading_dialog.dart';
 import 'package:buzzine/components/sleep_as_android_integration.dart';
+import 'package:buzzine/components/sleep_calculations_widget.dart';
 import 'package:buzzine/components/snooze_card.dart';
 import 'package:buzzine/components/temperature_widget.dart';
 import 'package:buzzine/components/tracking_entry_widget.dart';
@@ -677,6 +678,8 @@ class _HomePageState extends State<HomePage> {
                                   ),
                                   Section("📈 Sen"),
                                   TrackingEntryWidget(key: _trackingWidgetKey),
+                                  Section("🧮 Kalkulacje"),
+                                  SleepCalculationsWidget(),
                                   Section("🎵 Audio"),
                                   InkWell(
                                       onTap: navigateToAudioManager,

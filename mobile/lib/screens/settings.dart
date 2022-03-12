@@ -1,6 +1,7 @@
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:buzzine/components/number_vertical_picker.dart';
 import 'package:buzzine/components/simple_loading_dialog.dart';
+import 'package:buzzine/components/time_number_picker.dart';
 import 'package:buzzine/globalData.dart';
 import 'package:buzzine/screens/select_on_map.dart';
 import 'package:buzzine/utils/formatting.dart';
@@ -42,6 +43,9 @@ class _SettingsState extends State<Settings> {
   TextEditingController _weatherHoursCountController = TextEditingController();
 
   RangeValues _temperatureRange = RangeValues(19, 24);
+
+  Duration _sleepDuration = Duration(hours: 7, minutes: 30);
+  Duration _fallingAsleepTime = Duration(minutes: 15);
 
   FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
   bool? _isMessagingEnabled;
@@ -95,6 +99,19 @@ class _SettingsState extends State<Settings> {
         selectedValue + selectedValueFracionalValue / 10 < max) {
       return selectedValue + selectedValueFracionalValue / 10;
     }
+  }
+
+  Future<Duration?> selectDurationFromTimePicker(
+      int initialTime, int minTime, int maxTime) async {
+    Duration? userSelection =
+        await Navigator.of(context).push(MaterialPageRoute(
+      builder: (context) => TimeNumberPicker(
+        maxDuration: maxTime,
+        minDuration: minTime,
+        initialTime: initialTime,
+      ),
+    ));
+    return userSelection;
   }
 
   Future<void> getNotificationsStatus() async {
@@ -253,6 +270,12 @@ class _SettingsState extends State<Settings> {
       _temperatureRange = RangeValues(
           (_prefsInstance.getDouble('TEMPERATURE_RANGE_START') ?? 19),
           _prefsInstance.getDouble('TEMPERATURE_RANGE_END') ?? 24);
+
+      _sleepDuration = Duration(
+          seconds: _prefsInstance.getInt("SLEEP_DURATION") ??
+              (60 * 60 * 7.5).floor());
+      _fallingAsleepTime = Duration(
+          seconds: _prefsInstance.getInt("FALLING_ASLEEP_TIME") ?? 60 * 15);
     });
   }
 
@@ -273,6 +296,10 @@ class _SettingsState extends State<Settings> {
       _prefsInstance.setDouble(
           "TEMPERATURE_RANGE_START", _temperatureRange.start);
       _prefsInstance.setDouble("TEMPERATURE_RANGE_END", _temperatureRange.end);
+
+      _prefsInstance.setInt("SLEEP_DURATION", _sleepDuration.inSeconds);
+      _prefsInstance.setInt(
+          "FALLING_ASLEEP_TIME", _fallingAsleepTime.inSeconds);
 
       if (double.tryParse(_homeLatitudeController.text.replaceAll(",", ".")) !=
               null &&
@@ -824,7 +851,46 @@ class _SettingsState extends State<Settings> {
                                         ),
                                       )
                                     ],
-                            )
+                            ),
+                            SectionTitle("Obliczenia snu"),
+                            Column(
+                              children: [
+                                ListTile(
+                                  title: const Text("Idealna długość snu"),
+                                  subtitle:
+                                      Text(durationToHHmm(_sleepDuration)),
+                                  onTap: () async {
+                                    Duration? selectedDuration =
+                                        await selectDurationFromTimePicker(
+                                            _sleepDuration.inSeconds,
+                                            1,
+                                            9999999); //TODO: Don't do 9999999
+                                    if (selectedDuration != null) {
+                                      setState(() {
+                                        _sleepDuration = selectedDuration;
+                                      });
+                                    }
+                                  },
+                                ),
+                                ListTile(
+                                  title: const Text("Średni czas na zaśnięcie"),
+                                  subtitle:
+                                      Text(durationToHHmm(_fallingAsleepTime)),
+                                  onTap: () async {
+                                    Duration? selectedDuration =
+                                        await selectDurationFromTimePicker(
+                                            _fallingAsleepTime.inSeconds,
+                                            1,
+                                            9999999); //TODO: Don't do 9999999
+                                    if (selectedDuration != null) {
+                                      setState(() {
+                                        _fallingAsleepTime = selectedDuration;
+                                      });
+                                    }
+                                  },
+                                ),
+                              ],
+                            ),
                           ],
                         ))),
               ),
