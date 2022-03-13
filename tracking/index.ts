@@ -307,8 +307,28 @@ api.put("/updateDataForLatestIfDoesntExist", async (req, res) => {
           },
         });
         logger.info(
-          "Notificaton about missing alarm for the next day has been sent"
+          "Notification about missing alarm for the next day has been sent"
         );
+      } else {
+        let theEarliestAlarm = allAlarms.sort(
+          (a, b) =>
+            new Date(a.invocationDate).getTime() -
+            new Date(b.invocationDate).getTime()
+        )[0];
+
+        let isNap =
+          theEarliestAlarm.napId || theEarliestAlarm.alarmId.includes("NAP/");
+
+        await axios.post(`${API_URL}/v1/notifications/sendNotification`, {
+          notificationPayload: {
+            body: `Najbliższ${
+              isNap ? "a drzemka" : "y alarm"
+            }: ${toDateTimeString(new Date(theEarliestAlarm.invocationDate))}`,
+            color: "#0078f2",
+            title: `najbliższ${isNap ? "a drzemka" : "y alarm"}`,
+          },
+        });
+        logger.info("Notification about the next alarm has been sent");
       }
     } catch (err) {
       logger.error(
