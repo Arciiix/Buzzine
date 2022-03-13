@@ -24,6 +24,7 @@ class SleepCalculationsScreen extends StatefulWidget {
 class _SleepCalculationsScreenState extends State<SleepCalculationsScreen> {
   late SleepCalculations _calculations;
   late TrackingStats _trackingStats;
+  late List<SleepCalculationsComparison> _sleepComparison;
 
   Future<int?> displayChoiceDialog(List<String> choices) async {
     int? selectedOptionIndex = await showDialog(
@@ -90,8 +91,8 @@ class _SleepCalculationsScreenState extends State<SleepCalculationsScreen> {
 
   Future<void> handleSleepTimeSelect() async {
     DateTime? selectedTime = await getTime(TimeOfDay(
-        hour: _calculations.goingToSleep.hour,
-        minute: _calculations.goingToSleep.minute));
+        hour: _calculations.goingToSleep.toLocal().hour,
+        minute: _calculations.goingToSleep.toLocal().minute));
 
     if (selectedTime != null) {
       int? userChoice = await displayChoiceDialog(
@@ -100,6 +101,7 @@ class _SleepCalculationsScreenState extends State<SleepCalculationsScreen> {
       if (userChoice == null) return;
 
       _calculations.changeGoingToSleep(selectedTime, userChoice == 0);
+      refreshComparison();
 
       //Re-render
       setState(() {});
@@ -117,6 +119,7 @@ class _SleepCalculationsScreenState extends State<SleepCalculationsScreen> {
       if (userChoice == null) return;
 
       _calculations.changeTimeToFallAsleep(selectedDuration, userChoice == 0);
+      refreshComparison();
 
       //Re-render
       setState(() {});
@@ -134,6 +137,7 @@ class _SleepCalculationsScreenState extends State<SleepCalculationsScreen> {
       if (userChoice == null) return;
 
       _calculations.changeSleepDuration(selectedDuration, userChoice == 0);
+      refreshComparison();
 
       //Re-render
       setState(() {});
@@ -142,8 +146,8 @@ class _SleepCalculationsScreenState extends State<SleepCalculationsScreen> {
 
   Future<void> handleAlarmTimeSelect() async {
     DateTime? selectedTime = await getTime(TimeOfDay(
-        hour: _calculations.alarmTime.hour,
-        minute: _calculations.alarmTime.minute));
+        hour: _calculations.alarmTime.toLocal().hour,
+        minute: _calculations.alarmTime.toLocal().minute));
 
     if (selectedTime != null) {
       int? userChoice = await displayChoiceDialog(
@@ -152,9 +156,66 @@ class _SleepCalculationsScreenState extends State<SleepCalculationsScreen> {
       if (userChoice == null) return;
 
       _calculations.changeAlarmTime(selectedTime, userChoice == 0);
+      refreshComparison();
 
       //Re-render
       setState(() {});
+    }
+  }
+
+  Future<void> askToRecalculateDurationOnComparison() async {
+    bool? confirmed = await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Resetuj długości snu"),
+          content: Text(
+              'Czy na pewno chcesz przywrócić długość snu w tabeli do domyślnych wartości?'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text("Anuluj"),
+            ),
+            TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: const Text("Przywróć")),
+          ],
+        );
+      },
+    );
+
+    if (confirmed == true) {
+      refreshComparison();
+      calculateDurationsToComparison();
+    }
+  }
+
+  Future<void> changeSleepComparisonEntry(
+      SleepCalculationsComparison comparison) async {
+    int? userChoice =
+        await displayChoiceDialog(["Zmień długość", "Zmień godzinę budzenia"]);
+
+    if (userChoice == null) return;
+
+    if (userChoice == 0) {
+      Duration? selectedDuration =
+          await selectDurationFromPicker(comparison.duration.inSeconds);
+
+      if (selectedDuration != null) {
+        setState(() {
+          comparison.changeDuration(selectedDuration, _calculations);
+        });
+      }
+    } else {
+      DateTime? selectedTime = await getTime(TimeOfDay(
+          hour: _calculations.alarmTime.toLocal().hour,
+          minute: _calculations.alarmTime.toLocal().minute));
+
+      if (selectedTime != null) {
+        setState(() {
+          comparison.changeAlarmTime(selectedTime, _calculations);
+        });
+      }
     }
   }
 
@@ -166,10 +227,49 @@ class _SleepCalculationsScreenState extends State<SleepCalculationsScreen> {
     }
   }
 
+  void refreshComparison() {
+    _sleepComparison.forEach((e) => e.update(_calculations));
+    //Re-render
+    setState(() {});
+  }
+
+  void calculateDurationsToComparison() {
+    //This amount of minutes will be added to the base duration
+    List<int> durationDifferencesMinutes = [
+      -180,
+      -120,
+      -90,
+      -60,
+      0,
+      30,
+      60,
+      90,
+      120,
+      180
+    ];
+
+    setState(() {
+      _sleepComparison = durationDifferencesMinutes
+          .map((e) => SleepCalculationsComparison(
+              initDuration:
+                  Duration(minutes: _calculations.sleepDuration.inMinutes + e),
+              calculations: _calculations))
+          .toList();
+
+      //Delete entries with negative duration
+      _sleepComparison = _sleepComparison
+          .where((SleepCalculationsComparison e) => e.duration.inSeconds > 0)
+          .toList();
+    });
+  }
+
   @override
   void initState() {
     _calculations = widget.initCalculations;
     _trackingStats = GlobalData.trackingStats;
+
+    calculateDurationsToComparison();
+
     super.initState();
   }
 
@@ -241,6 +341,47 @@ class _SleepCalculationsScreenState extends State<SleepCalculationsScreen> {
               title: const Text("Godzina obudzenia się"),
               subtitle: Text(dateToTimeString(_calculations.alarmTime,
                   excludeSeconds: true)),
+            ),
+            SizedBox(height: 20),
+            InkWell(
+              onTap: askToRecalculateDurationOnComparison,
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  mainAxisSize: MainAxisSize.max,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: const [
+                    Text("Długość snu",
+                        style: TextStyle(fontWeight: FontWeight.bold)),
+                    Text("Godzina obudzenia się",
+                        style: TextStyle(fontWeight: FontWeight.bold)),
+                  ],
+                ),
+              ),
+            ),
+            Expanded(
+              child: ListView.builder(
+                padding: const EdgeInsets.only(bottom: 72),
+                itemCount: _sleepComparison.length,
+                itemBuilder: (context, index) {
+                  return ListTile(
+                    onTap: () =>
+                        changeSleepComparisonEntry(_sleepComparison[index]),
+                    title: Text(
+                        durationToHHmm(_sleepComparison[index].duration)
+                            .toString(),
+                        style: TextStyle(
+                          fontSize: 14,
+                        )),
+                    trailing: Text(
+                        dateToTimeString(_sleepComparison[index].alarmTime,
+                            excludeSeconds: true),
+                        style: TextStyle(
+                          fontSize: 14,
+                        )),
+                  );
+                },
+              ),
             ),
           ],
         ));

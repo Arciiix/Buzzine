@@ -1,3 +1,4 @@
+import 'package:buzzine/screens/sleep_calculations_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:buzzine/components/simple_loading_dialog.dart';
 import 'package:buzzine/globalData.dart';
@@ -102,5 +103,48 @@ class SleepCalculations {
     _timeToFallAsleep = targetTimeToFallAsleep;
     _goingToSleep = DateTime.now();
     _alarmTime = DateTime.now().add(_timeToFallAsleep).add(_sleepDuration);
+  }
+}
+
+class SleepCalculationsComparison {
+  late DateTime _alarmTime;
+  late Duration _duration;
+
+  //Outside the class, the only thing allowed is to read the variables
+  DateTime get alarmTime => _alarmTime;
+  Duration get duration => _duration;
+
+  void changeDuration(Duration newDuration, SleepCalculations calculations) {
+    _duration = newDuration;
+
+    _alarmTime = calculations.goingToSleep
+        .add(calculations.timeToFallAsleep)
+        .add(newDuration);
+  }
+
+  void changeAlarmTime(DateTime newAlarmTime, SleepCalculations calculations) {
+    _alarmTime = newAlarmTime;
+
+    _duration = calculations.goingToSleep
+        .add(calculations.timeToFallAsleep)
+        .difference(_alarmTime)
+        .abs();
+  }
+
+  void update(SleepCalculations calculations) {
+    _alarmTime = calculations.goingToSleep
+        .add(calculations.timeToFallAsleep)
+        .add(_duration);
+
+    _duration = calculations.goingToSleep
+        .add(calculations.timeToFallAsleep)
+        .difference(_alarmTime)
+        .abs();
+  }
+
+  SleepCalculationsComparison(
+      {required Duration initDuration,
+      required SleepCalculations calculations}) {
+    changeDuration(initDuration, calculations);
   }
 }
