@@ -15,7 +15,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 class AlarmForm extends StatefulWidget {
   final Alarm? baseAlarm;
   final AlarmType? alarmType;
-  const AlarmForm({Key? key, this.baseAlarm, this.alarmType}) : super(key: key);
+  final TimeOfDay? overrideTime;
+  const AlarmForm({Key? key, this.baseAlarm, this.alarmType, this.overrideTime})
+      : super(key: key);
 
   @override
   _AlarmFormState createState() => _AlarmFormState();
@@ -266,6 +268,12 @@ class _AlarmFormState extends State<AlarmForm> {
       _minute = widget.baseAlarm?.minute ?? 0;
       _second = widget.baseAlarm?.second ?? 0;
     }
+
+    if (widget.overrideTime != null) {
+      _hour = widget.overrideTime!.hour;
+      _minute = widget.overrideTime!.minute;
+    }
+
     initVariables();
   }
 

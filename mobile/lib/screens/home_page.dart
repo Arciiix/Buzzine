@@ -690,7 +690,9 @@ class _HomePageState extends State<HomePage> {
                                   Section("📈 Sen"),
                                   TrackingEntryWidget(key: _trackingWidgetKey),
                                   Section("🧮 Kalkulacje"),
-                                  SleepCalculationsWidget(),
+                                  SleepCalculationsWidget(
+                                    onRefresh: refresh,
+                                  ),
                                   Section("🎵 Audio"),
                                   InkWell(
                                       onTap: navigateToAudioManager,

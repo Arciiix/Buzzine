@@ -1,3 +1,9 @@
+import 'package:flutter/material.dart';
+import 'package:buzzine/components/simple_loading_dialog.dart';
+import 'package:buzzine/globalData.dart';
+import 'package:buzzine/screens/alarm_form.dart';
+import 'package:buzzine/types/Alarm.dart';
+
 class SleepCalculations {
   late DateTime _goingToSleep;
   late Duration _timeToFallAsleep;
@@ -66,6 +72,26 @@ class SleepCalculations {
     } else {
       _goingToSleep =
           _alarmTime.subtract(_sleepDuration).subtract(_timeToFallAsleep);
+    }
+  }
+
+  Future<void> addAlarm(context) async {
+    Alarm? alarm = await Navigator.of(context).push(MaterialPageRoute(
+      builder: (context) => AlarmForm(
+        overrideTime: TimeOfDay(hour: alarmTime.hour, minute: alarmTime.minute),
+      ),
+    ));
+
+    if (alarm != null) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return SimpleLoadingDialog("Trwa tworzenie alarmu...");
+        },
+      );
+      await GlobalData.addAlarm(alarm.toMap(), false);
+      Navigator.of(context).pop();
     }
   }
 

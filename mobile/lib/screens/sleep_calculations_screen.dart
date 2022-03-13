@@ -9,9 +9,11 @@ import 'package:buzzine/utils/get_icon_by_offset.dart';
 import 'package:flutter/material.dart';
 
 class SleepCalculationsScreen extends StatefulWidget {
+  final Function? onRefresh;
   final SleepCalculations initCalculations;
 
-  const SleepCalculationsScreen({Key? key, required this.initCalculations})
+  const SleepCalculationsScreen(
+      {Key? key, required this.initCalculations, this.onRefresh})
       : super(key: key);
 
   @override
@@ -156,6 +158,14 @@ class _SleepCalculationsScreenState extends State<SleepCalculationsScreen> {
     }
   }
 
+  Future<void> addAlarm() async {
+    await _calculations.addAlarm(context);
+
+    if (widget.onRefresh != null) {
+      widget.onRefresh!();
+    }
+  }
+
   @override
   void initState() {
     _calculations = widget.initCalculations;
@@ -167,6 +177,10 @@ class _SleepCalculationsScreenState extends State<SleepCalculationsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(title: const Text("Obliczenia snu")),
+        floatingActionButton: FloatingActionButton(
+          child: const Icon(Icons.alarm_add),
+          onPressed: addAlarm,
+        ),
         body: Column(
           mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.center,

@@ -5,7 +5,9 @@ import 'package:buzzine/utils/formatting.dart';
 import 'package:flutter/material.dart';
 
 class SleepCalculationsWidget extends StatefulWidget {
-  const SleepCalculationsWidget({Key? key}) : super(key: key);
+  final Function? onRefresh;
+
+  const SleepCalculationsWidget({Key? key, this.onRefresh}) : super(key: key);
 
   @override
   State<SleepCalculationsWidget> createState() =>
@@ -15,10 +17,24 @@ class SleepCalculationsWidget extends StatefulWidget {
 class _SleepCalculationsWidgetState extends State<SleepCalculationsWidget> {
   late SleepCalculations _calculations;
 
+  Future<void> addAlarm() async {
+    await _calculations.addAlarm(context);
+
+    if (widget.onRefresh != null) {
+      widget.onRefresh!();
+    }
+  }
+
   Future<void> navigateToSleepCalculationsScreen() async {
     await Navigator.of(context).push(MaterialPageRoute(
-        builder: (context) =>
-            SleepCalculationsScreen(initCalculations: _calculations)));
+        builder: (context) => SleepCalculationsScreen(
+              initCalculations: _calculations,
+              onRefresh: () {
+                if (widget.onRefresh != null) {
+                  widget.onRefresh!();
+                }
+              },
+            )));
   }
 
   @override
@@ -57,6 +73,17 @@ class _SleepCalculationsWidgetState extends State<SleepCalculationsWidget> {
                   ),
                   Text(
                       "Aby spać ${durationToHHmm(_calculations.sleepDuration)}"),
+                  TextButton(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: const [
+                        Icon(Icons.add),
+                        Text("Ustaw alarm"),
+                      ],
+                    ),
+                    onPressed: addAlarm,
+                  )
                 ],
               ),
             ),
