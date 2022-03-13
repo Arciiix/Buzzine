@@ -289,7 +289,7 @@ class _HomePageState extends State<HomePage> {
         ReceiveSharingIntent.getTextStream().listen(handleShareIntent);
     ReceiveSharingIntent.getInitialText().then(handleShareIntent);
 
-    GlobalData.getData(onProgress: _updateLoadingStage).then((value) {
+    GlobalData.getData(onProgress: _updateLoadingStage).then((value) async {
       setState(() {
         _isLoaded = true;
         upcomingAlarms = GlobalData.upcomingAlarms;
@@ -300,20 +300,31 @@ class _HomePageState extends State<HomePage> {
         activeSnoozes = GlobalData.activeSnoozes;
         emergencyStatus = GlobalData.emergencyStatus;
       });
+
+      if (GlobalData.ringingAlarms.isNotEmpty ||
+          GlobalData.ringingNaps.isNotEmpty) {
+        await navigateToRingingAlarm(GlobalData.ringingAlarms.isNotEmpty
+            ? GlobalData.ringingAlarms[0]
+            : GlobalData.ringingNaps[0]);
+      }
       GlobalData.ping().then((PingResult result) {
-        setState(() {
-          pingResult = result;
-        });
+        if (mounted) {
+          setState(() {
+            pingResult = result;
+          });
+        }
       });
       GlobalData.getWeatherData().then((_) {
-        if (GlobalData.weather != null) {
+        if (GlobalData.weather != null && mounted) {
           //Re-render the screen
           setState(() {});
         }
       });
       GlobalData.getCurrentTemperatureData().then((_) {
-        //Re-render the screen
-        setState(() {});
+        if (mounted) {
+          //Re-render the screen
+          setState(() {});
+        }
       });
     });
 
