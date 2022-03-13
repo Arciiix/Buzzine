@@ -22,16 +22,11 @@ class _SleepCalculationsWidgetState extends State<SleepCalculationsWidget> {
   }
 
   @override
-  void initState() {
+  Widget build(BuildContext context) {
     _calculations = SleepCalculations(
         targetDuration: GlobalData.targetSleepDuration,
         targetTimeToFallAsleep: GlobalData.targetFallingAsleepTime);
 
-    super.initState();
-  }
-
-  @override
-  Widget build(BuildContext context) {
     return Material(
         color: Colors.transparent,
         child: InkWell(

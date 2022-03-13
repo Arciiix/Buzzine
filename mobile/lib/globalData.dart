@@ -126,7 +126,7 @@ class GlobalData {
         _prefs.getDouble('TEMPERATURE_RANGE_END') ?? 24);
 
     targetSleepDuration = Duration(
-        seconds: _prefs.getInt("_SLEEP_DURATION") ?? (60 * 60 * 7.5).floor());
+        seconds: _prefs.getInt("SLEEP_DURATION") ?? (60 * 60 * 7.5).floor());
     targetFallingAsleepTime =
         Duration(seconds: _prefs.getInt("FALLING_ASLEEP_TIME") ?? 60 * 15);
 
