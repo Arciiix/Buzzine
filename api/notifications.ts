@@ -194,17 +194,17 @@ notificationsRouter.get("/sendTestNotification", async (req, res) => {
   res.send({ error: false });
 });
 
-notificationsRouter.put("/toogleNotifications", async (req, res) => {
+notificationsRouter.put("/toggleNotifications", async (req, res) => {
   if (!req.body.token) {
     logger.warn(
-      `Tried to toogle notifications but didn't send the token in the request body`
+      `Tried to toggle notifications but didn't send the token in the request body`
     );
     res.status(400).send({ error: true, errorCode: "MISSING_TOKEN" });
     return;
   }
   if (req.body.isTurnedOn === null || req.body.isTurnedOn === undefined) {
     logger.warn(
-      `Tried to toogle notifications but didn't specify the isTurnedOn param`
+      `Tried to toggle notifications but didn't specify the isTurnedOn param`
     );
     res.status(400).send({ error: true, errorCode: "MISSING_IS_TURNED_ON" });
     return;

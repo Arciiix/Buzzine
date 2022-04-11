@@ -125,7 +125,7 @@ class Nap extends Alarm {
     if (this.ringingStats) {
       this.mute();
     }
-    this.toogleEmergencyDevice(false);
+    this.toggleEmergencyDevice(false);
     this.snoozes.forEach((e) => {
       e.cancelJob();
     });

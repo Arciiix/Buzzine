@@ -4,7 +4,7 @@ import express from "express";
 import {
   AUDIO_URL,
   SLEEP_AS_ANDROID_MUTE_AFTER,
-  toogleEmergencyDevice,
+  toggleEmergencyDevice,
 } from ".";
 import TrackingAdapter from "./trackingAdapter";
 import IntegrationStatusModel from "./models/IntegrationStatus.model";
@@ -63,7 +63,7 @@ sleepAsAndroidRouter.get("/getStatus", async (req, res) => {
   );
 });
 
-sleepAsAndroidRouter.put("/toogleStatus", async (req, res) => {
+sleepAsAndroidRouter.put("/toggleStatus", async (req, res) => {
   if (req.body.isActive === null || req.body.isActive === undefined) {
     res.status(400).send({ error: true, errorCode: "MISSING_IS_ACTIVE" });
     return;
@@ -186,7 +186,7 @@ sleepAsAndroidRouter.put("/changeDelay", async (req, res) => {
   });
 });
 
-sleepAsAndroidRouter.put("/toogleCurrentAlarm", async (req, res) => {
+sleepAsAndroidRouter.put("/toggleCurrentAlarm", async (req, res) => {
   if (req.body.isActive === null || req.body.isActive === undefined) {
     res.status(400).send({ error: true, errorCode: "MISSING_IS_ACTIVE" });
     return;
@@ -307,7 +307,7 @@ class SleepAsAndroidAlarm {
         SLEEP_AS_ANDROID_MUTE_AFTER * 60 * 1000
       ),
       alarmEmergencyDeviceTimeout: setTimeout(
-        () => toogleEmergencyDevice(true),
+        () => toggleEmergencyDevice(true),
         ((await (
           await getSleepAsAndroidIntegrationDBObject()
         )?.config?.emergencyAlarmTimeoutSeconds) ??
@@ -356,7 +356,7 @@ class SleepAsAndroidAlarm {
       return false;
     }
 
-    await toogleEmergencyDevice(false);
+    await toggleEmergencyDevice(false);
 
     logger.info(`[SLEEP AS ANDROID] Stopped the Sleep as Android alarm`);
   }

@@ -192,13 +192,13 @@ io.on("connection", (socket: Socket) => {
     }
   });
 
-  socket.on("CMD/TOOGLE_ALARM", async (payload: any, cb?: any) => {
+  socket.on("CMD/toggle_ALARM", async (payload: any, cb?: any) => {
     let alarm: Alarm = await getAlarm(payload.id);
     if (!alarm) {
       if (cb) {
         cb({ error: true, errorMessage: "WRONG_ID" });
       }
-      logger.warn("Trying to toogle alarm with a wrong id!");
+      logger.warn("Trying to toggle alarm with a wrong id!");
       return;
     }
     if (payload.status) {
@@ -535,7 +535,7 @@ io.on("connection", (socket: Socket) => {
     }
   });
 
-  socket.on("CMD/TOOGLE_FAVORITE", async (payload: any, cb) => {
+  socket.on("CMD/toggle_FAVORITE", async (payload: any, cb) => {
     if (!payload.id) {
       if (cb) {
         cb({ error: true, errorCode: "MISSING_ID" });

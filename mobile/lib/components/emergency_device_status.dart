@@ -17,7 +17,7 @@ class _EmergencyDeviceStatusState extends State<EmergencyDeviceStatus> {
   late bool _isEmergencyDeviceOn;
   bool _isError = false;
 
-  void toogleEmergency(bool isOn) async {
+  void toggleEmergency(bool isOn) async {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -26,12 +26,12 @@ class _EmergencyDeviceStatusState extends State<EmergencyDeviceStatus> {
             "Trwa ${isOn ? "włączanie" : "wyłączanie"} systemu alarmowego...");
       },
     );
-    await GlobalData.toogleEmergency(isOn);
+    await GlobalData.toggleEmergency(isOn);
     Navigator.of(context).pop();
     await refreshEmergencyData();
   }
 
-  void toogleEmergencyDevice(bool isOn) async {
+  void toggleEmergencyDevice(bool isOn) async {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -40,7 +40,7 @@ class _EmergencyDeviceStatusState extends State<EmergencyDeviceStatus> {
             "Trwa ${isOn ? "włączanie" : "wyłączanie"} urządzenia systemu alarmowego...");
       },
     );
-    await GlobalData.toogleEmergencyDevice(isOn);
+    await GlobalData.toggleEmergencyDevice(isOn);
     Navigator.of(context).pop();
     await refreshEmergencyData();
   }
@@ -91,7 +91,7 @@ class _EmergencyDeviceStatusState extends State<EmergencyDeviceStatus> {
               ]
             : [
                 InkWell(
-                  onTap: () => toogleEmergencyDevice(!_isEmergencyDeviceOn),
+                  onTap: () => toggleEmergencyDevice(!_isEmergencyDeviceOn),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -107,12 +107,12 @@ class _EmergencyDeviceStatusState extends State<EmergencyDeviceStatus> {
                       ),
                       Switch(
                           value: _isEmergencyDeviceOn,
-                          onChanged: toogleEmergencyDevice),
+                          onChanged: toggleEmergencyDevice),
                     ],
                   ),
                 ),
                 InkWell(
-                  onTap: () => toogleEmergency(!_isEmergencyEnabled),
+                  onTap: () => toggleEmergency(!_isEmergencyEnabled),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -128,7 +128,7 @@ class _EmergencyDeviceStatusState extends State<EmergencyDeviceStatus> {
                       ),
                       Switch(
                           value: _isEmergencyEnabled,
-                          onChanged: toogleEmergency),
+                          onChanged: toggleEmergency),
                     ],
                   ),
                 ),

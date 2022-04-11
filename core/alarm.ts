@@ -242,7 +242,7 @@ class Alarm {
       clearInterval(this.ringingStats?.eventResendingInterval);
       clearTimeout(this.ringingStats?.alarmSilentTimeout);
     }
-    this.toogleEmergencyDevice(false);
+    this.toggleEmergencyDevice(false);
     Buzzine.currentlyRingingAlarms = Buzzine.currentlyRingingAlarms.filter(
       (e) => e.id !== this.id
     );
@@ -261,7 +261,7 @@ class Alarm {
       clearTimeout(this.ringingStats?.alarmSilentTimeout);
     }
     this.ringingStats = null;
-    this.toogleEmergencyDevice(false);
+    this.toggleEmergencyDevice(false);
     if (!this.repeat) {
       this.cancelJob();
       this.isActive = false;
@@ -304,7 +304,7 @@ class Alarm {
       clearTimeout(this.ringingStats?.alarmSilentTimeout);
     }
     this.ringingStats = null;
-    this.toogleEmergencyDevice(false);
+    this.toggleEmergencyDevice(false);
     this.cancelJob();
     this.isActive = false;
 
@@ -438,7 +438,7 @@ class Alarm {
           this.emergencyAlarmTimeoutSeconds &&
           this.ringingStats.timeElapsed >= this.emergencyAlarmTimeoutSeconds
         ) {
-          this.toogleEmergencyDevice(true);
+          this.toggleEmergencyDevice(true);
         }
 
         logger.info(
@@ -465,7 +465,7 @@ class Alarm {
     if (this.ringingStats) {
       this.mute();
     }
-    this.toogleEmergencyDevice(false);
+    this.toggleEmergencyDevice(false);
     this.snoozes.forEach((e) => {
       e.cancelJob();
     });
@@ -486,8 +486,8 @@ class Alarm {
     this.onAlarmRinging();
   }
 
-  async toogleEmergencyDevice(isTurnedOn: boolean): Promise<void> {
-    io.emit("TOOGLE_EMERGENCY_DEVICE", { isTurnedOn });
+  async toggleEmergencyDevice(isTurnedOn: boolean): Promise<void> {
+    io.emit("toggle_EMERGENCY_DEVICE", { isTurnedOn });
   }
 }
 

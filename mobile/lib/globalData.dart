@@ -421,7 +421,7 @@ class GlobalData {
   static Future<void> changeAlarmStatus(String id, bool status) async {
     Map requestData = {'id': id, 'status': status};
 
-    var response = await http.put(Uri.parse("$serverIP/v1/toogleAlarm"),
+    var response = await http.put(Uri.parse("$serverIP/v1/toggleAlarm"),
         body: json.encode(requestData),
         headers: {"Content-Type": "application/json"});
     var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
@@ -899,11 +899,11 @@ class GlobalData {
     return GlobalData.emergencyStatus;
   }
 
-  static Future<void> toogleEmergency(bool isOn) async {
+  static Future<void> toggleEmergency(bool isOn) async {
     Map requestData = {'isTurnedOn': isOn};
 
     var response = await http.put(
-        Uri.parse("$serverIP/v1/emergency/toogleProtection"),
+        Uri.parse("$serverIP/v1/emergency/toggleProtection"),
         body: json.encode(requestData),
         headers: {"Content-Type": "application/json"});
     var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
@@ -917,11 +917,11 @@ class GlobalData {
     return;
   }
 
-  static Future<void> toogleEmergencyDevice(bool isOn) async {
+  static Future<void> toggleEmergencyDevice(bool isOn) async {
     Map requestData = {'isTurnedOn': isOn};
 
     var response = await http.put(
-        Uri.parse("$serverIP/v1/emergency/toogleEmergency"),
+        Uri.parse("$serverIP/v1/emergency/toggleEmergency"),
         body: json.encode(requestData),
         headers: {"Content-Type": "application/json"});
     var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
@@ -1006,11 +1006,11 @@ class GlobalData {
     return result;
   }
 
-  static Future<void> toogleNotifications(bool isTurnedOn, String token) async {
+  static Future<void> toggleNotifications(bool isTurnedOn, String token) async {
     Map requestData = {'isTurnedOn': isTurnedOn, 'token': token};
 
     var response = await http.put(
-        Uri.parse("$serverIP/v1/notifications/toogleNotifications"),
+        Uri.parse("$serverIP/v1/notifications/toggleNotifications"),
         body: json.encode(requestData),
         headers: {"Content-Type": "application/json"});
     var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
@@ -1086,12 +1086,12 @@ class GlobalData {
     }
   }
 
-  static Future<void> toogleSleepAsAndroidIntegrationStatus(
+  static Future<void> toggleSleepAsAndroidIntegrationStatus(
       bool isActive) async {
     Map requestData = {'isActive': isActive};
 
     var response = await http.put(
-        Uri.parse("$serverIP/v1/sleepasandroid/toogleStatus"),
+        Uri.parse("$serverIP/v1/sleepasandroid/toggleStatus"),
         body: json.encode(requestData),
         headers: {"Content-Type": "application/json"});
     var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
@@ -1152,11 +1152,11 @@ class GlobalData {
     }
   }
 
-  static Future<void> toogleSleepAsAndroidCurrentAlarm(bool isActive) async {
+  static Future<void> toggleSleepAsAndroidCurrentAlarm(bool isActive) async {
     Map requestData = {'isActive': isActive};
 
     var response = await http.put(
-        Uri.parse("$serverIP/v1/sleepasandroid/toogleCurrentAlarm"),
+        Uri.parse("$serverIP/v1/sleepasandroid/toggleCurrentAlarm"),
         body: json.encode(requestData),
         headers: {"Content-Type": "application/json"});
     var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
@@ -1444,13 +1444,13 @@ class GlobalData {
     }
   }
 
-  static Future<void> toogleFavorite(String id, bool isFavorite) async {
+  static Future<void> toggleFavorite(String id, bool isFavorite) async {
     Map requestData = {
       'id': id,
       'isFavorite': isFavorite,
     };
 
-    var response = await http.put(Uri.parse("$serverIP/v1/toogleFavorite"),
+    var response = await http.put(Uri.parse("$serverIP/v1/toggleFavorite"),
         body: json.encode(requestData),
         headers: {"Content-Type": "application/json"});
     var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;

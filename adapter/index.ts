@@ -96,16 +96,16 @@ api.get("/getStatus", async (req, res) => {
   });
 });
 
-api.put("/toogleEmergency", async (req, res) => {
+api.put("/toggleEmergency", async (req, res) => {
   //Don't check if user provided the isTurnedOn param - the default is to turn on
-  let success = await toogleEmergencyDevice(
+  let success = await toggleEmergencyDevice(
     Boolean(req.body.isTurnedOn ?? true)
   );
 
   res.send({ error: !success });
 });
 
-api.put("/toogleProtection", async (req, res) => {
+api.put("/toggleProtection", async (req, res) => {
   if (req.body.isTurnedOn === undefined || req.body.isTurnedOn === null) {
     res.status(400).send({ error: true, errorCode: "MISSING_IS_TURNED_ON" });
     return;
@@ -181,13 +181,13 @@ socket.on("hello", () => {
   logger.info(`Successfully connected to the core`);
 });
 socket.on("EMERGENCY_ALARM", async (data) => {
-  toogleEmergencyDevice(true);
+  toggleEmergencyDevice(true);
 });
-socket.on("TOOGLE_EMERGENCY_DEVICE", async (data) => {
-  toogleEmergencyDevice(data.isTurnedOn ?? true);
+socket.on("toggle_EMERGENCY_DEVICE", async (data) => {
+  toggleEmergencyDevice(data.isTurnedOn ?? true);
 });
 socket.on("EMERGENCY_ALARM_CANCELLED", async (data) => {
-  toogleEmergencyDevice(false);
+  toggleEmergencyDevice(false);
 });
 
 async function getRelayStatus(): Promise<boolean | null> {
@@ -207,7 +207,7 @@ async function getRelayStatus(): Promise<boolean | null> {
   }
 }
 
-async function toogleEmergencyDevice(isTurnedOn: boolean): Promise<boolean> {
+async function toggleEmergencyDevice(isTurnedOn: boolean): Promise<boolean> {
   logger.info(`Turning ${isTurnedOn ? "on" : "off"} the emergency device...`);
 
   try {

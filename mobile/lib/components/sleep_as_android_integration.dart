@@ -96,7 +96,7 @@ class _SleepAsAndroidIntegrationState extends State<SleepAsAndroidIntegration> {
       },
     );
 
-    await GlobalData.toogleSleepAsAndroidCurrentAlarm(false);
+    await GlobalData.toggleSleepAsAndroidCurrentAlarm(false);
     Navigator.of(context).pop();
 
     //Refresh and re-render
@@ -200,7 +200,7 @@ class _SleepAsAndroidIntegrationState extends State<SleepAsAndroidIntegration> {
                               },
                             );
                             await GlobalData
-                                .toogleSleepAsAndroidIntegrationStatus(value);
+                                .toggleSleepAsAndroidIntegrationStatus(value);
                             Navigator.of(context).pop();
                             await refresh();
                           },

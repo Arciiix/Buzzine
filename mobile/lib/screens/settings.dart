@@ -173,7 +173,7 @@ class _SettingsState extends State<Settings> {
     });
   }
 
-  Future<void> toogleNotifications(bool isTurnedOn) async {
+  Future<void> toggleNotifications(bool isTurnedOn) async {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -182,7 +182,7 @@ class _SettingsState extends State<Settings> {
             "Trwa ${isTurnedOn ? "włączanie" : "wyłączanie"} powiadomień...");
       },
     );
-    await GlobalData.toogleNotifications(isTurnedOn, _notificationsToken!);
+    await GlobalData.toggleNotifications(isTurnedOn, _notificationsToken!);
     Navigator.of(context).pop();
     setState(() {
       _isMessagingEnabled = !_isMessagingEnabled!;
@@ -802,7 +802,7 @@ class _SettingsState extends State<Settings> {
                               children: _isMessagingEnabled != null
                                   ? [
                                       InkWell(
-                                        onTap: () => toogleNotifications(
+                                        onTap: () => toggleNotifications(
                                             !_isMessagingEnabled!),
                                         child: Padding(
                                           padding: const EdgeInsets.all(8.0),
@@ -815,7 +815,7 @@ class _SettingsState extends State<Settings> {
                                               Switch(
                                                   value: _isMessagingEnabled!,
                                                   onChanged:
-                                                      toogleNotifications),
+                                                      toggleNotifications),
                                             ],
                                           ),
                                         ),

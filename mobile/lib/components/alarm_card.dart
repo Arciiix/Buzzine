@@ -259,7 +259,7 @@ class _AlarmCardState extends State<AlarmCard> {
             ));
   }
 
-  Future<void> toogleFavorite() async {
+  Future<void> toggleFavorite() async {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -269,7 +269,7 @@ class _AlarmCardState extends State<AlarmCard> {
       },
     );
 
-    await GlobalData.toogleFavorite(widget.id, !isFavorite);
+    await GlobalData.toggleFavorite(widget.id, !isFavorite);
     await GlobalData.getAlarms();
 
     setState(() {
@@ -320,7 +320,7 @@ class _AlarmCardState extends State<AlarmCard> {
                       Icons.star,
                       color: isFavorite ? Colors.blue : Colors.grey,
                     ),
-                    onPressed: toogleFavorite,
+                    onPressed: toggleFavorite,
                   )
                 ],
               )),

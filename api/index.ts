@@ -463,7 +463,7 @@ async function cancelAlarm(req, res) {
   });
 }
 
-api.put("/toogleAlarm", async (req, res) => {
+api.put("/toggleAlarm", async (req, res) => {
   if (!req.body)
     return res.status(400).send({ error: true, errorCode: "EMPTY_PAYLOAD" });
 
@@ -477,7 +477,7 @@ api.put("/toogleAlarm", async (req, res) => {
       .send({ error: true, errorCode: "MISSING_ALARM_STATUS" });
   }
 
-  socket.emit("CMD/TOOGLE_ALARM", req.body, (response) => {
+  socket.emit("CMD/toggle_ALARM", req.body, (response) => {
     if (response.error) {
       res.status(400).send(response);
       logger.warn(
@@ -486,7 +486,7 @@ api.put("/toogleAlarm", async (req, res) => {
     } else {
       res.status(200).send({ error: false, response });
       logger.info(
-        `Toogled alarm ${
+        `toggled alarm ${
           req.body.status ? "on" : "off"
         } successfully. Response: ${JSON.stringify(response)}`
       );
@@ -797,13 +797,13 @@ api.put("/cancelAllAlarms", async (req, res) => {
   });
 });
 
-api.put("/toogleFavorite", async (req, res) => {
+api.put("/toggleFavorite", async (req, res) => {
   if (!req.body.id) {
     return res.status(400).send({ error: true, errorCode: "MISSING_ID" });
   }
 
   socket.emit(
-    "CMD/TOOGLE_FAVORITE",
+    "CMD/toggle_FAVORITE",
     {
       id: req.body.id,
       isFavorite: req.body.isFavorite,
@@ -947,9 +947,9 @@ const server = app.listen(PORT, () => {
   logger.info(`API has started on port ${PORT}`);
 });
 
-async function toogleEmergencyDevice(isTurnedOn: boolean): Promise<void> {
+async function toggleEmergencyDevice(isTurnedOn: boolean): Promise<void> {
   try {
-    await axios.put(`${ADAPTER_URL}/v1/toogleEmergency`, {
+    await axios.put(`${ADAPTER_URL}/v1/toggleEmergency`, {
       isTurnedOn,
     });
   } catch (err) {
@@ -984,5 +984,5 @@ export {
   AUDIO_URL,
   SLEEP_AS_ANDROID_MUTE_AFTER,
   TRACKING_URL,
-  toogleEmergencyDevice,
+  toggleEmergencyDevice,
 };
