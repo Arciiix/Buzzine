@@ -150,8 +150,8 @@ class _AlarmCardState extends State<AlarmCard> {
     });
     if (widget.refresh != null) {
       widget.refresh!();
-    }
-    if (isActive) {
+    } else if (isActive) {
+      //If there's a refresh function, then the snackbar cannot be shown because the widget will lose its context
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: const Text("Przejdź do danych snu"),
         action: SnackBarAction(
