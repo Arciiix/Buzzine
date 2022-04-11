@@ -1,4 +1,5 @@
 import 'package:awesome_notifications/awesome_notifications.dart';
+import 'package:buzzine/globalData.dart';
 import 'package:buzzine/screens/error.dart';
 import 'package:buzzine/screens/home_page.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -29,15 +30,32 @@ Future<void> main() async {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({Key? key}) : super(key: key);
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  bool isLightModeEnabled = false;
+
+  @override
+  void initState() {
+    super.initState();
+    GlobalData.loadSettings().then((_) {
+      setState(() {
+        isLightModeEnabled = GlobalData.isLightModeEnabled;
+      });
+    });
+  }
 
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Buzzine',
-      theme: ThemeData.dark(),
+      theme: isLightModeEnabled ? ThemeData.light() : ThemeData.dark(),
       home: HomePage(),
     );
   }

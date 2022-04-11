@@ -51,6 +51,8 @@ class _SettingsState extends State<Settings> {
   bool? _isMessagingEnabled;
   String? _notificationsToken;
 
+  bool? _isLightModeEnabled;
+
   Future<double?> selectNumberFromPicker(double min, double max, double init,
       String quantityName, String unit) async {
     int selectedValue = init.floor();
@@ -237,6 +239,46 @@ class _SettingsState extends State<Settings> {
     }
   }
 
+  Future<void> toggleLightMode(bool isTurnedOn) async {
+    if (isTurnedOn) {
+      bool? response = await showDialog<bool>(
+          context: context,
+          builder: (c) => AlertDialog(
+                title: const Text("Czy na pewno chcesz włączyć tryb jasny?"),
+                content: const Text(
+                    "Aplikacja nie była pod tym kątem testowana, a dodatkowo tryb jasny może mieć negatywny wpływ na Twój wzrok w nocy. Jako twórca aplikacji też nie popieram tego rozwiązania 😉"),
+                actions: [
+                  TextButton(
+                      child: const Text("Anuluj"),
+                      onPressed: () => Navigator.of(c).pop(false)),
+                  TextButton(
+                      child: const Text("Włącz"),
+                      onPressed: () => Navigator.of(c).pop(true)),
+                ],
+              ));
+      if (response != true) {
+        return;
+      }
+    }
+
+    setState(() {
+      _isLightModeEnabled = isTurnedOn;
+    });
+
+    await showDialog(
+        context: context,
+        builder: (c) => AlertDialog(
+              title: const Text("Zmiana motywu"),
+              content: const Text(
+                  "Zmiany będą widoczne dopiero po zapisaniu ustawień i restartowaniu aplikacji."),
+              actions: [
+                TextButton(
+                    child: const Text("OK"),
+                    onPressed: () => Navigator.of(c).pop()),
+              ],
+            ));
+  }
+
   @override
   void initState() {
     super.initState();
@@ -276,6 +318,9 @@ class _SettingsState extends State<Settings> {
               (60 * 60 * 7.5).floor());
       _fallingAsleepTime = Duration(
           seconds: _prefsInstance.getInt("FALLING_ASLEEP_TIME") ?? 60 * 15);
+
+      _isLightModeEnabled =
+          _prefsInstance.getBool("IS_LIGHT_MODE_ENABLED") ?? false;
     });
   }
 
@@ -300,6 +345,9 @@ class _SettingsState extends State<Settings> {
       _prefsInstance.setInt("SLEEP_DURATION", _sleepDuration.inSeconds);
       _prefsInstance.setInt(
           "FALLING_ASLEEP_TIME", _fallingAsleepTime.inSeconds);
+
+      _prefsInstance.setBool(
+          "IS_LIGHT_MODE_ENABLED", _isLightModeEnabled ?? false);
 
       if (double.tryParse(_homeLatitudeController.text.replaceAll(",", ".")) !=
               null &&
@@ -892,6 +940,26 @@ class _SettingsState extends State<Settings> {
                                   },
                                 ),
                               ],
+                            ),
+                            SectionTitle("Eksperymentalne ustawienia"),
+                            InkWell(
+                              onTap: () =>
+                                  toggleLightMode(!_isLightModeEnabled!),
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.max,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    const Text("Tryb jasny (niezalecane)"),
+                                    Switch(
+                                        value: _isLightModeEnabled ?? false,
+                                        onChanged: (value) =>
+                                            toggleLightMode(value)),
+                                  ],
+                                ),
+                              ),
                             ),
                           ],
                         ))),

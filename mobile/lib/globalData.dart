@@ -58,6 +58,8 @@ class GlobalData {
   static late String appVersion;
   static late String appBuildNumber;
 
+  static late bool isLightModeEnabled;
+
   GlobalData() {
     getData();
   }
@@ -135,6 +137,8 @@ class GlobalData {
     } else {
       homeLocation = null;
     }
+
+    isLightModeEnabled = _prefs.getBool("IS_LIGHT_MODE_ENABLED") ?? false;
   }
 
   static Future<void> getAlarms() async {
@@ -1198,15 +1202,15 @@ class GlobalData {
   }
 
   static Future<List<TrackingEntry>> getLastTrackingEntries(int count) async {
-    var response = await http.get(
-        Uri.parse("$serverIP/v1/tracking/getLastTrackingEntries/$count"));
+    var response = await http
+        .get(Uri.parse("$serverIP/v1/tracking/getLastTrackingEntries/$count"));
     var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
 
     if (response.statusCode != 200 || decodedResponse['error'] == true) {
       throw APIException(
           "Błąd podczas pobierania ostatnich $count snów. Status code: ${response.statusCode}, response: ${response.body}");
     } else {
-     List entryData = decodedResponse['response'];
+      List entryData = decodedResponse['response'];
       List<TrackingEntry> entries = [];
       for (var e in entryData) {
         TrackingEntry entry = TrackingEntry(
