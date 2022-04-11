@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:buzzine/screens/settings.dart';
 import 'package:flutter/material.dart';
 
@@ -5,8 +7,14 @@ class Loading extends StatefulWidget {
   final bool? showText;
   final bool? isInitLoading;
   String? currentStage;
+  Function? reloadFunction;
 
-  Loading({Key? key, this.showText, this.isInitLoading, this.currentStage})
+  Loading(
+      {Key? key,
+      this.showText,
+      this.isInitLoading,
+      this.currentStage,
+      this.reloadFunction})
       : super(key: key);
 
   @override
@@ -14,9 +22,32 @@ class Loading extends StatefulWidget {
 }
 
 class _LoadingState extends State<Loading> {
+  Timer? _tryAgainTimer;
+  bool showTryAgainButton = false;
+
   void navigateToSettings() {
     Navigator.of(context)
         .push(MaterialPageRoute(builder: (context) => const Settings()));
+  }
+
+  void setTryAgainTimer() {
+    setState(() {
+      showTryAgainButton = false;
+    });
+    _tryAgainTimer = Timer(const Duration(seconds: 10), () {
+      setState(() {
+        showTryAgainButton = true;
+      });
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    if (widget.reloadFunction != null) {
+      setTryAgainTimer();
+    }
   }
 
   @override
@@ -41,7 +72,27 @@ class _LoadingState extends State<Loading> {
                 children: widget.isInitLoading == true
                     ? [Icon(Icons.settings), Text("Ustawienia")]
                     : [],
-              ))
+              )),
+          if (showTryAgainButton)
+            TextButton(
+                onPressed: () {
+                  if (showTryAgainButton) {
+                    widget.reloadFunction!();
+                    setTryAgainTimer();
+                  }
+                },
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: showTryAgainButton
+                      ? [Icon(Icons.refresh), Text("Spróbuj ponownie")]
+                      : [],
+                )),
         ])));
+  }
+
+  @override
+  void dispose() {
+    _tryAgainTimer?.cancel();
+    super.dispose();
   }
 }

@@ -289,45 +289,6 @@ class _HomePageState extends State<HomePage> {
         ReceiveSharingIntent.getTextStream().listen(handleShareIntent);
     ReceiveSharingIntent.getInitialText().then(handleShareIntent);
 
-    GlobalData.getData(onProgress: _updateLoadingStage).then((value) async {
-      setState(() {
-        _isLoaded = true;
-        upcomingAlarms = GlobalData.upcomingAlarms;
-        qrCodeHash = GlobalData.qrCodeHash;
-        ringingAlarms = GlobalData.ringingAlarms;
-        ringingNaps = GlobalData.ringingNaps;
-        upcomingNaps = GlobalData.upcomingNaps;
-        activeSnoozes = GlobalData.activeSnoozes;
-        emergencyStatus = GlobalData.emergencyStatus;
-      });
-
-      if (GlobalData.ringingAlarms.isNotEmpty ||
-          GlobalData.ringingNaps.isNotEmpty) {
-        await navigateToRingingAlarm(GlobalData.ringingAlarms.isNotEmpty
-            ? GlobalData.ringingAlarms[0]
-            : GlobalData.ringingNaps[0]);
-      }
-      GlobalData.ping().then((PingResult result) {
-        if (mounted) {
-          setState(() {
-            pingResult = result;
-          });
-        }
-      });
-      GlobalData.getWeatherData().then((_) {
-        if (GlobalData.weather != null && mounted) {
-          //Re-render the screen
-          setState(() {});
-        }
-      });
-      GlobalData.getCurrentTemperatureData().then((_) {
-        if (mounted) {
-          //Re-render the screen
-          setState(() {});
-        }
-      });
-    });
-
     FirebaseMessaging.instance.getToken().then((value) {
       FirebaseMessaging.onMessageOpenedApp.listen((data) async {
         print("User clicked on message: ${data.messageId}");
@@ -357,6 +318,48 @@ class _HomePageState extends State<HomePage> {
         }
       });
     });
+    init();
+  }
+
+  @override
+  Future<void> init() async {
+    await GlobalData.getData(onProgress: _updateLoadingStage);
+
+    setState(() {
+      _isLoaded = true;
+      upcomingAlarms = GlobalData.upcomingAlarms;
+      qrCodeHash = GlobalData.qrCodeHash;
+      ringingAlarms = GlobalData.ringingAlarms;
+      ringingNaps = GlobalData.ringingNaps;
+      upcomingNaps = GlobalData.upcomingNaps;
+      activeSnoozes = GlobalData.activeSnoozes;
+      emergencyStatus = GlobalData.emergencyStatus;
+    });
+
+    if (GlobalData.ringingAlarms.isNotEmpty ||
+        GlobalData.ringingNaps.isNotEmpty) {
+      await navigateToRingingAlarm(GlobalData.ringingAlarms.isNotEmpty
+          ? GlobalData.ringingAlarms[0]
+          : GlobalData.ringingNaps[0]);
+    }
+    PingResult result = await GlobalData.ping();
+    if (mounted) {
+      setState(() {
+        pingResult = result;
+      });
+    }
+
+    await GlobalData.getWeatherData();
+    if (GlobalData.weather != null && mounted) {
+      //Re-render the screen
+      setState(() {});
+    }
+
+    await GlobalData.getCurrentTemperatureData();
+    if (mounted) {
+      //Re-render the screen
+      setState(() {});
+    }
   }
 
   void _updateLoadingStage(String stage) {
@@ -369,10 +372,10 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     if (!_isLoaded) {
       return Loading(
-        showText: true,
-        isInitLoading: true,
-        currentStage: _currentLoadingStage,
-      );
+          showText: true,
+          isInitLoading: true,
+          currentStage: _currentLoadingStage,
+          reloadFunction: init);
     } else {
       return Scaffold(
           backgroundColor: const Color(0xFF00283F),
