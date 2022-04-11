@@ -275,7 +275,22 @@ api.put("/updateDataForLatestIfDoesntExist", async (req, res) => {
 
   for (const [key, value] of Object.entries(req.body.updateObject)) {
     if (!value) continue;
-    if (dbObject[key]) continue; //If a field has its own value already
+
+    //If a field has its own value already, don't change it, but add a new version history
+    if (dbObject[key]) {
+      await saveVersionHistory(
+        dbObject.entryId,
+        new Date(dbObject.date),
+        {
+          [key]: dbObject[key],
+        },
+        {
+          [key]: value,
+        }
+      );
+
+      continue;
+    }
     if (key === "rate") {
       dbObject[key] = parseInt(value as string);
     } else if (key === "notes") {
