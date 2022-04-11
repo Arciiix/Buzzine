@@ -39,6 +39,21 @@ class _TrackingScreenState extends State<TrackingScreen> {
     });
   }
 
+  bool checkIfTheEntryWasNotRated(TrackingEntry entry) {
+    //Check if the previous one was rated and wasn't earlier than 3 days ago
+    return (entry.rate?.isNaN ?? true) &&
+        (entry.date?.add(const Duration(days: 3)).isAfter(DateTime.now()) ??
+            true);
+  }
+
+  Future<TrackingEntry> getThePreviousLastTrackingEntry() async {
+    //Get the last 2 tracking entries
+    List<TrackingEntry> _fetchedEntries =
+        await GlobalData.getLastTrackingEntries(2);
+
+    return _fetchedEntries[1];
+  }
+
   Future<void> updateEntry(
     DateTime date,
     Map dataToUpdate,
@@ -217,14 +232,48 @@ class _TrackingScreenState extends State<TrackingScreen> {
     ));
   }
 
+  Future<void> displayUnratedWarningDialog(DateTime previousEntryDate) async {
+    bool? goToEntry = await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Ostrzeżenie"),
+          content: const Text(
+              "Poprzedni sen nie został oceniony. Czy chcesz go ocenić teraz?"),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text("Anuluj"),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text("Przejdź"),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (goToEntry == true) {
+      getDataForDay(previousEntryDate);
+    }
+  }
+
   Future<void> refresh() async {
     await _refreshState.currentState?.show();
   }
 
   @override
   void initState() {
-    getDataForDay(widget.initDate)
-        .then((value) => setState(() => _isLoaded = true));
+    getDataForDay(widget.initDate).then((value) {
+      getThePreviousLastTrackingEntry().then((TrackingEntry previousEntry) {
+        if (checkIfTheEntryWasNotRated(previousEntry)) {
+          displayUnratedWarningDialog(previousEntry.date!);
+        }
+        setState(() => _isLoaded = true);
+      });
+    });
+
     super.initState();
   }
 

@@ -94,6 +94,21 @@ api.get("/getLatest", async (req, res) => {
   res.send({ error: false, response: latest });
 });
 
+api.get("/getLastTrackingEntries/:count", async (req, res) => {
+  let count = parseInt(req.params.count as string);
+  if (isNaN(count)) {
+    res.status(400).send({ error: true, errorCode: "WRONG_COUNT" });
+    return;
+  }
+
+  let data = await TrackingEntryModel.findAll({
+    limit: count,
+    order: [["date", "DESC"]],
+  });
+
+  res.send({ error: false, count: count, response: data });
+});
+
 api.get("/getVersionHistoryForDate", async (req, res) => {
   if (!req.query.date || isNaN(new Date(req.query.date as string)?.getTime())) {
     res.status(400).send({ error: true, errorCode: "WRONG_DATE" });

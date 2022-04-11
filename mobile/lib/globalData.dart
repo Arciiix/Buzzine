@@ -1197,6 +1197,40 @@ class GlobalData {
     }
   }
 
+  static Future<List<TrackingEntry>> getLastTrackingEntries(int count) async {
+    var response = await http.get(
+        Uri.parse("$serverIP/v1/tracking/getLastTrackingEntries/$count"));
+    var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
+
+    if (response.statusCode != 200 || decodedResponse['error'] == true) {
+      throw APIException(
+          "Błąd podczas pobierania ostatnich $count snów. Status code: ${response.statusCode}, response: ${response.body}");
+    } else {
+     List entryData = decodedResponse['response'];
+      List<TrackingEntry> entries = [];
+      for (var e in entryData) {
+        TrackingEntry entry = TrackingEntry(
+            date: DateTime.parse(e['date']),
+            bedTime: DateTime.tryParse(e['bedTime'] ?? ""),
+            sleepTime: DateTime.tryParse(e['sleepTime'] ?? ""),
+            firstAlarmTime: DateTime.tryParse(e['firstAlarmTime'] ?? ""),
+            wakeUpTime: DateTime.tryParse(e['wakeUpTime'] ?? ""),
+            getUpTime: DateTime.tryParse(e['getUpTime'] ?? ""),
+            rate: e['rate'],
+            notes: e['notes'],
+            isNap: DateTime.parse(e['date']).hour != 0 &&
+                DateTime.parse(e['date']).minute != 0);
+
+        List<TrackingVersionHistory>? versionHistory =
+            await getTrackingVersionHistoryForDate(entry.date!);
+        entry.versionHistory = versionHistory;
+        entries.add(entry);
+      }
+
+      return entries;
+    }
+  }
+
   static Future<List<TrackingVersionHistory>?> getTrackingVersionHistoryForDate(
       DateTime date) async {
     Map<String, String> requestData = {
