@@ -921,6 +921,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
                                                 : _entries[index].notes!;
                                         bool? change = await showDialog(
                                           context: context,
+                                          barrierDismissible: false,
                                           builder: (BuildContext context) {
                                             return AlertDialog(
                                               title: const Text("Notka"),
