@@ -2,12 +2,10 @@ import 'dart:async';
 import 'package:buzzine/components/simple_loading_dialog.dart';
 import 'package:buzzine/globalData.dart';
 import 'package:buzzine/screens/tracking_screen.dart';
-import 'package:buzzine/screens/tracking_stats_screen.dart';
 import 'package:buzzine/types/AlarmType.dart';
 import 'package:buzzine/types/Audio.dart';
 import 'package:buzzine/types/Repeat.dart';
 import 'package:buzzine/types/TrackingEntry.dart';
-import 'package:buzzine/types/TrackingStats.dart';
 import 'package:buzzine/utils/formatting.dart';
 import 'package:flutter/material.dart';
 
@@ -40,6 +38,8 @@ class AlarmCard extends StatefulWidget {
 
   final AlarmType? alarmType;
 
+  final bool? isFavorite;
+
   const AlarmCard(
       {Key? key,
       required this.id,
@@ -60,7 +60,8 @@ class AlarmCard extends StatefulWidget {
       this.emergencyAlarmTimeoutSeconds,
       this.hideSwitch,
       this.refresh,
-      this.alarmType})
+      this.alarmType,
+      required this.isFavorite}) //DEV
       : super(key: key);
 
   @override
@@ -71,6 +72,7 @@ class _AlarmCardState extends State<AlarmCard> {
   late String timeDetailsTextContent;
   late String timeTextContent;
   late bool isActive;
+  late bool isFavorite;
   Timer? _updateRemainingTimeTimer;
 
   @override
@@ -78,6 +80,7 @@ class _AlarmCardState extends State<AlarmCard> {
     super.initState();
 
     isActive = widget.isActive;
+    isFavorite = widget.isFavorite ?? false;
     if (widget.nextInvocation != null) {
       timeDetailsTextContent = calculateDateTimeDifference(
           widget.nextInvocation!,
@@ -256,6 +259,29 @@ class _AlarmCardState extends State<AlarmCard> {
             ));
   }
 
+  Future<void> toogleFavorite() async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return SimpleLoadingDialog(
+            "Trwa ${isFavorite ? "usuwanie wybranego alarmu z ulubionych" : "dodawanie wybranego alarmu do ulubionych"}...");
+      },
+    );
+
+    await GlobalData.toogleFavorite(widget.id, !isFavorite);
+    await GlobalData.getAlarms();
+
+    setState(() {
+      isFavorite = !isFavorite;
+    });
+    if (widget.refresh != null) {
+      widget.refresh!();
+    }
+
+    Navigator.of(context).pop();
+  }
+
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
@@ -276,13 +302,27 @@ class _AlarmCardState extends State<AlarmCard> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Flexible(
-                  child: Text(
-                widget.name ??
-                    (widget.alarmType == AlarmType.nap
-                        ? "Drzemka bez nazwy"
-                        : "Alarm bez nazwy"),
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontSize: 18),
+                  child: Row(
+                mainAxisSize: MainAxisSize.max,
+                children: [
+                  Expanded(
+                    child: Text(
+                      widget.name ??
+                          (widget.alarmType == AlarmType.nap
+                              ? "Drzemka bez nazwy"
+                              : "Alarm bez nazwy"),
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontSize: 18),
+                    ),
+                  ),
+                  IconButton(
+                    icon: Icon(
+                      Icons.star,
+                      color: isFavorite ? Colors.blue : Colors.grey,
+                    ),
+                    onPressed: toogleFavorite,
+                  )
+                ],
               )),
               Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
                 Column(

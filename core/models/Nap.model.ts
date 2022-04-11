@@ -61,6 +61,11 @@ const NapModel = db.define("Nap", {
     type: DataTypes.DATE,
     allowNull: true,
   },
+  isFavorite: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: 0,
+    allowNull: true,
+  },
 });
 
 export default NapModel;

@@ -508,6 +508,8 @@ class _HomePageState extends State<HomePage> {
                                                       emergencyAlarmTimeoutSeconds: e
                                                           .alarm
                                                           .emergencyAlarmTimeoutSeconds,
+                                                      isFavorite:
+                                                          e.alarm.isFavorite,
                                                       hideSwitch: true);
                                                 }).toList()),
                                           ]
@@ -550,6 +552,8 @@ class _HomePageState extends State<HomePage> {
                                                       emergencyAlarmTimeoutSeconds: e
                                                           .alarm
                                                           .emergencyAlarmTimeoutSeconds,
+                                                      isFavorite:
+                                                          e.alarm.isFavorite,
                                                       hideSwitch: true,
                                                       alarmType: AlarmType.nap);
                                                 }).toList()),
@@ -650,6 +654,7 @@ class _HomePageState extends State<HomePage> {
                                                       repeat: e.repeat,
                                                       emergencyAlarmTimeoutSeconds:
                                                           e.emergencyAlarmTimeoutSeconds,
+                                                      isFavorite: e.isFavorite,
                                                       refresh: refresh);
                                                 }).toList()),
                                             Section("⏳ Nadchodzące drzemki"),
@@ -680,6 +685,7 @@ class _HomePageState extends State<HomePage> {
                                                         e.deleteAfterRinging,
                                                     notes: e.notes,
                                                     isRepeating: false,
+                                                    isFavorite: e.isFavorite,
                                                     emergencyAlarmTimeoutSeconds:
                                                         e.emergencyAlarmTimeoutSeconds,
                                                   );

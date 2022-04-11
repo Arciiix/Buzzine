@@ -20,6 +20,7 @@ class GetDatabaseData {
         notes: alarm?.notes,
         repeat: alarm?.repeat,
         emergencyAlarmTimeoutSeconds: alarm?.emergencyAlarmTimeoutSeconds,
+        isFavorite: alarm?.isFavorite ?? false,
       };
     });
     return alarms;
@@ -42,6 +43,7 @@ class GetDatabaseData {
         notes: nap?.notes,
         emergencyAlarmTimeoutSeconds: nap?.emergencyAlarmTimeoutSeconds,
         invocationDate: nap?.invocationDate,
+        isFavorite: nap?.isFavorite ?? false,
       };
     });
     return naps;

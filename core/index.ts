@@ -107,6 +107,7 @@ io.on("connection", (socket: Socket) => {
         maxTotalSnoozeDuration: payload?.maxTotalSnoozeDuration,
         deleteAfterRinging: payload?.deleteAfterRinging ?? false,
         emergencyAlarmTimeoutSeconds: payload?.emergencyAlarmTimeoutSeconds,
+        isFavorite: payload?.isFavorite ?? false,
       });
       if (cb) {
         cb(newAlarm);
@@ -127,6 +128,7 @@ io.on("connection", (socket: Socket) => {
           notes: newAlarm?.notes,
           repeat: newAlarm?.repeat,
           emergencyAlarmTimeoutSeconds: newAlarm?.emergencyAlarmTimeoutSeconds,
+          isFavorite: newAlarm?.isFavorite ?? false,
         })
       );
     } catch (err) {
@@ -155,6 +157,7 @@ io.on("connection", (socket: Socket) => {
         maxTotalSnoozeDuration: payload?.maxTotalSnoozeDuration,
         deleteAfterRinging: payload?.deleteAfterRinging ?? false,
         emergencyAlarmTimeoutSeconds: payload?.emergencyAlarmTimeoutSeconds,
+        isFavorite: payload?.isFavorite ?? false,
       });
       if (cb) {
         cb(newNap);
@@ -174,6 +177,7 @@ io.on("connection", (socket: Socket) => {
           name: newNap?.name,
           notes: newNap?.notes,
           emergencyAlarmTimeoutSeconds: newNap?.emergencyAlarmTimeoutSeconds,
+          isFavorite: newNap?.isFavorite,
         })
       );
     } catch (err) {
@@ -346,6 +350,7 @@ io.on("connection", (socket: Socket) => {
         maxTotalSnoozeDuration: payload?.maxTotalSnoozeDuration,
         deleteAfterRinging: payload?.deleteAfterRinging ?? false,
         emergencyAlarmTimeoutSeconds: payload?.emergencyAlarmTimeoutSeconds,
+        isFavorite: payload?.isFavorite ?? false,
       });
       await alarm.save();
       //I can't just refetch the alarms - e.g. it would cancel all snoozes
@@ -364,6 +369,7 @@ io.on("connection", (socket: Socket) => {
         notes: alarm?.notes,
         repeat: alarm?.repeat,
         emergencyAlarmTimeoutSeconds: alarm?.emergencyAlarmTimeoutSeconds,
+        isFavorite: alarm?.isFavorite,
       });
       saveUpcomingAlarms();
 
@@ -399,6 +405,7 @@ io.on("connection", (socket: Socket) => {
         maxTotalSnoozeDuration: payload?.maxTotalSnoozeDuration,
         deleteAfterRinging: payload?.deleteAfterRinging ?? false,
         emergencyAlarmTimeoutSeconds: payload?.emergencyAlarmTimeoutSeconds,
+        isFavorite: payload?.isFavorite ?? false,
       });
       await nap.save();
 
@@ -418,6 +425,7 @@ io.on("connection", (socket: Socket) => {
         maxTotalSnoozeDuration: payload?.maxTotalSnoozeDuration,
         deleteAfterRinging: payload?.deleteAfterRinging ?? false,
         emergencyAlarmTimeoutSeconds: payload?.emergencyAlarmTimeoutSeconds,
+        isFavorite: payload?.isFavorite ?? false,
       });
       saveUpcomingAlarms();
 
@@ -524,6 +532,51 @@ io.on("connection", (socket: Socket) => {
 
     if (cb) {
       cb({ error: false });
+    }
+  });
+
+  socket.on("CMD/TOOGLE_FAVORITE", async (payload: any, cb) => {
+    if (!payload.id) {
+      if (cb) {
+        cb({ error: true, errorCode: "MISSING_ID" });
+      }
+      return;
+    }
+
+    let obj: any = await AlarmModel.findOne({
+      where: {
+        id: payload.id,
+      },
+    });
+
+    if (!obj) {
+      obj = await NapModel.findOne({
+        where: {
+          id: payload.id,
+        },
+      });
+    }
+
+    if (!obj) {
+      if (cb) {
+        cb({ error: true, errorCode: "ALARM_NOT_FOUND" });
+      }
+      return;
+    }
+
+    obj.isFavorite = payload?.isFavorite ?? false;
+
+    if (payload.id.toString().includes("NAP/")) {
+      Buzzine.naps.find((e) => e.id === payload.id).isFavorite =
+        payload?.isFavorite ?? false;
+    } else {
+      Buzzine.alarms.find((e) => e.id === payload.id).isFavorite =
+        payload?.isFavorite ?? false;
+    }
+    await obj.save();
+
+    if (cb) {
+      cb({ error: false, response: obj });
     }
   });
 });

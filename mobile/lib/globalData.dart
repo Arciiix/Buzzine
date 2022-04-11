@@ -148,31 +148,34 @@ class GlobalData {
       List alarmsResponse = decodedResponse['response']['alarms'];
       GlobalData.alarms = alarmsResponse
           .map((e) => Alarm(
-              id: e['id'],
-              hour: e['hour'],
-              minute: e['minute'],
-              isActive: e?['isActive'] ?? false,
-              isGuardEnabled: e?['isGuardEnabled'] ?? false,
-              isSnoozeEnabled: e?['isSnoozeEnabled'] ?? false,
-              deleteAfterRinging: e?['deleteAfterRinging'] ?? false,
-              maxTotalSnoozeDuration: e?['maxTotalSnoozeDuration'],
-              sound: Audio(
-                  audioId: e['sound']['audioId'],
-                  filename: e['sound']['filename'],
-                  friendlyName:
-                      e['sound']['friendlyName'] ?? e['sound']['filename']),
-              name: e['name'],
-              notes: e['notes'],
-              isRepeating: e['repeat'] != null,
-              repeat: e['repeat'] != null
-                  ? Repeat(
-                      daysOfWeek: e['repeat']['dayOfWeek']?.cast<int>(),
-                      days: e['repeat']['date']?.cast<int>(),
-                      months: e['repeat']['month']?.cast<int>(),
-                    )
-                  : null,
-              nextInvocation: DateTime.tryParse(e['nextInvocationDate'] ?? ""),
-              emergencyAlarmTimeoutSeconds: e['emergencyAlarmTimeoutSeconds']))
+                id: e['id'],
+                hour: e['hour'],
+                minute: e['minute'],
+                isActive: e?['isActive'] ?? false,
+                isGuardEnabled: e?['isGuardEnabled'] ?? false,
+                isSnoozeEnabled: e?['isSnoozeEnabled'] ?? false,
+                deleteAfterRinging: e?['deleteAfterRinging'] ?? false,
+                maxTotalSnoozeDuration: e?['maxTotalSnoozeDuration'],
+                sound: Audio(
+                    audioId: e['sound']['audioId'],
+                    filename: e['sound']['filename'],
+                    friendlyName:
+                        e['sound']['friendlyName'] ?? e['sound']['filename']),
+                name: e['name'],
+                notes: e['notes'],
+                isRepeating: e['repeat'] != null,
+                repeat: e['repeat'] != null
+                    ? Repeat(
+                        daysOfWeek: e['repeat']['dayOfWeek']?.cast<int>(),
+                        days: e['repeat']['date']?.cast<int>(),
+                        months: e['repeat']['month']?.cast<int>(),
+                      )
+                    : null,
+                nextInvocation:
+                    DateTime.tryParse(e['nextInvocationDate'] ?? ""),
+                emergencyAlarmTimeoutSeconds: e['emergencyAlarmTimeoutSeconds'],
+                isFavorite: e['isFavorite'] ?? false,
+              ))
           .toList();
     }
 
@@ -185,6 +188,8 @@ class GlobalData {
         GlobalData.alarms.where((elem) => elem.isActive).toList();
     List<Alarm> inactiveAlarms =
         GlobalData.alarms.where((elem) => !elem.isActive).toList();
+    //Favorite inactive alarms first
+    inactiveAlarms.sort((a, b) => (a.isFavorite ?? false) ? -1 : 1);
 
     GlobalData.alarms = [...activeAlarms, ...inactiveAlarms];
 
@@ -192,24 +197,26 @@ class GlobalData {
     List napsResponse = decodedResponse['response']['naps'];
     GlobalData.naps = napsResponse
         .map((e) => Nap(
-            id: e['id'],
-            hour: e['hour'],
-            minute: e['minute'],
-            second: e['second'],
-            isActive: e?['isActive'] ?? false,
-            isGuardEnabled: e?['isGuardEnabled'] ?? false,
-            isSnoozeEnabled: e?['isSnoozeEnabled'] ?? false,
-            deleteAfterRinging: e?['deleteAfterRinging'] ?? false,
-            maxTotalSnoozeDuration: e?['maxTotalSnoozeDuration'],
-            sound: Audio(
-                audioId: e['sound']['audioId'],
-                filename: e['sound']['filename'],
-                friendlyName:
-                    e['sound']['friendlyName'] ?? e['sound']['filename']),
-            name: e['name'],
-            notes: e['notes'],
-            emergencyAlarmTimeoutSeconds: e['emergencyAlarmTimeoutSeconds'],
-            invocationDate: DateTime.tryParse(e['invocationDate'] ?? "")))
+              id: e['id'],
+              hour: e['hour'],
+              minute: e['minute'],
+              second: e['second'],
+              isActive: e?['isActive'] ?? false,
+              isGuardEnabled: e?['isGuardEnabled'] ?? false,
+              isSnoozeEnabled: e?['isSnoozeEnabled'] ?? false,
+              deleteAfterRinging: e?['deleteAfterRinging'] ?? false,
+              maxTotalSnoozeDuration: e?['maxTotalSnoozeDuration'],
+              sound: Audio(
+                  audioId: e['sound']['audioId'],
+                  filename: e['sound']['filename'],
+                  friendlyName:
+                      e['sound']['friendlyName'] ?? e['sound']['filename']),
+              name: e['name'],
+              notes: e['notes'],
+              emergencyAlarmTimeoutSeconds: e['emergencyAlarmTimeoutSeconds'],
+              invocationDate: DateTime.tryParse(e['invocationDate'] ?? ""),
+              isFavorite: e['isFavorite'] ?? false,
+            ))
         .toList();
 
     //Sort the naps
@@ -226,6 +233,8 @@ class GlobalData {
         GlobalData.naps.where((elem) => elem.isActive).toList();
     List<Nap> inactiveNaps =
         GlobalData.naps.where((elem) => !elem.isActive).toList();
+    //Favorite inactive naps first
+    inactiveNaps.sort((a, b) => (a.isFavorite ?? false) ? -1 : 1);
     //Sort the active naps by invocationDate
     activeNaps.sort((a, b) => a.invocationDate!.compareTo(b.invocationDate!));
 
@@ -1432,6 +1441,23 @@ class GlobalData {
         throw APIException(
             "Błąd podczas podglądu efektów przejścia audio $audioId. Status code: ${response.statusCode}, response: ${response.body}");
       }
+    }
+  }
+
+  static Future<void> toogleFavorite(String id, bool isFavorite) async {
+    Map requestData = {
+      'id': id,
+      'isFavorite': isFavorite,
+    };
+
+    var response = await http.put(Uri.parse("$serverIP/v1/toogleFavorite"),
+        body: json.encode(requestData),
+        headers: {"Content-Type": "application/json"});
+    var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
+
+    if (response.statusCode != 200 || decodedResponse['error'] == true) {
+      throw APIException(
+          "Błąd podczas ${isFavorite ? "dodawania alarmu $id do ulubionych" : "usuwania alarmu $id z ulubionych"}. Status code: ${response.statusCode}, response: ${response.body}");
     }
   }
 }

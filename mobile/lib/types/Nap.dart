@@ -24,6 +24,8 @@ class Nap extends Alarm {
 
   DateTime? invocationDate;
 
+  bool? isFavorite;
+
   Nap(
       {this.id,
       this.name,
@@ -38,7 +40,8 @@ class Nap extends Alarm {
       this.deleteAfterRinging,
       this.notes,
       this.emergencyAlarmTimeoutSeconds,
-      this.invocationDate})
+      this.invocationDate,
+      this.isFavorite})
       : super(
             id: id,
             name: name,
@@ -53,7 +56,8 @@ class Nap extends Alarm {
             deleteAfterRinging: deleteAfterRinging,
             notes: notes,
             emergencyAlarmTimeoutSeconds: emergencyAlarmTimeoutSeconds,
-            isRepeating: false);
+            isRepeating: false,
+            isFavorite: isFavorite);
 
   @override
   Map toMap() {
@@ -71,7 +75,8 @@ class Nap extends Alarm {
       'deleteAfterRinging': deleteAfterRinging,
       'notes': notes,
       'emergencyAlarmTimeoutSeconds': emergencyAlarmTimeoutSeconds,
-      'invocationDate': invocationDate
+      'invocationDate': invocationDate,
+      'isFavorite': isFavorite
     };
   }
 }

@@ -35,6 +35,8 @@ class Alarm {
 
   maxTotalSnoozeDuration: number; //In seconds
 
+  isFavorite: boolean;
+
   protected isNextInvocationCancelled: { isCancelled: boolean; clearJob: Job }; //clearJob is a Job which removes the isNextInvocationCancelled object
   protected jobObject: Job;
 
@@ -57,6 +59,7 @@ class Alarm {
     notes,
     repeat,
     emergencyAlarmTimeoutSeconds,
+    isFavorite,
   }: {
     hour: number;
     minute: number;
@@ -71,6 +74,7 @@ class Alarm {
     notes?: string;
     repeat?: RecurrenceObject;
     emergencyAlarmTimeoutSeconds?: number;
+    isFavorite?: boolean;
   }) {
     if (name) {
       this.name = name;
@@ -100,6 +104,7 @@ class Alarm {
       };
     }
     this.emergencyAlarmTimeoutSeconds = emergencyAlarmTimeoutSeconds;
+    this.isFavorite = isFavorite ?? false;
     this.getDBObject();
     if (isActive) {
       this.turnOn();
@@ -128,6 +133,7 @@ class Alarm {
       notes: this.notes,
       repeat: this.repeat,
       emergencyAlarmTimeoutSeconds: this.emergencyAlarmTimeoutSeconds,
+      isFavorite: this.isFavorite,
     };
   }
 
@@ -510,6 +516,7 @@ interface IAlarm {
   notes?: string;
   repeat?: RecurrenceObject;
   emergencyAlarmTimeoutSeconds?: number;
+  isFavorite?: boolean;
 }
 
 interface IRingingStats {

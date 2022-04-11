@@ -224,6 +224,7 @@ class _AlarmListState extends State<AlarmList> {
                                             emergencyAlarmTimeoutSeconds:
                                                 e.emergencyAlarmTimeoutSeconds,
                                             repeat: e.repeat,
+                                            isFavorite: e.isFavorite,
                                             // refresh: () async =>       await _refreshState.currentState?.show()
                                           )))));
                         }),

@@ -240,6 +240,7 @@ class _NapListState extends State<NapList> {
                                             deleteAfterRinging:
                                                 e.deleteAfterRinging,
                                             notes: e.notes,
+                                            isFavorite: e.isFavorite,
                                             isRepeating: false,
                                             emergencyAlarmTimeoutSeconds:
                                                 e.emergencyAlarmTimeoutSeconds,

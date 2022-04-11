@@ -56,6 +56,11 @@ const AlarmModel = db.define("Alarm", {
     type: DataTypes.INTEGER,
     defaultValue: 0,
   },
+  isFavorite: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: 0,
+    allowNull: true,
+  },
 });
 
 export default AlarmModel;

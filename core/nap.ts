@@ -22,6 +22,7 @@ class Nap extends Alarm {
     notes,
     emergencyAlarmTimeoutSeconds,
     invocationDate,
+    isFavorite,
   }: {
     hour: number;
     minute: number;
@@ -35,6 +36,7 @@ class Nap extends Alarm {
     notes?: string;
     emergencyAlarmTimeoutSeconds?: number;
     invocationDate?: Date;
+    isFavorite?: boolean;
   }) {
     super({
       hour,
@@ -49,6 +51,7 @@ class Nap extends Alarm {
       name,
       notes,
       emergencyAlarmTimeoutSeconds,
+      isFavorite,
     });
 
     if (invocationDate?.getTime() <= new Date().getTime()) {
@@ -154,6 +157,7 @@ class Nap extends Alarm {
       name: this.name,
       notes: this.notes,
       emergencyAlarmTimeoutSeconds: this.emergencyAlarmTimeoutSeconds,
+      isFavorite: this.isFavorite,
     };
   }
 
@@ -191,6 +195,7 @@ interface INap {
   notes?: string;
   emergencyAlarmTimeoutSeconds?: number;
   invocationDate?: Date;
+  isFavorite?: boolean;
 }
 
 type RingingNap = INap & { maxAlarmDate?: Date };

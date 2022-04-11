@@ -117,7 +117,8 @@ class _AlarmFormState extends State<AlarmForm> {
         isRepeating: _isRepeating,
         repeat: _repeat,
         emergencyAlarmTimeoutSeconds: _emergencyAlarmTimeoutSeconds,
-        isActive: widget.baseAlarm?.isActive ?? true);
+        isActive: widget.baseAlarm?.isActive ?? true,
+        isFavorite: widget.baseAlarm?.isFavorite);
     if (widget.alarmType == AlarmType.nap) {
       returnedAlarm.second = _second!;
       returnedAlarm.isRepeating = false;

@@ -797,6 +797,33 @@ api.put("/cancelAllAlarms", async (req, res) => {
   });
 });
 
+api.put("/toogleFavorite", async (req, res) => {
+  if (!req.body.id) {
+    return res.status(400).send({ error: true, errorCode: "MISSING_ID" });
+  }
+
+  socket.emit(
+    "CMD/TOOGLE_FAVORITE",
+    {
+      id: req.body.id,
+      isFavorite: req.body.isFavorite,
+    },
+    (response) => {
+      if (response.error) {
+        res.status(500).send(response);
+        logger.warn(
+          `Response error when toggling favorite: ${JSON.stringify(response)}`
+        );
+      } else {
+        res.status(200).send(response);
+        logger.info(
+          `Toggled favorite successfully. Response: ${JSON.stringify(response)}`
+        );
+      }
+    }
+  );
+});
+
 audioRouter.put("/tempMuteAudio", async (req, res) => {
   //It's just the same request sent to the audio microservice
   try {
