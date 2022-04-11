@@ -1,9 +1,13 @@
 import 'dart:async';
 import 'package:buzzine/components/simple_loading_dialog.dart';
 import 'package:buzzine/globalData.dart';
+import 'package:buzzine/screens/tracking_screen.dart';
+import 'package:buzzine/screens/tracking_stats_screen.dart';
 import 'package:buzzine/types/AlarmType.dart';
 import 'package:buzzine/types/Audio.dart';
 import 'package:buzzine/types/Repeat.dart';
+import 'package:buzzine/types/TrackingEntry.dart';
+import 'package:buzzine/types/TrackingStats.dart';
 import 'package:buzzine/utils/formatting.dart';
 import 'package:flutter/material.dart';
 
@@ -147,6 +151,47 @@ class _AlarmCardState extends State<AlarmCard> {
     if (widget.refresh != null) {
       widget.refresh!();
     }
+    if (isActive) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: const Text("Przejdź do danych snu"),
+        action: SnackBarAction(
+          label: 'Przejdź',
+          onPressed: () {
+            navigateToTrackingScreen();
+          },
+        ),
+      ));
+    }
+  }
+
+  Future<void> navigateToTrackingScreen() async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return SimpleLoadingDialog("Trwa pobieranie snu...");
+      },
+    );
+    TrackingEntry latestEntry = await GlobalData.getLatestTrackingEntry();
+
+    Navigator.of(context).pop();
+
+    await Navigator.of(context).push(MaterialPageRoute(
+      builder: (context) => TrackingScreen(initDate: latestEntry.date!),
+    ));
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return SimpleLoadingDialog("Trwa pobieranie snu...");
+      },
+    );
+    await GlobalData.getTrackingStats();
+    Navigator.of(context).pop();
+    if (widget.refresh != null) {
+      widget.refresh!();
+    }
   }
 
   void askToCancelNextInvocation() async {
@@ -213,176 +258,182 @@ class _AlarmCardState extends State<AlarmCard> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-        width: MediaQuery.of(context).size.width * 0.9,
-        padding: const EdgeInsets.all(10),
-        margin: const EdgeInsets.all(5),
-        decoration: BoxDecoration(
-          color: Theme.of(context).cardColor,
-          borderRadius: BorderRadius.circular(5),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Flexible(
-                child: Text(
-              widget.name ??
-                  (widget.alarmType == AlarmType.nap
-                      ? "Drzemka bez nazwy"
-                      : "Alarm bez nazwy"),
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontSize: 18),
-            )),
-            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(timeTextContent, style: const TextStyle(fontSize: 44)),
-                ],
+    return WillPopScope(
+      onWillPop: () async {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        return true;
+      },
+      child: Container(
+          width: MediaQuery.of(context).size.width * 0.9,
+          padding: const EdgeInsets.all(10),
+          margin: const EdgeInsets.all(5),
+          decoration: BoxDecoration(
+            color: Theme.of(context).cardColor,
+            borderRadius: BorderRadius.circular(5),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Flexible(
+                  child: Text(
+                widget.name ??
+                    (widget.alarmType == AlarmType.nap
+                        ? "Drzemka bez nazwy"
+                        : "Alarm bez nazwy"),
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(fontSize: 18),
+              )),
+              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(timeTextContent, style: const TextStyle(fontSize: 44)),
+                  ],
+                ),
+                if (widget.hideSwitch != true)
+                  GestureDetector(
+                      onLongPress: () async {
+                        if (widget.isRepeating == true && widget.isActive) {
+                          askToCancelNextInvocation();
+                        }
+                      },
+                      child: Switch(onChanged: setIsActive, value: isActive)),
+              ]),
+              InkWell(
+                onTap: widget.alarmType == AlarmType.nap &&
+                        widget.nextInvocation != null
+                    ? showInvocationDateAlertDialog
+                    : null,
+                child: Row(
+                  children: [
+                    const Icon(Icons.schedule),
+                    Padding(
+                        padding: const EdgeInsets.all(5),
+                        child: Text(timeDetailsTextContent))
+                  ],
+                ),
               ),
-              if (widget.hideSwitch != true)
-                GestureDetector(
-                    onLongPress: () async {
-                      if (widget.isRepeating == true && widget.isActive) {
-                        askToCancelNextInvocation();
-                      }
-                    },
-                    child: Switch(onChanged: setIsActive, value: isActive)),
-            ]),
-            InkWell(
-              onTap: widget.alarmType == AlarmType.nap &&
-                      widget.nextInvocation != null
-                  ? showInvocationDateAlertDialog
-                  : null,
-              child: Row(
+              Row(
                 children: [
-                  const Icon(Icons.schedule),
+                  const Icon(Icons.snooze),
                   Padding(
                       padding: const EdgeInsets.all(5),
-                      child: Text(timeDetailsTextContent))
+                      child: Text(widget.isSnoozeEnabled == true
+                          ? "Max. ${((widget.maxTotalSnoozeDuration ?? 0) / 60).floor()} min"
+                          : "Wyłączona"))
                 ],
               ),
-            ),
-            Row(
-              children: [
-                const Icon(Icons.snooze),
+              Row(
+                children: [
+                  const Icon(Icons.music_note),
+                  Flexible(
+                      child: Padding(
+                          padding: const EdgeInsets.all(5),
+                          child: Text(
+                            widget.sound?.friendlyName ?? "Domyślna",
+                            overflow: TextOverflow.ellipsis,
+                          )))
+                ],
+              ),
+              Row(children: [
+                Icon(widget.isGuardEnabled ? Icons.lock : Icons.lock_open),
                 Padding(
                     padding: const EdgeInsets.all(5),
-                    child: Text(widget.isSnoozeEnabled == true
-                        ? "Max. ${((widget.maxTotalSnoozeDuration ?? 0) / 60).floor()} min"
-                        : "Wyłączona"))
-              ],
-            ),
-            Row(
-              children: [
-                const Icon(Icons.music_note),
-                Flexible(
-                    child: Padding(
-                        padding: const EdgeInsets.all(5),
-                        child: Text(
-                          widget.sound?.friendlyName ?? "Domyślna",
-                          overflow: TextOverflow.ellipsis,
-                        )))
-              ],
-            ),
-            Row(children: [
-              Icon(widget.isGuardEnabled ? Icons.lock : Icons.lock_open),
-              Padding(
-                  padding: const EdgeInsets.all(5),
-                  child: Text(
-                      "Ochrona ${widget.isGuardEnabled ? "włączona" : "wyłączona"}"))
-            ]),
-            Column(
-                children: widget.isRepeating == true
-                    ? [
-                        Row(children: const [
-                          Icon(Icons.repeat),
-                          Text("Powtarzanie")
-                        ]),
-                        Row(children: [
-                          const Text("Dni tygodnia: "),
-                          Flexible(
+                    child: Text(
+                        "Ochrona ${widget.isGuardEnabled ? "włączona" : "wyłączona"}"))
+              ]),
+              Column(
+                  children: widget.isRepeating == true
+                      ? [
+                          Row(children: const [
+                            Icon(Icons.repeat),
+                            Text("Powtarzanie")
+                          ]),
+                          Row(children: [
+                            const Text("Dni tygodnia: "),
+                            Flexible(
+                                child: Text(
+                              widget.repeat!.daysOfWeek == null
+                                  ? "wszystkie"
+                                  : (widget.repeat!.daysOfWeek ?? [])
+                                      .map((e) => daysOfWeek[e].substring(0, 3))
+                                      .toList()
+                                      .join(', '),
+                              overflow: TextOverflow.ellipsis,
+                            ))
+                          ]),
+                          Row(children: [
+                            const Text("Dni miesiąca: "),
+                            Flexible(
                               child: Text(
-                            widget.repeat!.daysOfWeek == null
-                                ? "wszystkie"
-                                : (widget.repeat!.daysOfWeek ?? [])
-                                    .map((e) => daysOfWeek[e].substring(0, 3))
-                                    .toList()
-                                    .join(', '),
-                            overflow: TextOverflow.ellipsis,
-                          ))
+                                widget.repeat!.days == null
+                                    ? "wszystkie"
+                                    : (widget.repeat!.days ?? [])
+                                        .toList()
+                                        .join(', '),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            )
+                          ]),
+                          Row(children: [
+                            const Text("Miesiące: "),
+                            Flexible(
+                              child: Text(
+                                widget.repeat!.months == null
+                                    ? "wszystkie"
+                                    : (widget.repeat!.months ?? [])
+                                        .map((e) => months[e].substring(0, 3))
+                                        .toList()
+                                        .join(', '),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            )
+                          ]),
+                          const SizedBox(height: 10)
+                        ]
+                      : [
+                          Row(
+                              children: widget.deleteAfterRinging == true
+                                  ? const [
+                                      SizedBox(
+                                          width:
+                                              2.5), //Flutter, for some reason, adds extra blank space on the left side of the icon.
+                                      Icon(Icons.auto_delete),
+                                      Text("Jednorazowy")
+                                    ]
+                                  : const [
+                                      Icon(Icons.repeat_one),
+                                      Text("Ręczny")
+                                    ]),
                         ]),
-                        Row(children: [
-                          const Text("Dni miesiąca: "),
-                          Flexible(
-                            child: Text(
-                              widget.repeat!.days == null
-                                  ? "wszystkie"
-                                  : (widget.repeat!.days ?? [])
-                                      .toList()
-                                      .join(', '),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          )
-                        ]),
-                        Row(children: [
-                          const Text("Miesiące: "),
-                          Flexible(
-                            child: Text(
-                              widget.repeat!.months == null
-                                  ? "wszystkie"
-                                  : (widget.repeat!.months ?? [])
-                                      .map((e) => months[e].substring(0, 3))
-                                      .toList()
-                                      .join(', '),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          )
-                        ]),
-                        const SizedBox(height: 10)
-                      ]
-                    : [
-                        Row(
-                            children: widget.deleteAfterRinging == true
-                                ? const [
-                                    SizedBox(
-                                        width:
-                                            2.5), //Flutter, for some reason, adds extra blank space on the left side of the icon.
-                                    Icon(Icons.auto_delete),
-                                    Text("Jednorazowy")
-                                  ]
-                                : const [
-                                    Icon(Icons.repeat_one),
-                                    Text("Ręczny")
-                                  ]),
-                      ]),
-            Row(
-              children: [
-                Icon(Icons.verified_user),
-                Flexible(
-                    child: Text(
-                  "Zapasowy alarm: ${widget.emergencyAlarmTimeoutSeconds != null && widget.emergencyAlarmTimeoutSeconds != 0 ? addZero((widget.emergencyAlarmTimeoutSeconds! / 60).floor()) + ":" + addZero(widget.emergencyAlarmTimeoutSeconds!.remainder(60)) : "tylko ochrona"}",
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                )),
-              ],
-            ),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                const Icon(Icons.subject),
-                Flexible(
-                    child: Text(
-                  widget.notes ?? "Brak",
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.left,
-                )),
-              ],
-            ),
-          ],
-        ));
+              Row(
+                children: [
+                  Icon(Icons.verified_user),
+                  Flexible(
+                      child: Text(
+                    "Zapasowy alarm: ${widget.emergencyAlarmTimeoutSeconds != null && widget.emergencyAlarmTimeoutSeconds != 0 ? addZero((widget.emergencyAlarmTimeoutSeconds! / 60).floor()) + ":" + addZero(widget.emergencyAlarmTimeoutSeconds!.remainder(60)) : "tylko ochrona"}",
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  )),
+                ],
+              ),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const Icon(Icons.subject),
+                  Flexible(
+                      child: Text(
+                    widget.notes ?? "Brak",
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.left,
+                  )),
+                ],
+              ),
+            ],
+          )),
+    );
   }
 
   @override
