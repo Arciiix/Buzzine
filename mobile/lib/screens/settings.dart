@@ -423,7 +423,7 @@ class _SettingsState extends State<Settings> {
                 child: Form(
                     key: _formKey,
                     child: Padding(
-                        padding: EdgeInsets.all(10),
+                        padding: EdgeInsets.all(15),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -856,6 +856,7 @@ class _SettingsState extends State<Settings> {
                             Column(
                               children: [
                                 ListTile(
+                                  contentPadding: EdgeInsets.all(2),
                                   title: const Text("Idealna długość snu"),
                                   subtitle:
                                       Text(durationToHHmm(_sleepDuration)),
@@ -873,6 +874,7 @@ class _SettingsState extends State<Settings> {
                                   },
                                 ),
                                 ListTile(
+                                  contentPadding: EdgeInsets.all(2),
                                   title: const Text("Średni czas na zaśnięcie"),
                                   subtitle:
                                       Text(durationToHHmm(_fallingAsleepTime)),
