@@ -185,15 +185,22 @@ class GlobalData {
 
     //Sort the alarms
     //By the invocation time
-    GlobalData.alarms
-        .sort((a, b) => a.hour * 60 + a.minute - b.hour * 60 - b.minute);
+    GlobalData.alarms.sort((a, b) {
+      if (a.nextInvocation != null && b.nextInvocation != null) {
+        return a.nextInvocation!.compareTo(b.nextInvocation!);
+      } else {
+        return a.hour * 60 + a.minute - b.hour * 60 - b.minute;
+      }
+    });
     //Active ones first
     List<Alarm> activeAlarms =
         GlobalData.alarms.where((elem) => elem.isActive).toList();
     List<Alarm> inactiveAlarms =
         GlobalData.alarms.where((elem) => !elem.isActive).toList();
     //Favorite inactive alarms first
-    inactiveAlarms.sort((a, b) => (a.isFavorite ?? false) ? -1 : 1);
+    inactiveAlarms.sort((a, b) => (a.isFavorite ?? false) ? 1 : -1);
+    //Sort the active alarms by invocationDate
+    activeAlarms.sort((a, b) => a.nextInvocation!.compareTo(b.nextInvocation!));
 
     GlobalData.alarms = [...activeAlarms, ...inactiveAlarms];
 
@@ -225,20 +232,25 @@ class GlobalData {
 
     //Sort the naps
     //By length
-    GlobalData.naps.sort((a, b) =>
-        a.hour * 3600 +
-        a.minute * 60 +
-        a.second! -
-        b.hour * 3600 -
-        b.minute * 60 -
-        b.second!);
+    GlobalData.naps.sort((a, b) {
+      if (a.nextInvocation != null && b.nextInvocation != null) {
+        return a.nextInvocation!.compareTo(b.nextInvocation!);
+      } else {
+        return a.hour * 3600 +
+            a.minute * 60 +
+            a.second! -
+            b.hour * 3600 -
+            b.minute * 60 -
+            b.second!;
+      }
+    });
     //Active ones first
     List<Nap> activeNaps =
         GlobalData.naps.where((elem) => elem.isActive).toList();
     List<Nap> inactiveNaps =
         GlobalData.naps.where((elem) => !elem.isActive).toList();
     //Favorite inactive naps first
-    inactiveNaps.sort((a, b) => (a.isFavorite ?? false) ? -1 : 1);
+    inactiveNaps.sort((a, b) => (a.isFavorite ?? false) ? 1 : -1);
     //Sort the active naps by invocationDate
     activeNaps.sort((a, b) => a.invocationDate!.compareTo(b.invocationDate!));
 
