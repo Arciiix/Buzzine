@@ -268,6 +268,56 @@ class TrackingEntryWidgetState extends State<TrackingEntryWidget> {
                           )
                         ],
                       ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        mainAxisSize: MainAxisSize.max,
+                        children: [
+                          SizedBox(
+                            width:
+                                MediaQuery.of(context).size.width * 0.9 * 0.4,
+                            child: Column(
+                              children: [
+                                Padding(
+                                  padding: EdgeInsets.all(2),
+                                  child: Icon(Icons.first_page, size: 24),
+                                ),
+                                Text("Początek alarmów",
+                                    style: TextStyle(fontSize: 16),
+                                    textAlign: TextAlign.center),
+                                Text(
+                                    _currentEntry.alarmTimeFrom == null
+                                        ? "-"
+                                        : dateToTimeString(
+                                            _currentEntry.alarmTimeFrom!,
+                                            excludeSeconds: true),
+                                    style: const TextStyle(fontSize: 24))
+                              ],
+                            ),
+                          ),
+                          SizedBox(
+                            width:
+                                MediaQuery.of(context).size.width * 0.9 * 0.4,
+                            child: Column(
+                              children: [
+                                Padding(
+                                  padding: EdgeInsets.all(2),
+                                  child: Icon(Icons.last_page, size: 24),
+                                ),
+                                Text("Koniec alarmów",
+                                    style: TextStyle(fontSize: 16),
+                                    textAlign: TextAlign.center),
+                                Text(
+                                    _currentEntry.alarmTimeTo == null
+                                        ? "-"
+                                        : dateToTimeString(
+                                            _currentEntry.alarmTimeTo!,
+                                            excludeSeconds: true),
+                                    style: const TextStyle(fontSize: 24))
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                       SizedBox(
                         height: 100,
                         child: Column(

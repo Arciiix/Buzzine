@@ -148,6 +148,8 @@ api.put("/updateDataForDate", async (req, res) => {
     firstAlarmTime: dbObject.firstAlarmTime,
     wakeUpTime: dbObject.wakeUpTime,
     getUpTime: dbObject.getUpTime,
+    alarmTimeFrom: dbObject.alarmTimeFrom,
+    alarmTimeTo: dbObject.alarmTimeTo,
     rate: dbObject.rate,
     notes: dbObject.notes,
   };
@@ -166,6 +168,12 @@ api.put("/updateDataForDate", async (req, res) => {
   }
   if (req.body.updateObject.getUpTime) {
     dbObject.getUpTime = new Date(req.body.updateObject.getUpTime);
+  }
+  if (req.body.updateObject.alarmTimeFrom) {
+    dbObject.alarmTimeFrom = new Date(req.body.updateObject.alarmTimeFrom);
+  }
+  if (req.body.updateObject.alarmTimeTo) {
+    dbObject.alarmTimeTo = new Date(req.body.updateObject.alarmTimeTo);
   }
   if (req.body.updateObject.rate) {
     dbObject.rate = parseInt(req.body.updateObject.rate);
@@ -269,6 +277,8 @@ api.put("/updateDataForLatestIfDoesntExist", async (req, res) => {
     firstAlarmTime: dbObject.firstAlarmTime,
     wakeUpTime: dbObject.wakeUpTime,
     getUpTime: dbObject.getUpTime,
+    alarmTimeFrom: dbObject.alarmTimeFrom,
+    alarmTimeTo: dbObject.alarmTimeTo,
     rate: dbObject.rate,
     notes: dbObject.notes,
   };
@@ -397,6 +407,8 @@ interface ITrackingEntryObject {
   firstAlarmTime?: Date;
   wakeUpTime?: Date;
   getUpTime?: Date;
+  alarmTimeFrom?: Date;
+  alarmTimeTo?: Date;
   rate?: number;
   notes?: string;
 }

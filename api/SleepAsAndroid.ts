@@ -237,6 +237,11 @@ async function handleSleepAsAndroidWebhook(event, value1?, value2?, value3?) {
         true
       );
       break;
+    case "smart_period":
+      TrackingAdapter.updateIfDoesNotExistCurrent({
+        alarmTimeFrom: new Date(new Date().setSeconds(0)),
+      });
+      break;
     default:
       break;
   }

@@ -62,6 +62,8 @@ interface ITrackingEntryObject {
   firstAlarmTime?: Date;
   wakeUpTime?: Date;
   getUpTime?: Date;
+  alarmTimeFrom?: Date;
+  alarmTimeTo?: Date;
   rate?: number;
 }
 

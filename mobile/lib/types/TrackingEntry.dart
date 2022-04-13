@@ -5,6 +5,8 @@ class TrackingEntry {
   DateTime? firstAlarmTime;
   DateTime? wakeUpTime;
   DateTime? getUpTime;
+  DateTime? alarmTimeFrom;
+  DateTime? alarmTimeTo;
   int? rate;
   String? notes;
   bool? isNap;
@@ -18,6 +20,8 @@ class TrackingEntry {
       'firstAlarmTime': firstAlarmTime?.toIso8601String(),
       'wakeUpTime': wakeUpTime?.toIso8601String(),
       'getUpTime': getUpTime?.toIso8601String(),
+      'alarmTimeFrom': alarmTimeFrom?.toIso8601String(),
+      'alarmTimeTo': alarmTimeTo?.toIso8601String(),
       'rate': rate,
       'notes': notes
     };
@@ -30,6 +34,8 @@ class TrackingEntry {
       this.firstAlarmTime,
       this.wakeUpTime,
       this.getUpTime,
+      this.alarmTimeFrom,
+      this.alarmTimeTo,
       this.rate,
       this.notes,
       this.versionHistory,
@@ -51,6 +57,8 @@ enum TrackingFieldName {
   firstAlarmTime,
   wakeUpTime,
   getUpTime,
+  alarmTimeFrom,
+  alarmTimeTo,
   rate,
   notes
 }

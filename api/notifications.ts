@@ -311,6 +311,7 @@ function loadFirebaseConfig() {
       );
       TrackingAdapter.updateIfDoesNotExistCurrent({
         firstAlarmTime: new Date(new Date().setSeconds(0)),
+        alarmTimeFrom: new Date(new Date().setSeconds(0)),
       });
     });
     socket.on("ALARM_OFF", () => {

@@ -1187,6 +1187,8 @@ class GlobalData {
           firstAlarmTime: DateTime.tryParse(entryData['firstAlarmTime'] ?? ""),
           wakeUpTime: DateTime.tryParse(entryData['wakeUpTime'] ?? ""),
           getUpTime: DateTime.tryParse(entryData['getUpTime'] ?? ""),
+          alarmTimeFrom: DateTime.tryParse(entryData['alarmTimeFrom'] ?? ""),
+          alarmTimeTo: DateTime.tryParse(entryData['alarmTimeTo'] ?? ""),
           rate: entryData['rate'],
           notes: entryData['notes'],
           isNap: DateTime.parse(entryData['date']).hour != 0 &&
@@ -1220,6 +1222,8 @@ class GlobalData {
             firstAlarmTime: DateTime.tryParse(e['firstAlarmTime'] ?? ""),
             wakeUpTime: DateTime.tryParse(e['wakeUpTime'] ?? ""),
             getUpTime: DateTime.tryParse(e['getUpTime'] ?? ""),
+            alarmTimeFrom: DateTime.tryParse(e['alarmTimeFrom'] ?? ""),
+            alarmTimeTo: DateTime.tryParse(e['alarmTimeTo'] ?? ""),
             rate: e['rate'],
             notes: e['notes'],
             isNap: DateTime.parse(e['date']).hour != 0 &&
@@ -1288,6 +1292,8 @@ class GlobalData {
             firstAlarmTime: DateTime.tryParse(e['firstAlarmTime'] ?? ""),
             wakeUpTime: DateTime.tryParse(e['wakeUpTime'] ?? ""),
             getUpTime: DateTime.tryParse(e['getUpTime'] ?? ""),
+            alarmTimeFrom: DateTime.tryParse(e['alarmTimeFrom'] ?? ""),
+            alarmTimeTo: DateTime.tryParse(e['alarmTimeTo'] ?? ""),
             rate: e['rate'],
             notes: e['notes'],
             isNap: DateTime.parse(e['date']).hour != 0 &&

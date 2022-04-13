@@ -46,12 +46,12 @@ class _TrackingScreenState extends State<TrackingScreen> {
             true);
   }
 
-  Future<TrackingEntry> getThePreviousLastTrackingEntry() async {
+  Future<TrackingEntry?> getThePreviousLastTrackingEntry() async {
     //Get the last 2 tracking entries
     List<TrackingEntry> _fetchedEntries =
         await GlobalData.getLastTrackingEntries(2);
 
-    return _fetchedEntries[1];
+    return _fetchedEntries.length >= 2 ? _fetchedEntries[1] : null;
   }
 
   Future<void> updateEntry(
@@ -266,8 +266,9 @@ class _TrackingScreenState extends State<TrackingScreen> {
   @override
   void initState() {
     getDataForDay(widget.initDate).then((value) {
-      getThePreviousLastTrackingEntry().then((TrackingEntry previousEntry) {
-        if (checkIfTheEntryWasNotRated(previousEntry)) {
+      getThePreviousLastTrackingEntry().then((TrackingEntry? previousEntry) {
+        if (previousEntry != null &&
+            checkIfTheEntryWasNotRated(previousEntry)) {
           displayUnratedWarningDialog(previousEntry.date!);
         }
         setState(() => _isLoaded = true);
@@ -859,6 +860,190 @@ class _TrackingScreenState extends State<TrackingScreen> {
                                                                   getUpTime: DateTime.parse(
                                                                       selectedHistoricalEntry
                                                                           .value))
+                                                              .toMapWithoutDate());
+                                                    }
+                                                  }
+                                                : null,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    ListTile(
+                                      title: const Text("Początek alarmów"),
+                                      onTap: () async {
+                                        DateTime? selectedTime =
+                                            await askForTime();
+
+                                        if (selectedTime != null) {
+                                          if (selectedTime.compareTo(
+                                                  _entries[index].alarmTimeTo ??
+                                                      selectedTime) <=
+                                              0) {
+                                            await updateEntry(
+                                                _entries[index].date!,
+                                                TrackingEntry(
+                                                        alarmTimeFrom:
+                                                            selectedTime)
+                                                    .toMapWithoutDate());
+                                          } else {
+                                            await showDialog(
+                                              context: context,
+                                              builder: (BuildContext context) {
+                                                return AlertDialog(
+                                                  title: const Text("Błąd"),
+                                                  content: Text(
+                                                      'Czas początku alarmów musi być wcześniejszy niż czas końca alarmów'),
+                                                  actions: <Widget>[
+                                                    TextButton(
+                                                        onPressed: () =>
+                                                            Navigator.of(
+                                                                    context)
+                                                                .pop(),
+                                                        child:
+                                                            const Text("OK")),
+                                                  ],
+                                                );
+                                              },
+                                            );
+                                          }
+                                        }
+                                      },
+                                      subtitle: Text(_entries[index]
+                                                  .alarmTimeFrom ==
+                                              null
+                                          ? "-"
+                                          : dateToTimeString(
+                                              _entries[index].alarmTimeFrom!,
+                                              excludeSeconds: true)),
+                                      trailing: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          IconButton(
+                                            icon: const Icon(Icons.history),
+                                            onPressed: _entries[index]
+                                                        .versionHistory!
+                                                        .where((e) =>
+                                                            e.fieldName ==
+                                                            TrackingFieldName
+                                                                .alarmTimeFrom)
+                                                        .length >
+                                                    0
+                                                ? () async {
+                                                    TrackingVersionHistory?
+                                                        selectedHistoricalEntry =
+                                                        await showVersionHistory(
+                                                            _entries[index]
+                                                                .versionHistory!
+                                                                .where((e) =>
+                                                                    e.fieldName ==
+                                                                    TrackingFieldName
+                                                                        .alarmTimeFrom)
+                                                                .toList(),
+                                                            true);
+
+                                                    if (selectedHistoricalEntry !=
+                                                        null) {
+                                                      await updateEntry(
+                                                          _entries[index]
+                                                              .date!
+                                                              .toLocal(),
+                                                          TrackingEntry(
+                                                                  alarmTimeFrom:
+                                                                      DateTime.parse(
+                                                                          selectedHistoricalEntry
+                                                                              .value))
+                                                              .toMapWithoutDate());
+                                                    }
+                                                  }
+                                                : null,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    ListTile(
+                                      title: const Text("Koniec alarmów"),
+                                      onTap: () async {
+                                        DateTime? selectedTime =
+                                            await askForTime();
+
+                                        if (selectedTime != null) {
+                                          if (selectedTime.compareTo(
+                                                  _entries[index]
+                                                          .alarmTimeFrom ??
+                                                      selectedTime) >=
+                                              0) {
+                                            await updateEntry(
+                                                _entries[index].date!,
+                                                TrackingEntry(
+                                                        alarmTimeTo:
+                                                            selectedTime)
+                                                    .toMapWithoutDate());
+                                          } else {
+                                            await showDialog(
+                                              context: context,
+                                              builder: (BuildContext context) {
+                                                return AlertDialog(
+                                                  title: const Text("Błąd"),
+                                                  content: Text(
+                                                      'Czas końca alarmów musi być późniejszy lub równy czasu początku alarmów'),
+                                                  actions: <Widget>[
+                                                    TextButton(
+                                                        onPressed: () =>
+                                                            Navigator.of(
+                                                                    context)
+                                                                .pop(),
+                                                        child:
+                                                            const Text("OK")),
+                                                  ],
+                                                );
+                                              },
+                                            );
+                                          }
+                                        }
+                                      },
+                                      subtitle: Text(
+                                          _entries[index].alarmTimeTo == null
+                                              ? "-"
+                                              : dateToTimeString(
+                                                  _entries[index].alarmTimeTo!,
+                                                  excludeSeconds: true)),
+                                      trailing: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          IconButton(
+                                            icon: const Icon(Icons.history),
+                                            onPressed: _entries[index]
+                                                        .versionHistory!
+                                                        .where((e) =>
+                                                            e.fieldName ==
+                                                            TrackingFieldName
+                                                                .alarmTimeTo)
+                                                        .length >
+                                                    0
+                                                ? () async {
+                                                    TrackingVersionHistory?
+                                                        selectedHistoricalEntry =
+                                                        await showVersionHistory(
+                                                            _entries[index]
+                                                                .versionHistory!
+                                                                .where((e) =>
+                                                                    e.fieldName ==
+                                                                    TrackingFieldName
+                                                                        .alarmTimeTo)
+                                                                .toList(),
+                                                            true);
+
+                                                    if (selectedHistoricalEntry !=
+                                                        null) {
+                                                      await updateEntry(
+                                                          _entries[index]
+                                                              .date!
+                                                              .toLocal(),
+                                                          TrackingEntry(
+                                                                  alarmTimeTo:
+                                                                      DateTime.parse(
+                                                                          selectedHistoricalEntry
+                                                                              .value))
                                                               .toMapWithoutDate());
                                                     }
                                                   }

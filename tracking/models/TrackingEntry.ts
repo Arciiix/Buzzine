@@ -38,6 +38,14 @@ const TrackingEntryModel = db.define("TrackingEntry", {
     allowNull: true,
     type: DataTypes.INTEGER,
   },
+  alarmTimeFrom: {
+    allowNull: true,
+    type: DataTypes.DATE,
+  },
+  alarmTimeTo: {
+    allowNull: true,
+    type: DataTypes.DATE,
+  },
   notes: {
     allowNull: true,
     type: DataTypes.STRING,
