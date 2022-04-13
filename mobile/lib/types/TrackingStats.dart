@@ -26,6 +26,7 @@ class TrackingStatsObject {
   int averageTimeAtBed;
   int averageAlarmWakeUpProcrastinationTime;
   int averageTimeBeforeGettingUp;
+  int averageTimeToTurnOffAlarm;
   int?
       averageSleepTime; //Only for alarms; number of minutes passed until the day start (customizable day start)
   int?
@@ -36,6 +37,7 @@ class TrackingStatsObject {
       required this.averageTimeAtBed,
       required this.averageAlarmWakeUpProcrastinationTime,
       required this.averageTimeBeforeGettingUp,
+      required this.averageTimeToTurnOffAlarm,
       this.averageSleepTime,
       this.averageWakeUpTime});
 }

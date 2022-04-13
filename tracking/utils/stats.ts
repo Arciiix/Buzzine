@@ -87,6 +87,11 @@ class Stats {
       nap: { sum: 0, count: 0 },
     };
 
+    let timeTakenToTurnOffTheAlarm: IAverageCalculation = {
+      alarm: { sum: 0, count: 0 },
+      nap: { sum: 0, count: 0 },
+    };
+
     let sleepTimes: Date[] = [];
     let wakeUpTimes: Date[] = [];
 
@@ -136,6 +141,12 @@ class Stats {
       if (element.wakeUpTime) {
         wakeUpTimes.push(new Date(element.wakeUpTime));
       }
+
+      if (element.timeTakenToTurnOffTheAlarm) {
+        timeTakenToTurnOffTheAlarm[isWholeDay ? "alarm" : "nap"].sum +=
+          element.timeTakenToTurnOffTheAlarm;
+        timeTakenToTurnOffTheAlarm[isWholeDay ? "alarm" : "nap"].count++;
+      }
     }
 
     let averageSleepDuration =
@@ -157,6 +168,12 @@ class Stats {
       timeBeforeGettingUp.alarm.sum / timeBeforeGettingUp.alarm.count;
     let averageTimeBeforeGettingUpNap =
       timeBeforeGettingUp.nap.sum / timeBeforeGettingUp.nap.count;
+
+    let averageTimeTakenToTurnOffTheAlarm =
+      timeTakenToTurnOffTheAlarm.alarm.sum /
+      timeTakenToTurnOffTheAlarm.alarm.count;
+    let averageTimeTakenToTurnOffTheAlarmNap =
+      timeTakenToTurnOffTheAlarm.nap.sum / timeTakenToTurnOffTheAlarm.nap.count;
 
     let averageSleepTime = this.calculateAverageTime(
       true,
@@ -199,6 +216,13 @@ class Stats {
       averageWakeUpTime = { hour: 0, minute: 0 };
     }
 
+    if (isNaN(averageTimeTakenToTurnOffTheAlarm)) {
+      averageTimeTakenToTurnOffTheAlarm = 0;
+    }
+    if (isNaN(averageTimeTakenToTurnOffTheAlarmNap)) {
+      averageTimeTakenToTurnOffTheAlarmNap = 0;
+    }
+
     return {
       alarm: {
         averageSleepDuration: Math.floor(averageSleepDuration),
@@ -207,6 +231,9 @@ class Stats {
           averageAlarmWakeUpProcrastinationTime
         ),
         averageTimeBeforeGettingUp: Math.floor(averageTimeBeforeGettingUp),
+        averageTimeTakenToTurnOffTheAlarm: Math.floor(
+          averageTimeTakenToTurnOffTheAlarm
+        ),
 
         averageSleepTime: averageSleepTime,
         averageWakeUpTime: averageWakeUpTime,
@@ -218,6 +245,9 @@ class Stats {
           averageAlarmWakeUpProcrastinationTimeNap
         ),
         averageTimeBeforeGettingUp: Math.floor(averageTimeBeforeGettingUpNap),
+        averageTimeTakenToTurnOffTheAlarm: Math.floor(
+          averageTimeTakenToTurnOffTheAlarmNap
+        ),
       },
     };
   }
@@ -275,6 +305,7 @@ interface IStatsObject {
   averageTimeAtBed?: number;
   averageAlarmWakeUpProcrastinationTime?: number;
   averageTimeBeforeGettingUp?: number;
+  averageTimeTakenToTurnOffTheAlarm?: number;
   averageSleepTime?: ITime; // Used only in alarm, not nap
   averageWakeUpTime?: ITime; // Used only in alarm, not nap
 }
