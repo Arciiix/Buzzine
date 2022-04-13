@@ -83,8 +83,7 @@ class _TrackingStatsScreenState extends State<TrackingStatsScreen> {
                                                 .alarm.averageSleepDuration)),
                                         style: const TextStyle(fontSize: 24)),
                                     Icon(
-                                        getIconByOffset(((GlobalData
-                                                    .trackingStats
+                                        getIconByOffset(((_trackingStats
                                                     .monthly
                                                     .alarm
                                                     .averageSleepDuration -
@@ -193,15 +192,13 @@ class _TrackingStatsScreenState extends State<TrackingStatsScreen> {
                                   children: [
                                     Text(
                                         durationToHHmm(Duration(
-                                            seconds: GlobalData
-                                                .trackingStats
+                                            seconds: _trackingStats
                                                 .monthly
                                                 .alarm
                                                 .averageAlarmWakeUpProcrastinationTime)),
                                         style: const TextStyle(fontSize: 24)),
                                     Icon(
-                                        getIconByOffset(((GlobalData
-                                                    .trackingStats
+                                        getIconByOffset(((_trackingStats
                                                     .monthly
                                                     .alarm
                                                     .averageAlarmWakeUpProcrastinationTime -
@@ -253,15 +250,13 @@ class _TrackingStatsScreenState extends State<TrackingStatsScreen> {
                                   children: [
                                     Text(
                                         durationToHHmm(Duration(
-                                            seconds: GlobalData
-                                                .trackingStats
+                                            seconds: _trackingStats
                                                 .monthly
                                                 .alarm
                                                 .averageTimeBeforeGettingUp)),
                                         style: const TextStyle(fontSize: 24)),
                                     Icon(
-                                        getIconByOffset(((GlobalData
-                                                    .trackingStats
+                                        getIconByOffset(((_trackingStats
                                                     .monthly
                                                     .alarm
                                                     .averageTimeBeforeGettingUp -
@@ -293,6 +288,136 @@ class _TrackingStatsScreenState extends State<TrackingStatsScreen> {
                               ],
                             ),
                           )
+                        ],
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        mainAxisSize: MainAxisSize.max,
+                        children: [
+                          SizedBox(
+                            width:
+                                MediaQuery.of(context).size.width * 0.9 * 0.4,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Padding(
+                                  padding: EdgeInsets.all(2),
+                                  child: Icon(Icons.bed, size: 24),
+                                ),
+                                Text(
+                                  "Czas pójścia\nspać",
+                                  style: TextStyle(fontSize: 16),
+                                  textAlign: TextAlign.center,
+                                ),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                        secondsToHHmm(_trackingStats
+                                                        .monthly
+                                                        .alarm
+                                                        .averageSleepTime! *
+                                                    60 >
+                                                24 * 3600
+                                            ? _trackingStats.monthly.alarm
+                                                        .averageSleepTime! *
+                                                    60 -
+                                                24 * 3600
+                                            : _trackingStats.monthly.alarm
+                                                    .averageSleepTime! *
+                                                60),
+                                        style: const TextStyle(fontSize: 24)),
+                                    Icon(
+                                        getIconByOffset(
+                                          TrackingStatsService
+                                                  .calculateTimeOffsetPercent(
+                                                      _trackingStats
+                                                          .monthly
+                                                          .alarm
+                                                          .averageSleepTime!,
+                                                      _trackingStats
+                                                          .lifetime
+                                                          .alarm
+                                                          .averageSleepTime!) /
+                                              100,
+                                        ),
+                                        size: 14),
+                                    Text(TrackingStatsService
+                                                .calculateTimeOffsetPercent(
+                                                    _trackingStats.monthly.alarm
+                                                        .averageSleepTime!,
+                                                    _trackingStats
+                                                        .lifetime
+                                                        .alarm
+                                                        .averageSleepTime!)
+                                            .floor()
+                                            .toStringAsFixed(0) +
+                                        "%")
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          SizedBox(
+                            width:
+                                MediaQuery.of(context).size.width * 0.9 * 0.4,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Padding(
+                                  padding: EdgeInsets.all(2),
+                                  child: Icon(Icons.light_mode, size: 24),
+                                ),
+                                Text(
+                                  "Czas\nobudzenia się",
+                                  style: TextStyle(fontSize: 16),
+                                  textAlign: TextAlign.center,
+                                ),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                        secondsToHHmm(_trackingStats
+                                                        .monthly
+                                                        .alarm
+                                                        .averageWakeUpTime! *
+                                                    60 >
+                                                24 * 3600
+                                            ? _trackingStats.monthly.alarm
+                                                        .averageWakeUpTime! *
+                                                    60 -
+                                                24 * 3600
+                                            : _trackingStats.monthly.alarm
+                                                    .averageWakeUpTime! *
+                                                60),
+                                        style: const TextStyle(fontSize: 24)),
+                                    Icon(
+                                        getIconByOffset(TrackingStatsService
+                                                .calculateTimeOffsetPercent(
+                                                    _trackingStats.monthly.alarm
+                                                        .averageWakeUpTime!,
+                                                    _trackingStats
+                                                        .lifetime
+                                                        .alarm
+                                                        .averageWakeUpTime!) /
+                                            100),
+                                        size: 14),
+                                    Text(TrackingStatsService
+                                                .calculateTimeOffsetPercent(
+                                                    _trackingStats.monthly.alarm
+                                                        .averageWakeUpTime!,
+                                                    _trackingStats
+                                                        .lifetime
+                                                        .alarm
+                                                        .averageWakeUpTime!)
+                                            .floor()
+                                            .toStringAsFixed(0) +
+                                        "%")
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
                         ],
                       ),
                     ],
@@ -405,6 +530,74 @@ class _TrackingStatsScreenState extends State<TrackingStatsScreen> {
                           )
                         ],
                       ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        mainAxisSize: MainAxisSize.max,
+                        children: [
+                          SizedBox(
+                            width:
+                                MediaQuery.of(context).size.width * 0.9 * 0.4,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Padding(
+                                  padding: EdgeInsets.all(2),
+                                  child: Icon(Icons.bed, size: 24),
+                                ),
+                                Text(
+                                  "Czas pójścia\nspać",
+                                  style: TextStyle(fontSize: 16),
+                                  textAlign: TextAlign.center,
+                                ),
+                                Text(
+                                    secondsToHHmm(_trackingStats.lifetime.alarm
+                                                    .averageSleepTime! *
+                                                60 >
+                                            24 * 3600
+                                        ? _trackingStats.lifetime.alarm
+                                                    .averageSleepTime! *
+                                                60 -
+                                            24 * 3600
+                                        : _trackingStats.lifetime.alarm
+                                                .averageSleepTime! *
+                                            60),
+                                    style: const TextStyle(fontSize: 24))
+                              ],
+                            ),
+                          ),
+                          SizedBox(
+                            width:
+                                MediaQuery.of(context).size.width * 0.9 * 0.4,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Padding(
+                                  padding: EdgeInsets.all(2),
+                                  child: Icon(Icons.smartphone, size: 24),
+                                ),
+                                Text(
+                                  "Czas\nobudzenia się",
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(fontSize: 16),
+                                ),
+                                Text(
+                                    secondsToHHmm(_trackingStats.lifetime.alarm
+                                                    .averageWakeUpTime! *
+                                                60 >
+                                            24 * 3600
+                                        ? (_trackingStats.lifetime.alarm
+                                                    .averageWakeUpTime! *
+                                                60) -
+                                            (24 * 3600)
+                                        : _trackingStats.lifetime.alarm
+                                                .averageWakeUpTime! *
+                                            60),
+                                    style: const TextStyle(fontSize: 24))
+                              ],
+                            ),
+                          )
+                        ],
+                      ),
                     ],
                   ),
                 )),
@@ -437,10 +630,7 @@ class _TrackingStatsScreenState extends State<TrackingStatsScreen> {
                                             .monthly.nap.averageSleepDuration)),
                                     style: const TextStyle(fontSize: 24)),
                                 Icon(
-                                    getIconByOffset(((GlobalData
-                                                .trackingStats
-                                                .monthly
-                                                .nap
+                                    getIconByOffset(((_trackingStats.monthly.nap
                                                 .averageSleepDuration -
                                             _trackingStats.lifetime.nap
                                                 .averageSleepDuration) /
@@ -451,16 +641,10 @@ class _TrackingStatsScreenState extends State<TrackingStatsScreen> {
                                     size: 14),
                                 Text((((_trackingStats.monthly.nap
                                                         .averageSleepDuration -
-                                                    GlobalData
-                                                        .trackingStats
-                                                        .lifetime
-                                                        .nap
+                                                    _trackingStats.lifetime.nap
                                                         .averageSleepDuration) /
                                                 max(
-                                                    GlobalData
-                                                        .trackingStats
-                                                        .lifetime
-                                                        .nap
+                                                    _trackingStats.lifetime.nap
                                                         .averageSleepDuration,
                                                     1)) *
                                             100)
@@ -503,16 +687,10 @@ class _TrackingStatsScreenState extends State<TrackingStatsScreen> {
                                     size: 14),
                                 Text((((_trackingStats.monthly.nap
                                                         .averageTimeAtBed -
-                                                    GlobalData
-                                                        .trackingStats
-                                                        .lifetime
-                                                        .nap
+                                                    _trackingStats.lifetime.nap
                                                         .averageTimeAtBed) /
                                                 max(
-                                                    GlobalData
-                                                        .trackingStats
-                                                        .lifetime
-                                                        .nap
+                                                    _trackingStats.lifetime.nap
                                                         .averageTimeAtBed,
                                                     1)) *
                                             100)
@@ -549,17 +727,11 @@ class _TrackingStatsScreenState extends State<TrackingStatsScreen> {
                               children: [
                                 Text(
                                     durationToHHmm(Duration(
-                                        seconds: GlobalData
-                                            .trackingStats
-                                            .monthly
-                                            .nap
+                                        seconds: _trackingStats.monthly.nap
                                             .averageAlarmWakeUpProcrastinationTime)),
                                     style: const TextStyle(fontSize: 24)),
                                 Icon(
-                                    getIconByOffset(((GlobalData
-                                                .trackingStats
-                                                .monthly
-                                                .nap
+                                    getIconByOffset(((_trackingStats.monthly.nap
                                                 .averageAlarmWakeUpProcrastinationTime -
                                             _trackingStats.lifetime.nap
                                                 .averageAlarmWakeUpProcrastinationTime) /
@@ -570,16 +742,10 @@ class _TrackingStatsScreenState extends State<TrackingStatsScreen> {
                                     size: 14),
                                 Text((((_trackingStats.monthly.nap
                                                         .averageAlarmWakeUpProcrastinationTime -
-                                                    GlobalData
-                                                        .trackingStats
-                                                        .lifetime
-                                                        .nap
+                                                    _trackingStats.lifetime.nap
                                                         .averageAlarmWakeUpProcrastinationTime) /
                                                 max(
-                                                    GlobalData
-                                                        .trackingStats
-                                                        .lifetime
-                                                        .nap
+                                                    _trackingStats.lifetime.nap
                                                         .averageAlarmWakeUpProcrastinationTime,
                                                     1)) *
                                             100)
@@ -610,17 +776,11 @@ class _TrackingStatsScreenState extends State<TrackingStatsScreen> {
                               children: [
                                 Text(
                                     durationToHHmm(Duration(
-                                        seconds: GlobalData
-                                            .trackingStats
-                                            .monthly
-                                            .nap
+                                        seconds: _trackingStats.monthly.nap
                                             .averageTimeBeforeGettingUp)),
                                     style: const TextStyle(fontSize: 24)),
                                 Icon(
-                                    getIconByOffset(((GlobalData
-                                                .trackingStats
-                                                .monthly
-                                                .nap
+                                    getIconByOffset(((_trackingStats.monthly.nap
                                                 .averageTimeBeforeGettingUp -
                                             _trackingStats.lifetime.nap
                                                 .averageTimeBeforeGettingUp) /
@@ -631,16 +791,10 @@ class _TrackingStatsScreenState extends State<TrackingStatsScreen> {
                                     size: 14),
                                 Text((((_trackingStats.monthly.nap
                                                         .averageTimeBeforeGettingUp -
-                                                    GlobalData
-                                                        .trackingStats
-                                                        .lifetime
-                                                        .nap
+                                                    _trackingStats.lifetime.nap
                                                         .averageTimeBeforeGettingUp) /
                                                 max(
-                                                    GlobalData
-                                                        .trackingStats
-                                                        .lifetime
-                                                        .nap
+                                                    _trackingStats.lifetime.nap
                                                         .averageTimeBeforeGettingUp,
                                                     1)) *
                                             100)

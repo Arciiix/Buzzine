@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:buzzine/globalData.dart';
 import 'package:buzzine/types/TrackingEntry.dart';
 import 'package:buzzine/utils/get_icon_by_offset.dart';
 import 'package:flutter/material.dart';
@@ -25,12 +26,18 @@ class TrackingStatsObject {
   int averageTimeAtBed;
   int averageAlarmWakeUpProcrastinationTime;
   int averageTimeBeforeGettingUp;
+  int?
+      averageSleepTime; //Only for alarms; number of minutes passed until the day start (customizable day start)
+  int?
+      averageWakeUpTime; //Only for alarms; number of minutes passed until the day start (customizable day start)
 
   TrackingStatsObject(
       {required this.averageSleepDuration,
       required this.averageTimeAtBed,
       required this.averageAlarmWakeUpProcrastinationTime,
-      required this.averageTimeBeforeGettingUp});
+      required this.averageTimeBeforeGettingUp,
+      this.averageSleepTime,
+      this.averageWakeUpTime});
 }
 
 class TrackingStatsService {
@@ -41,6 +48,9 @@ class TrackingStatsService {
   TrackingValue? timeAtBed;
   TrackingValue? alarmWakeUpProcrastinationTime;
   TrackingValue? timeBeforeGettingUp;
+
+  TrackingValue? sleepTime;
+  TrackingValue? wakeUpTime;
 
   static TrackingStatsService of(TrackingEntry entry, TrackingStats stats) {
     TrackingStatsService service =
@@ -183,7 +193,58 @@ class TrackingStatsService {
       }
     }
 
+    if (!entry!.isNap! && entry!.sleepTime != null) {
+      int tempCurrent = entry!.sleepTime!.toLocal().hour * 60 +
+          entry!.sleepTime!.toLocal().minute;
+      int tempMonthly = statsObj!.monthly.alarm.averageSleepTime!;
+      int tempLifetime = statsObj!.lifetime.alarm.averageSleepTime!;
+
+      if (tempCurrent / 60 < GlobalData.trackerDayStartHour) {
+        tempCurrent += 24 * 60;
+      }
+      if (tempMonthly / 60 < GlobalData.trackerDayStartHour) {
+        tempMonthly += 24 * 60;
+      }
+      if (tempLifetime / 60 < GlobalData.trackerDayStartHour) {
+        tempLifetime += 24 * 60;
+      }
+
+      sleepTime = TrackingValue(
+          value: tempCurrent,
+          offsetMonthly:
+              ((tempCurrent - tempMonthly) / max((tempMonthly), 1) * 100),
+          offsetLifetime:
+              ((tempCurrent - tempLifetime) / max((tempLifetime), 1) * 100));
+    }
+
+    if (!entry!.isNap! && entry!.wakeUpTime != null) {
+      int tempCurrent = entry!.wakeUpTime!.toLocal().hour * 60 +
+          entry!.wakeUpTime!.toLocal().minute;
+
+      wakeUpTime = TrackingValue(
+          value: tempCurrent,
+          offsetMonthly:
+              (tempCurrent - statsObj!.monthly.alarm.averageWakeUpTime!) /
+                  max((statsObj!.monthly.alarm.averageWakeUpTime!), 1) *
+                  100,
+          offsetLifetime:
+              (tempCurrent - statsObj!.lifetime.alarm.averageWakeUpTime!) /
+                  max((statsObj!.lifetime.alarm.averageWakeUpTime!), 1) *
+                  100);
+    }
+
     return this;
+  }
+
+  static double calculateTimeOffsetPercent(int time1seconds, int time2seconds) {
+    if (time1seconds / 60 < GlobalData.trackerDayStartHour) {
+      time1seconds += 24 * 60;
+    }
+    if (time2seconds / 60 < GlobalData.trackerDayStartHour) {
+      time2seconds += 24 * 60;
+    }
+
+    return (time1seconds - time2seconds) / max((time1seconds), 1) * 100;
   }
 
   TrackingStatsService({this.entry, this.statsObj});

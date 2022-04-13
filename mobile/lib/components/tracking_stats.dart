@@ -160,6 +160,87 @@ class TrackingStatsWidget extends StatelessWidget {
                 ),
               ],
             ),
+            if (stats.sleepTime != null || stats.wakeUpTime != null)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisSize: MainAxisSize.max,
+                children: [
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width * 0.9 * 0.4,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Padding(
+                          padding: EdgeInsets.all(2),
+                          child: Icon(Icons.bed, size: 24),
+                        ),
+                        Text("Czas pójścia\nspać",
+                            style: TextStyle(fontSize: 16),
+                            textAlign: TextAlign.center),
+                        Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: stats.sleepTime == null
+                                ? [
+                                    Text("-",
+                                        style: const TextStyle(fontSize: 24))
+                                  ]
+                                : [
+                                    Text(
+                                        secondsToHHmm(
+                                          stats.sleepTime!.value * 60 >
+                                                  24 * 3600
+                                              ? (stats.sleepTime!.value * 60) -
+                                                  24 * 3600
+                                              : stats.sleepTime!.value *
+                                                  60, // *60 so that we convert minutes to seconds
+                                        ),
+                                        style: const TextStyle(fontSize: 24)),
+                                    Icon(stats.sleepTime!.getIcon(true),
+                                        size: 14),
+                                    Text(stats.sleepTime!.getOffset(true))
+                                  ]),
+                      ],
+                    ),
+                  ),
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width * 0.9 * 0.4,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Padding(
+                          padding: EdgeInsets.all(2),
+                          child: Icon(Icons.light_mode, size: 24),
+                        ),
+                        Text("Czas\nobudzenia się",
+                            style: TextStyle(fontSize: 16),
+                            textAlign: TextAlign.center),
+                        Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: stats.wakeUpTime == null
+                                ? [
+                                    Text("-",
+                                        style: const TextStyle(fontSize: 24))
+                                  ]
+                                : [
+                                    Text(
+                                        secondsToHHmm(
+                                          stats.wakeUpTime!.value * 60 >
+                                                  24 * 3600
+                                              ? (stats.wakeUpTime!.value * 60) -
+                                                  24 * 3600
+                                              : stats.wakeUpTime!.value *
+                                                  60, // *60 so that we convert minutes to seconds
+                                        ),
+                                        style: const TextStyle(fontSize: 24)),
+                                    Icon(stats.wakeUpTime!.getIcon(true),
+                                        size: 14),
+                                    Text(stats.wakeUpTime!.getOffset(true))
+                                  ]),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
           ],
         ),
       ),

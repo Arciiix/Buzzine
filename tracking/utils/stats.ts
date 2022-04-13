@@ -1,6 +1,7 @@
 import express from "express";
 import { Op } from "sequelize";
 import TrackingEntryModel from "../models/TrackingEntry";
+import { TRACKER_DAY_START } from "./constants";
 import { dateTimeToDateOnly } from "./formatting";
 import logger from "./logger";
 
@@ -86,6 +87,9 @@ class Stats {
       nap: { sum: 0, count: 0 },
     };
 
+    let sleepTimes: Date[] = [];
+    let wakeUpTimes: Date[] = [];
+
     for (const element of elements) {
       let isWholeDay =
         dateTimeToDateOnly(new Date(element.date)).getTime() ===
@@ -124,6 +128,14 @@ class Stats {
         );
         timeBeforeGettingUp[isWholeDay ? "alarm" : "nap"].count++;
       }
+
+      //Used to calculate the average sleep and wake up time
+      if (element.sleepTime) {
+        sleepTimes.push(new Date(element.sleepTime));
+      }
+      if (element.wakeUpTime) {
+        wakeUpTimes.push(new Date(element.wakeUpTime));
+      }
     }
 
     let averageSleepDuration =
@@ -146,6 +158,27 @@ class Stats {
     let averageTimeBeforeGettingUpNap =
       timeBeforeGettingUp.nap.sum / timeBeforeGettingUp.nap.count;
 
+    let averageSleepTime = this.calculateAverageTime(
+      true,
+      sleepTimes.map((e: Date) => {
+        return {
+          hour: e.getHours(),
+          minute: e.getMinutes(),
+        };
+      }),
+      TRACKER_DAY_START.hour
+    );
+
+    let averageWakeUpTime = this.calculateAverageTime(
+      false,
+      wakeUpTimes.map((e: Date) => {
+        return {
+          hour: e.getHours(),
+          minute: e.getMinutes(),
+        };
+      })
+    );
+
     if (isNaN(averageSleepDuration)) averageSleepDuration = 0;
     if (isNaN(averageTimeAtBed)) averageTimeAtBed = 0;
     if (isNaN(averageAlarmWakeUpProcrastinationTime))
@@ -158,6 +191,14 @@ class Stats {
       averageAlarmWakeUpProcrastinationTimeNap = 0;
     if (isNaN(averageTimeBeforeGettingUpNap)) averageTimeBeforeGettingUpNap = 0;
 
+    if (isNaN(averageSleepTime.hour) || isNaN(averageSleepTime.minute)) {
+      averageSleepTime = { hour: 0, minute: 0 };
+    }
+
+    if (isNaN(averageWakeUpTime.hour) || isNaN(averageWakeUpTime.minute)) {
+      averageWakeUpTime = { hour: 0, minute: 0 };
+    }
+
     return {
       alarm: {
         averageSleepDuration: Math.floor(averageSleepDuration),
@@ -166,6 +207,9 @@ class Stats {
           averageAlarmWakeUpProcrastinationTime
         ),
         averageTimeBeforeGettingUp: Math.floor(averageTimeBeforeGettingUp),
+
+        averageSleepTime: averageSleepTime,
+        averageWakeUpTime: averageWakeUpTime,
       },
       nap: {
         averageSleepDuration: Math.floor(averageSleepDurationNap),
@@ -183,7 +227,42 @@ class Stats {
       lifetime: this.lifetimeStats,
       monthly: this.monthlyStats,
       timestamp: this.calculationTimestamp,
+      trackerDayStartHour: TRACKER_DAY_START.hour,
     };
+  }
+
+  static calculateAverageTime(
+    includeDayStartTime: boolean,
+    times: ITime[],
+    hourUpperRange?: number
+  ): ITime {
+    //To calculate the average time, we need to have something like an upper range, a border - used to determinate the start/end of the day.
+    //Because, for example, the average time (when it comes to calculating it for average sleep time) of 23:00 and 01:00 is 0:00, not 12:00, so we can't just calculate the normal mathematical average.
+    //On the other hand, 23:00 and 8:00 can be considered as a normal mathematical average ( (23+8)/2 )
+
+    let minutesSum = 0;
+
+    //Calculate the average time by adding up all the minutes of the times (1 hour = 60 minutes).
+    times.forEach((elem) => {
+      if (includeDayStartTime) {
+        minutesSum +=
+          elem.hour < hourUpperRange
+            ? elem.minute + 24 * 60 + elem.hour * 60
+            : elem.minute + elem.hour * 60;
+      } else {
+        minutesSum += elem.minute + elem.hour * 60;
+      }
+    });
+
+    let averageMinutes = minutesSum / times.length;
+    let hours = Math.floor(averageMinutes / 60);
+    let minutes = Math.floor(averageMinutes - hours * 60);
+
+    if (hours >= 24) {
+      hours -= 24;
+    }
+
+    return { hour: hours, minute: minutes };
   }
 }
 
@@ -196,6 +275,8 @@ interface IStatsObject {
   averageTimeAtBed?: number;
   averageAlarmWakeUpProcrastinationTime?: number;
   averageTimeBeforeGettingUp?: number;
+  averageSleepTime?: ITime; // Used only in alarm, not nap
+  averageWakeUpTime?: ITime; // Used only in alarm, not nap
 }
 interface IStatsDetails {
   alarm: IStatsObject;
@@ -205,6 +286,11 @@ interface IStats {
   lifetime: IStatsDetails;
   monthly: IStatsDetails;
   timestamp: Date;
+  trackerDayStartHour: number;
+}
+interface ITime {
+  hour: number;
+  minute: number;
 }
 
 export default Stats;

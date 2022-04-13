@@ -52,6 +52,7 @@ class GlobalData {
 
   static late TrackingEntry latestTrackingEntry;
   static late TrackingStats trackingStats;
+  static late int trackerDayStartHour = 20;
 
   static late Constants constants;
   static late EmergencyStatus emergencyStatus;
@@ -1364,6 +1365,8 @@ class GlobalData {
     } else {
       var data = decodedResponse['response'];
 
+      GlobalData.trackerDayStartHour = data['trackerDayStartHour'];
+
       GlobalData.trackingStats = TrackingStats(
         timestamp: DateTime.parse(data['timestamp']),
         lifetime: TrackingStatsDetails(
@@ -1374,7 +1377,13 @@ class GlobalData {
                 averageAlarmWakeUpProcrastinationTime: data['lifetime']['alarm']
                     ['averageAlarmWakeUpProcrastinationTime'],
                 averageTimeBeforeGettingUp: data['lifetime']['alarm']
-                    ['averageTimeBeforeGettingUp']),
+                    ['averageTimeBeforeGettingUp'],
+                averageSleepTime: (data['lifetime']['alarm']['averageSleepTime']['hour'] * 60 +
+                    data['lifetime']['alarm']['averageSleepTime']['minute']),
+                averageWakeUpTime:
+                    (data['lifetime']['alarm']['averageWakeUpTime']['hour'] * 60 +
+                        data['lifetime']['alarm']['averageWakeUpTime']
+                            ['minute'])),
             nap: TrackingStatsObject(
                 averageSleepDuration: data['lifetime']['nap']
                     ['averageSleepDuration'],
@@ -1391,7 +1400,13 @@ class GlobalData {
                 averageAlarmWakeUpProcrastinationTime: data['monthly']['alarm']
                     ['averageAlarmWakeUpProcrastinationTime'],
                 averageTimeBeforeGettingUp: data['monthly']['alarm']
-                    ['averageTimeBeforeGettingUp']),
+                    ['averageTimeBeforeGettingUp'],
+                averageSleepTime: (data['monthly']['alarm']['averageSleepTime']['hour'] * 60 +
+                    data['monthly']['alarm']['averageSleepTime']['minute']),
+                averageWakeUpTime:
+                    (data['monthly']['alarm']['averageWakeUpTime']['hour'] * 60 +
+                        data['monthly']['alarm']['averageWakeUpTime']
+                            ['minute'])),
             nap: TrackingStatsObject(
                 averageSleepDuration: data['monthly']['nap']
                     ['averageSleepDuration'],
@@ -1428,7 +1443,13 @@ class GlobalData {
               averageAlarmWakeUpProcrastinationTime: data['lifetime']['alarm']
                   ['averageAlarmWakeUpProcrastinationTime'],
               averageTimeBeforeGettingUp: data['lifetime']['alarm']
-                  ['averageTimeBeforeGettingUp']),
+                  ['averageTimeBeforeGettingUp'],
+              averageSleepTime: (data['lifetime']['alarm']['averageSleepTime']['hour'] * 60 +
+                  data['lifetime']['alarm']['averageSleepTime']['minute']),
+              averageWakeUpTime:
+                  (data['lifetime']['alarm']['averageWakeUpTime']['hour'] * 60 +
+                      data['lifetime']['alarm']['averageWakeUpTime']
+                          ['minute'])),
           nap: TrackingStatsObject(
               averageSleepDuration: data['lifetime']['nap']
                   ['averageSleepDuration'],
@@ -1445,7 +1466,13 @@ class GlobalData {
               averageAlarmWakeUpProcrastinationTime: data['monthly']['alarm']
                   ['averageAlarmWakeUpProcrastinationTime'],
               averageTimeBeforeGettingUp: data['monthly']['alarm']
-                  ['averageTimeBeforeGettingUp']),
+                  ['averageTimeBeforeGettingUp'],
+              averageSleepTime:
+                  (data['monthly']['alarm']['averageSleepTime']['hour'] * 60 +
+                      data['monthly']['alarm']['averageSleepTime']['minute']),
+              averageWakeUpTime:
+                  (data['monthly']['alarm']['averageWakeUpTime']['hour'] * 60 +
+                      data['monthly']['alarm']['averageWakeUpTime']['minute'])),
           nap: TrackingStatsObject(
               averageSleepDuration: data['monthly']['nap']
                   ['averageSleepDuration'],
