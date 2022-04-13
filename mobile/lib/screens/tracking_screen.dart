@@ -28,6 +28,9 @@ class _TrackingScreenState extends State<TrackingScreen> {
   double leftIconOffset = 0;
   double rightIconOffset = 0;
 
+  bool isTableModeOn = false;
+  List<TrackingEntry> _allEntries = [];
+
   GlobalKey<RefreshIndicatorState> _refreshState =
       GlobalKey<RefreshIndicatorState>();
 
@@ -287,6 +290,15 @@ class _TrackingScreenState extends State<TrackingScreen> {
     }
   }
 
+  Future<void> toggleViewingMode() async {
+    List<TrackingEntry> entries = await GlobalData.getAllTrackingEntries();
+
+    setState(() {
+      isTableModeOn = !isTableModeOn;
+      _allEntries = entries;
+    });
+  }
+
   Future<void> refresh() async {
     await _refreshState.currentState?.show();
   }
@@ -339,6 +351,12 @@ class _TrackingScreenState extends State<TrackingScreen> {
           child: Scaffold(
               appBar: AppBar(
                 title: Text("Sen"),
+                actions: [
+                  IconButton(
+                    icon: Icon(isTableModeOn ? Icons.toc : Icons.table_chart),
+                    onPressed: () => toggleViewingMode(),
+                  )
+                ],
               ),
               floatingActionButton: FloatingActionButton(
                   child: const Icon(Icons.add), onPressed: addEntry),
@@ -349,1042 +367,1141 @@ class _TrackingScreenState extends State<TrackingScreen> {
                 },
                 child: Column(
                   children: [
-                    Row(
-                      mainAxisSize: MainAxisSize.max,
-                      children: [
-                        Material(
-                          child: IconButton(
-                            icon: Icon(Icons.arrow_back,
-                                color: Theme.of(context)
-                                    .buttonTheme
-                                    .colorScheme!
-                                    .primary),
-                            onPressed: dateBackward,
+                    if (!isTableModeOn)
+                      Row(
+                        mainAxisSize: MainAxisSize.max,
+                        children: [
+                          Material(
+                            child: IconButton(
+                              icon: Icon(Icons.arrow_back,
+                                  color: Theme.of(context)
+                                      .buttonTheme
+                                      .colorScheme!
+                                      .primary),
+                              onPressed: dateBackward,
+                            ),
                           ),
-                        ),
-                        Expanded(
-                          child: TextButton(
-                            onPressed: selectDate,
-                            onLongPress: () => getDataForDay(DateTime.now()),
-                            child: Text(dateToDateString(_selectedDate)),
+                          Expanded(
+                            child: TextButton(
+                              onPressed: selectDate,
+                              onLongPress: () => getDataForDay(DateTime.now()),
+                              child: Text(dateToDateString(_selectedDate)),
+                            ),
                           ),
-                        ),
-                        Material(
-                          child: IconButton(
-                            icon: Icon(Icons.arrow_forward,
-                                color: Theme.of(context)
-                                    .buttonTheme
-                                    .colorScheme!
-                                    .primary),
-                            onPressed: dateForward,
+                          Material(
+                            child: IconButton(
+                              icon: Icon(Icons.arrow_forward,
+                                  color: Theme.of(context)
+                                      .buttonTheme
+                                      .colorScheme!
+                                      .primary),
+                              onPressed: dateForward,
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                    Expanded(
-                      child: _entries.isNotEmpty
-                          ? ListView.builder(
-                              padding: const EdgeInsets.only(bottom: 72),
-                              itemCount: _entries.length,
-                              itemBuilder: (context, index) {
-                                TrackingStatsService _stats =
-                                    TrackingStatsService.of(_entries[index],
-                                        GlobalData.trackingStats);
-                                return Column(
-                                  children: [
-                                    InkWell(
-                                      onLongPress: () async {
-                                        bool? confirmDelete = await showDialog(
-                                          context: context,
-                                          builder: (BuildContext context) {
-                                            return AlertDialog(
-                                              title: const Text("Usuń sen"),
-                                              content: Text(
-                                                  'Czy na pewno chcesz usunąć sen z ${dateToDateTimeString(_entries[index].date!)}?'),
-                                              actions: <Widget>[
-                                                TextButton(
-                                                  onPressed: () =>
-                                                      Navigator.of(context)
-                                                          .pop(false),
-                                                  child: const Text("Anuluj"),
-                                                ),
-                                                TextButton(
+                        ],
+                      ),
+                    if (!isTableModeOn)
+                      Expanded(
+                        child: _entries.isNotEmpty
+                            ? ListView.builder(
+                                padding: const EdgeInsets.only(bottom: 72),
+                                itemCount: _entries.length,
+                                itemBuilder: (context, index) {
+                                  TrackingStatsService _stats =
+                                      TrackingStatsService.of(_entries[index],
+                                          GlobalData.trackingStats);
+                                  return Column(
+                                    children: [
+                                      InkWell(
+                                        onLongPress: () async {
+                                          bool? confirmDelete =
+                                              await showDialog(
+                                            context: context,
+                                            builder: (BuildContext context) {
+                                              return AlertDialog(
+                                                title: const Text("Usuń sen"),
+                                                content: Text(
+                                                    'Czy na pewno chcesz usunąć sen z ${dateToDateTimeString(_entries[index].date!)}?'),
+                                                actions: <Widget>[
+                                                  TextButton(
                                                     onPressed: () =>
                                                         Navigator.of(context)
-                                                            .pop(true),
-                                                    child: const Text("Usuń")),
-                                              ],
-                                            );
-                                          },
-                                        );
+                                                            .pop(false),
+                                                    child: const Text("Anuluj"),
+                                                  ),
+                                                  TextButton(
+                                                      onPressed: () =>
+                                                          Navigator.of(context)
+                                                              .pop(true),
+                                                      child:
+                                                          const Text("Usuń")),
+                                                ],
+                                              );
+                                            },
+                                          );
 
-                                        if (confirmDelete == true) {
-                                          await deleteEntry(
-                                              _entries[index].date!);
-                                        }
-                                      },
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: Text(
-                                          "${_entries[index].date!.hour == 0 && _entries[index].date!.minute == 0 ? dateToDateString(_entries[index].date!) : dateToDateTimeString(_entries[index].date!)}",
-                                          style: const TextStyle(fontSize: 24),
+                                          if (confirmDelete == true) {
+                                            await deleteEntry(
+                                                _entries[index].date!);
+                                          }
+                                        },
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: Text(
+                                            "${_entries[index].date!.hour == 0 && _entries[index].date!.minute == 0 ? dateToDateString(_entries[index].date!) : dateToDateTimeString(_entries[index].date!)}",
+                                            style:
+                                                const TextStyle(fontSize: 24),
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                    ListTile(
-                                      title: const Text("W łóżku"),
-                                      onTap: () async {
-                                        DateTime? selectedTime =
-                                            await askForTime();
-                                        if (selectedTime != null) {
-                                          if (selectedTime.compareTo(
-                                                  _entries[index].sleepTime ??
-                                                      selectedTime) <=
-                                              0) {
-                                            await updateEntry(
-                                                _entries[index].date!,
-                                                TrackingEntry(
-                                                        bedTime: selectedTime)
-                                                    .toMapWithoutDate());
-                                          } else {
-                                            await showDialog(
-                                              context: context,
-                                              builder: (BuildContext context) {
-                                                return AlertDialog(
-                                                  title: const Text("Błąd"),
-                                                  content: Text(
-                                                      'Czas w łóżku musi być wcześniejszy lub równy czasowi pójścia spać'),
-                                                  actions: <Widget>[
-                                                    TextButton(
-                                                        onPressed: () =>
-                                                            Navigator.of(
-                                                                    context)
-                                                                .pop(),
-                                                        child:
-                                                            const Text("OK")),
-                                                  ],
-                                                );
-                                              },
-                                            );
+                                      ListTile(
+                                        title: const Text("W łóżku"),
+                                        onTap: () async {
+                                          DateTime? selectedTime =
+                                              await askForTime();
+                                          if (selectedTime != null) {
+                                            if (selectedTime.compareTo(
+                                                    _entries[index].sleepTime ??
+                                                        selectedTime) <=
+                                                0) {
+                                              await updateEntry(
+                                                  _entries[index].date!,
+                                                  TrackingEntry(
+                                                          bedTime: selectedTime)
+                                                      .toMapWithoutDate());
+                                            } else {
+                                              await showDialog(
+                                                context: context,
+                                                builder:
+                                                    (BuildContext context) {
+                                                  return AlertDialog(
+                                                    title: const Text("Błąd"),
+                                                    content: Text(
+                                                        'Czas w łóżku musi być wcześniejszy lub równy czasowi pójścia spać'),
+                                                    actions: <Widget>[
+                                                      TextButton(
+                                                          onPressed: () =>
+                                                              Navigator.of(
+                                                                      context)
+                                                                  .pop(),
+                                                          child:
+                                                              const Text("OK")),
+                                                    ],
+                                                  );
+                                                },
+                                              );
+                                            }
                                           }
-                                        }
-                                      },
-                                      subtitle: Text(
-                                          _entries[index].bedTime == null
-                                              ? "-"
-                                              : dateToTimeString(
-                                                  _entries[index].bedTime!,
-                                                  excludeSeconds: true)),
-                                      trailing: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          IconButton(
-                                            icon: const Icon(Icons.history),
-                                            onPressed: _entries[index]
-                                                        .versionHistory!
-                                                        .where((e) =>
-                                                            e.fieldName ==
-                                                            TrackingFieldName
-                                                                .bedTime)
-                                                        .length >
-                                                    0
-                                                ? () async {
-                                                    TrackingVersionHistory?
-                                                        selectedHistoricalEntry =
-                                                        await showVersionHistory(
+                                        },
+                                        subtitle: Text(
+                                            _entries[index].bedTime == null
+                                                ? "-"
+                                                : dateToTimeString(
+                                                    _entries[index].bedTime!,
+                                                    excludeSeconds: true)),
+                                        trailing: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            IconButton(
+                                              icon: const Icon(Icons.history),
+                                              onPressed: _entries[index]
+                                                          .versionHistory!
+                                                          .where((e) =>
+                                                              e.fieldName ==
+                                                              TrackingFieldName
+                                                                  .bedTime)
+                                                          .length >
+                                                      0
+                                                  ? () async {
+                                                      TrackingVersionHistory?
+                                                          selectedHistoricalEntry =
+                                                          await showVersionHistory(
+                                                              _entries[index]
+                                                                  .versionHistory!
+                                                                  .where((e) =>
+                                                                      e.fieldName ==
+                                                                      TrackingFieldName
+                                                                          .bedTime)
+                                                                  .toList(),
+                                                              TrackingDataType
+                                                                  .timestamp);
+
+                                                      if (selectedHistoricalEntry !=
+                                                          null) {
+                                                        await updateEntry(
                                                             _entries[index]
-                                                                .versionHistory!
-                                                                .where((e) =>
-                                                                    e.fieldName ==
-                                                                    TrackingFieldName
-                                                                        .bedTime)
-                                                                .toList(),
-                                                            TrackingDataType
-                                                                .timestamp);
-
-                                                    if (selectedHistoricalEntry !=
-                                                        null) {
-                                                      await updateEntry(
-                                                          _entries[index]
-                                                              .date!
-                                                              .toLocal(),
-                                                          TrackingEntry(
-                                                                  bedTime: DateTime.parse(
-                                                                      selectedHistoricalEntry
-                                                                          .value))
-                                                              .toMapWithoutDate());
+                                                                .date!
+                                                                .toLocal(),
+                                                            TrackingEntry(
+                                                                    bedTime: DateTime.parse(
+                                                                        selectedHistoricalEntry
+                                                                            .value))
+                                                                .toMapWithoutDate());
+                                                      }
                                                     }
-                                                  }
-                                                : null,
-                                          ),
-                                        ],
+                                                  : null,
+                                            ),
+                                          ],
+                                        ),
                                       ),
-                                    ),
-                                    ListTile(
-                                      title: const Text("Pójście spać"),
-                                      onTap: () async {
-                                        DateTime? selectedTime =
-                                            await askForTime();
+                                      ListTile(
+                                        title: const Text("Pójście spać"),
+                                        onTap: () async {
+                                          DateTime? selectedTime =
+                                              await askForTime();
 
-                                        if (selectedTime != null) {
-                                          if (selectedTime.compareTo(
-                                                      _entries[index].bedTime ??
-                                                          selectedTime) >=
-                                                  0 &&
-                                              selectedTime.compareTo(
-                                                      _entries[index]
-                                                              .wakeUpTime ??
-                                                          selectedTime) <=
-                                                  0) {
-                                            await updateEntry(
-                                                _entries[index].date!,
-                                                TrackingEntry(
-                                                        sleepTime: selectedTime)
-                                                    .toMapWithoutDate());
-                                          } else {
-                                            await showDialog(
-                                              context: context,
-                                              builder: (BuildContext context) {
-                                                return AlertDialog(
-                                                  title: const Text("Błąd"),
-                                                  content: Text(
-                                                      'Czas pójścia spać musi być wcześniejszy od czasu obudzenia oraz późniejszy niż czas w łóżku'),
-                                                  actions: <Widget>[
-                                                    TextButton(
-                                                        onPressed: () =>
-                                                            Navigator.of(
-                                                                    context)
-                                                                .pop(),
-                                                        child:
-                                                            const Text("OK")),
-                                                  ],
-                                                );
-                                              },
-                                            );
+                                          if (selectedTime != null) {
+                                            if (selectedTime.compareTo(
+                                                        _entries[index]
+                                                                .bedTime ??
+                                                            selectedTime) >=
+                                                    0 &&
+                                                selectedTime.compareTo(
+                                                        _entries[index]
+                                                                .wakeUpTime ??
+                                                            selectedTime) <=
+                                                    0) {
+                                              await updateEntry(
+                                                  _entries[index].date!,
+                                                  TrackingEntry(
+                                                          sleepTime:
+                                                              selectedTime)
+                                                      .toMapWithoutDate());
+                                            } else {
+                                              await showDialog(
+                                                context: context,
+                                                builder:
+                                                    (BuildContext context) {
+                                                  return AlertDialog(
+                                                    title: const Text("Błąd"),
+                                                    content: Text(
+                                                        'Czas pójścia spać musi być wcześniejszy od czasu obudzenia oraz późniejszy niż czas w łóżku'),
+                                                    actions: <Widget>[
+                                                      TextButton(
+                                                          onPressed: () =>
+                                                              Navigator.of(
+                                                                      context)
+                                                                  .pop(),
+                                                          child:
+                                                              const Text("OK")),
+                                                    ],
+                                                  );
+                                                },
+                                              );
+                                            }
                                           }
-                                        }
-                                      },
-                                      subtitle: Text(
-                                          _entries[index].sleepTime == null
-                                              ? "-"
-                                              : dateToTimeString(
-                                                  _entries[index].sleepTime!,
-                                                  excludeSeconds: true)),
-                                      trailing: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          IconButton(
-                                            icon: const Icon(Icons.history),
-                                            onPressed: _entries[index]
-                                                        .versionHistory!
-                                                        .where((e) =>
-                                                            e.fieldName ==
-                                                            TrackingFieldName
-                                                                .sleepTime)
-                                                        .length >
-                                                    0
-                                                ? () async {
-                                                    TrackingVersionHistory?
-                                                        selectedHistoricalEntry =
-                                                        await showVersionHistory(
+                                        },
+                                        subtitle: Text(
+                                            _entries[index].sleepTime == null
+                                                ? "-"
+                                                : dateToTimeString(
+                                                    _entries[index].sleepTime!,
+                                                    excludeSeconds: true)),
+                                        trailing: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            IconButton(
+                                              icon: const Icon(Icons.history),
+                                              onPressed: _entries[index]
+                                                          .versionHistory!
+                                                          .where((e) =>
+                                                              e.fieldName ==
+                                                              TrackingFieldName
+                                                                  .sleepTime)
+                                                          .length >
+                                                      0
+                                                  ? () async {
+                                                      TrackingVersionHistory?
+                                                          selectedHistoricalEntry =
+                                                          await showVersionHistory(
+                                                              _entries[index]
+                                                                  .versionHistory!
+                                                                  .where((e) =>
+                                                                      e.fieldName ==
+                                                                      TrackingFieldName
+                                                                          .sleepTime)
+                                                                  .toList(),
+                                                              TrackingDataType
+                                                                  .timestamp);
+
+                                                      if (selectedHistoricalEntry !=
+                                                          null) {
+                                                        await updateEntry(
                                                             _entries[index]
-                                                                .versionHistory!
-                                                                .where((e) =>
-                                                                    e.fieldName ==
-                                                                    TrackingFieldName
-                                                                        .sleepTime)
-                                                                .toList(),
-                                                            TrackingDataType
-                                                                .timestamp);
-
-                                                    if (selectedHistoricalEntry !=
-                                                        null) {
-                                                      await updateEntry(
-                                                          _entries[index]
-                                                              .date!
-                                                              .toLocal(),
-                                                          TrackingEntry(
-                                                                  sleepTime: DateTime.parse(
-                                                                      selectedHistoricalEntry
-                                                                          .value))
-                                                              .toMapWithoutDate());
+                                                                .date!
+                                                                .toLocal(),
+                                                            TrackingEntry(
+                                                                    sleepTime: DateTime.parse(
+                                                                        selectedHistoricalEntry
+                                                                            .value))
+                                                                .toMapWithoutDate());
+                                                      }
                                                     }
-                                                  }
-                                                : null,
-                                          ),
-                                        ],
+                                                  : null,
+                                            ),
+                                          ],
+                                        ),
                                       ),
-                                    ),
-                                    ListTile(
-                                      title: const Text("Pierwszy budzik"),
-                                      onTap: () async {
-                                        DateTime? selectedTime =
-                                            await askForTime();
+                                      ListTile(
+                                        title: const Text("Pierwszy budzik"),
+                                        onTap: () async {
+                                          DateTime? selectedTime =
+                                              await askForTime();
 
-                                        if (selectedTime != null) {
-                                          if (selectedTime.compareTo(
-                                                      _entries[index]
-                                                              .wakeUpTime ??
-                                                          selectedTime) <=
-                                                  0 &&
-                                              selectedTime.compareTo(
-                                                      _entries[index]
-                                                              .sleepTime ??
-                                                          selectedTime) >=
-                                                  0) {
-                                            await updateEntry(
-                                                _entries[index].date!,
-                                                TrackingEntry(
-                                                        firstAlarmTime:
-                                                            selectedTime)
-                                                    .toMapWithoutDate());
-                                          } else {
-                                            await showDialog(
-                                              context: context,
-                                              builder: (BuildContext context) {
-                                                return AlertDialog(
-                                                  title: const Text("Błąd"),
-                                                  content: Text(
-                                                      'Czas pierwszego alarmu musi być wcześniejszy lub równy czasowi obudzenia się oraz późniejszy od czasu pójścia spać'),
-                                                  actions: <Widget>[
-                                                    TextButton(
-                                                        onPressed: () =>
-                                                            Navigator.of(
-                                                                    context)
-                                                                .pop(),
-                                                        child:
-                                                            const Text("OK")),
-                                                  ],
-                                                );
-                                              },
-                                            );
+                                          if (selectedTime != null) {
+                                            if (selectedTime.compareTo(
+                                                        _entries[index]
+                                                                .wakeUpTime ??
+                                                            selectedTime) <=
+                                                    0 &&
+                                                selectedTime.compareTo(
+                                                        _entries[index]
+                                                                .sleepTime ??
+                                                            selectedTime) >=
+                                                    0) {
+                                              await updateEntry(
+                                                  _entries[index].date!,
+                                                  TrackingEntry(
+                                                          firstAlarmTime:
+                                                              selectedTime)
+                                                      .toMapWithoutDate());
+                                            } else {
+                                              await showDialog(
+                                                context: context,
+                                                builder:
+                                                    (BuildContext context) {
+                                                  return AlertDialog(
+                                                    title: const Text("Błąd"),
+                                                    content: Text(
+                                                        'Czas pierwszego alarmu musi być wcześniejszy lub równy czasowi obudzenia się oraz późniejszy od czasu pójścia spać'),
+                                                    actions: <Widget>[
+                                                      TextButton(
+                                                          onPressed: () =>
+                                                              Navigator.of(
+                                                                      context)
+                                                                  .pop(),
+                                                          child:
+                                                              const Text("OK")),
+                                                    ],
+                                                  );
+                                                },
+                                              );
+                                            }
                                           }
-                                        }
-                                      },
-                                      subtitle: Text(_entries[index]
-                                                  .firstAlarmTime ==
-                                              null
-                                          ? "-"
-                                          : dateToTimeString(
-                                              _entries[index].firstAlarmTime!,
-                                              excludeSeconds: true)),
-                                      trailing: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          IconButton(
-                                            icon: const Icon(Icons.history),
-                                            onPressed: _entries[index]
-                                                        .versionHistory!
-                                                        .where((e) =>
-                                                            e.fieldName ==
-                                                            TrackingFieldName
-                                                                .firstAlarmTime)
-                                                        .length >
-                                                    0
-                                                ? () async {
-                                                    TrackingVersionHistory?
-                                                        selectedHistoricalEntry =
-                                                        await showVersionHistory(
-                                                            _entries[index]
-                                                                .versionHistory!
-                                                                .where((e) =>
-                                                                    e.fieldName ==
-                                                                    TrackingFieldName
-                                                                        .firstAlarmTime)
-                                                                .toList(),
-                                                            TrackingDataType
-                                                                .timestamp);
-
-                                                    if (selectedHistoricalEntry !=
-                                                        null) {
-                                                      await updateEntry(
-                                                          _entries[index]
-                                                              .date!
-                                                              .toLocal(),
-                                                          TrackingEntry(
-                                                                  firstAlarmTime:
-                                                                      DateTime.parse(
-                                                                          selectedHistoricalEntry
-                                                                              .value))
-                                                              .toMapWithoutDate());
-                                                    }
-                                                  }
-                                                : null,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    ListTile(
-                                      title: const Text("Obudzenie się"),
-                                      onTap: () async {
-                                        DateTime? selectedTime =
-                                            await askForTime();
-
-                                        if (selectedTime != null) {
-                                          if (selectedTime.compareTo(
-                                                      _entries[index]
-                                                              .getUpTime ??
-                                                          selectedTime) <=
-                                                  0 &&
-                                              selectedTime.compareTo(
-                                                      _entries[index]
-                                                              .sleepTime ??
-                                                          selectedTime) >=
-                                                  0) {
-                                            await updateEntry(
-                                                _entries[index].date!,
-                                                TrackingEntry(
-                                                        wakeUpTime:
-                                                            selectedTime)
-                                                    .toMapWithoutDate());
-                                          } else {
-                                            await showDialog(
-                                              context: context,
-                                              builder: (BuildContext context) {
-                                                return AlertDialog(
-                                                  title: const Text("Błąd"),
-                                                  content: Text(
-                                                      'Czas obudzenia się musi być wcześniejszy od wstania oraz późniejszy od czasu pójścia spać'),
-                                                  actions: <Widget>[
-                                                    TextButton(
-                                                        onPressed: () =>
-                                                            Navigator.of(
-                                                                    context)
-                                                                .pop(),
-                                                        child:
-                                                            const Text("OK")),
-                                                  ],
-                                                );
-                                              },
-                                            );
-                                          }
-                                        }
-                                      },
-                                      subtitle: Text(
-                                          _entries[index].wakeUpTime == null
-                                              ? "-"
-                                              : dateToTimeString(
-                                                  _entries[index].wakeUpTime!,
-                                                  excludeSeconds: true)),
-                                      trailing: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          IconButton(
-                                            icon: const Icon(Icons.history),
-                                            onPressed: _entries[index]
-                                                        .versionHistory!
-                                                        .where((e) =>
-                                                            e.fieldName ==
-                                                            TrackingFieldName
-                                                                .wakeUpTime)
-                                                        .length >
-                                                    0
-                                                ? () async {
-                                                    TrackingVersionHistory?
-                                                        selectedHistoricalEntry =
-                                                        await showVersionHistory(
-                                                            _entries[index]
-                                                                .versionHistory!
-                                                                .where((e) =>
-                                                                    e.fieldName ==
-                                                                    TrackingFieldName
-                                                                        .wakeUpTime)
-                                                                .toList(),
-                                                            TrackingDataType
-                                                                .timestamp);
-
-                                                    if (selectedHistoricalEntry !=
-                                                        null) {
-                                                      await updateEntry(
-                                                          _entries[index]
-                                                              .date!
-                                                              .toLocal(),
-                                                          TrackingEntry(
-                                                                  wakeUpTime: DateTime.parse(
-                                                                      selectedHistoricalEntry
-                                                                          .value))
-                                                              .toMapWithoutDate());
-                                                    }
-                                                  }
-                                                : null,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    ListTile(
-                                      title: const Text("Wstanie"),
-                                      onTap: () async {
-                                        DateTime? selectedTime =
-                                            await askForTime();
-
-                                        if (selectedTime != null) {
-                                          if (selectedTime.compareTo(
-                                                  _entries[index].wakeUpTime ??
-                                                      selectedTime) >=
-                                              0) {
-                                            await updateEntry(
-                                                _entries[index].date!,
-                                                TrackingEntry(
-                                                        getUpTime: selectedTime)
-                                                    .toMapWithoutDate());
-                                          } else {
-                                            await showDialog(
-                                              context: context,
-                                              builder: (BuildContext context) {
-                                                return AlertDialog(
-                                                  title: const Text("Błąd"),
-                                                  content: Text(
-                                                      'Czas wstania musi być późniejszy lub równy obudzeniu się'),
-                                                  actions: <Widget>[
-                                                    TextButton(
-                                                        onPressed: () =>
-                                                            Navigator.of(
-                                                                    context)
-                                                                .pop(),
-                                                        child:
-                                                            const Text("OK")),
-                                                  ],
-                                                );
-                                              },
-                                            );
-                                          }
-                                        }
-                                      },
-                                      subtitle: Text(
-                                          _entries[index].getUpTime == null
-                                              ? "-"
-                                              : dateToTimeString(
-                                                  _entries[index].getUpTime!,
-                                                  excludeSeconds: true)),
-                                      trailing: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          IconButton(
-                                            icon: const Icon(Icons.history),
-                                            onPressed: _entries[index]
-                                                        .versionHistory!
-                                                        .where((e) =>
-                                                            e.fieldName ==
-                                                            TrackingFieldName
-                                                                .getUpTime)
-                                                        .length >
-                                                    0
-                                                ? () async {
-                                                    TrackingVersionHistory?
-                                                        selectedHistoricalEntry =
-                                                        await showVersionHistory(
-                                                            _entries[index]
-                                                                .versionHistory!
-                                                                .where((e) =>
-                                                                    e.fieldName ==
-                                                                    TrackingFieldName
-                                                                        .getUpTime)
-                                                                .toList(),
-                                                            TrackingDataType
-                                                                .timestamp);
-
-                                                    if (selectedHistoricalEntry !=
-                                                        null) {
-                                                      await updateEntry(
-                                                          _entries[index]
-                                                              .date!
-                                                              .toLocal(),
-                                                          TrackingEntry(
-                                                                  getUpTime: DateTime.parse(
-                                                                      selectedHistoricalEntry
-                                                                          .value))
-                                                              .toMapWithoutDate());
-                                                    }
-                                                  }
-                                                : null,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    ListTile(
-                                      title: const Text("Początek alarmów"),
-                                      onTap: () async {
-                                        DateTime? selectedTime =
-                                            await askForTime();
-
-                                        if (selectedTime != null) {
-                                          if (selectedTime.compareTo(
-                                                  _entries[index].alarmTimeTo ??
-                                                      selectedTime) <=
-                                              0) {
-                                            await updateEntry(
-                                                _entries[index].date!,
-                                                TrackingEntry(
-                                                        alarmTimeFrom:
-                                                            selectedTime)
-                                                    .toMapWithoutDate());
-                                          } else {
-                                            await showDialog(
-                                              context: context,
-                                              builder: (BuildContext context) {
-                                                return AlertDialog(
-                                                  title: const Text("Błąd"),
-                                                  content: Text(
-                                                      'Czas początku alarmów musi być wcześniejszy niż czas końca alarmów'),
-                                                  actions: <Widget>[
-                                                    TextButton(
-                                                        onPressed: () =>
-                                                            Navigator.of(
-                                                                    context)
-                                                                .pop(),
-                                                        child:
-                                                            const Text("OK")),
-                                                  ],
-                                                );
-                                              },
-                                            );
-                                          }
-                                        }
-                                      },
-                                      subtitle: Text(_entries[index]
-                                                  .alarmTimeFrom ==
-                                              null
-                                          ? "-"
-                                          : dateToTimeString(
-                                              _entries[index].alarmTimeFrom!,
-                                              excludeSeconds: true)),
-                                      trailing: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          IconButton(
-                                            icon: const Icon(Icons.history),
-                                            onPressed: _entries[index]
-                                                        .versionHistory!
-                                                        .where((e) =>
-                                                            e.fieldName ==
-                                                            TrackingFieldName
-                                                                .alarmTimeFrom)
-                                                        .length >
-                                                    0
-                                                ? () async {
-                                                    TrackingVersionHistory?
-                                                        selectedHistoricalEntry =
-                                                        await showVersionHistory(
-                                                            _entries[index]
-                                                                .versionHistory!
-                                                                .where((e) =>
-                                                                    e.fieldName ==
-                                                                    TrackingFieldName
-                                                                        .alarmTimeFrom)
-                                                                .toList(),
-                                                            TrackingDataType
-                                                                .timestamp);
-
-                                                    if (selectedHistoricalEntry !=
-                                                        null) {
-                                                      await updateEntry(
-                                                          _entries[index]
-                                                              .date!
-                                                              .toLocal(),
-                                                          TrackingEntry(
-                                                                  alarmTimeFrom:
-                                                                      DateTime.parse(
-                                                                          selectedHistoricalEntry
-                                                                              .value))
-                                                              .toMapWithoutDate());
-                                                    }
-                                                  }
-                                                : null,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    ListTile(
-                                      title: const Text("Koniec alarmów"),
-                                      onTap: () async {
-                                        DateTime? selectedTime =
-                                            await askForTime();
-
-                                        if (selectedTime != null) {
-                                          if (selectedTime.compareTo(
-                                                  _entries[index]
-                                                          .alarmTimeFrom ??
-                                                      selectedTime) >=
-                                              0) {
-                                            await updateEntry(
-                                                _entries[index].date!,
-                                                TrackingEntry(
-                                                        alarmTimeTo:
-                                                            selectedTime)
-                                                    .toMapWithoutDate());
-                                          } else {
-                                            await showDialog(
-                                              context: context,
-                                              builder: (BuildContext context) {
-                                                return AlertDialog(
-                                                  title: const Text("Błąd"),
-                                                  content: Text(
-                                                      'Czas końca alarmów musi być późniejszy lub równy czasu początku alarmów'),
-                                                  actions: <Widget>[
-                                                    TextButton(
-                                                        onPressed: () =>
-                                                            Navigator.of(
-                                                                    context)
-                                                                .pop(),
-                                                        child:
-                                                            const Text("OK")),
-                                                  ],
-                                                );
-                                              },
-                                            );
-                                          }
-                                        }
-                                      },
-                                      subtitle: Text(
-                                          _entries[index].alarmTimeTo == null
-                                              ? "-"
-                                              : dateToTimeString(
-                                                  _entries[index].alarmTimeTo!,
-                                                  excludeSeconds: true)),
-                                      trailing: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          IconButton(
-                                            icon: const Icon(Icons.history),
-                                            onPressed: _entries[index]
-                                                        .versionHistory!
-                                                        .where((e) =>
-                                                            e.fieldName ==
-                                                            TrackingFieldName
-                                                                .alarmTimeTo)
-                                                        .length >
-                                                    0
-                                                ? () async {
-                                                    TrackingVersionHistory?
-                                                        selectedHistoricalEntry =
-                                                        await showVersionHistory(
-                                                            _entries[index]
-                                                                .versionHistory!
-                                                                .where((e) =>
-                                                                    e.fieldName ==
-                                                                    TrackingFieldName
-                                                                        .alarmTimeTo)
-                                                                .toList(),
-                                                            TrackingDataType
-                                                                .timestamp);
-
-                                                    if (selectedHistoricalEntry !=
-                                                        null) {
-                                                      await updateEntry(
-                                                          _entries[index]
-                                                              .date!
-                                                              .toLocal(),
-                                                          TrackingEntry(
-                                                                  alarmTimeTo:
-                                                                      DateTime.parse(
-                                                                          selectedHistoricalEntry
-                                                                              .value))
-                                                              .toMapWithoutDate());
-                                                    }
-                                                  }
-                                                : null,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    ListTile(
-                                      title: const Text("Ocena"),
-                                      onTap: () async {
-                                        int rate = _entries[index].rate ?? 1;
-                                        bool? change = await showDialog(
-                                          context: context,
-                                          builder: (BuildContext context) {
-                                            return AlertDialog(
-                                              title:
-                                                  const Text("Wybierz ocenę"),
-                                              content: SelectNumberSlider(
-                                                min: 1,
-                                                max: 10,
-                                                divisions: 10,
-                                                init: rate,
-                                                onSelect: (int val) =>
-                                                    rate = val,
-                                              ),
-                                              actions: <Widget>[
-                                                TextButton(
-                                                  onPressed: () =>
-                                                      Navigator.of(context)
-                                                          .pop(false),
-                                                  child: const Text("Anuluj"),
-                                                ),
-                                                TextButton(
-                                                    onPressed: () =>
-                                                        Navigator.of(context)
-                                                            .pop(true),
-                                                    child:
-                                                        const Text("Wybierz")),
-                                              ],
-                                            );
-                                          },
-                                        );
-                                        if (change == true) {
-                                          await updateEntry(
-                                              _entries[index].date!,
-                                              TrackingEntry(rate: rate)
-                                                  .toMapWithoutDate());
-                                        }
-                                      },
-                                      subtitle: Text(
-                                        _entries[index].rate == null
-                                            ? "-"
-                                            : _entries[index].rate.toString(),
-                                      ),
-                                      trailing: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          IconButton(
-                                            icon: const Icon(Icons.history),
-                                            onPressed: _entries[index]
-                                                        .versionHistory!
-                                                        .where((e) =>
-                                                            e.fieldName ==
-                                                            TrackingFieldName
-                                                                .rate)
-                                                        .length >
-                                                    0
-                                                ? () async {
-                                                    TrackingVersionHistory?
-                                                        selectedHistoricalEntry =
-                                                        await showVersionHistory(
-                                                            _entries[index]
-                                                                .versionHistory!
-                                                                .where((e) =>
-                                                                    e.fieldName ==
-                                                                    TrackingFieldName
-                                                                        .rate)
-                                                                .toList(),
-                                                            TrackingDataType
-                                                                .number);
-
-                                                    if (selectedHistoricalEntry !=
-                                                        null) {
-                                                      await updateEntry(
-                                                          _entries[index]
-                                                              .date!
-                                                              .toLocal(),
-                                                          TrackingEntry(
-                                                                  rate: int.tryParse(
-                                                                      selectedHistoricalEntry
-                                                                          .value))
-                                                              .toMapWithoutDate());
-                                                    }
-                                                  }
-                                                : null,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    ListTile(
-                                      title: const Text(
-                                          "Czas na wyłączanie alarmów"),
-                                      onTap: () async {
-                                        int timeTakenToTurnOffTheAlarm =
-                                            _entries[index]
-                                                    .timeTakenToTurnOffTheAlarm ??
-                                                0;
-                                        Duration? selectedDuration =
-                                            await askForLength(0, 9999999,
-                                                timeTakenToTurnOffTheAlarm); //TODO: Don't do 9999999
-                                        if (selectedDuration != null) {
-                                          await updateEntry(
-                                              _entries[index].date!,
-                                              TrackingEntry(
-                                                      timeTakenToTurnOffTheAlarm:
-                                                          selectedDuration
-                                                              .inSeconds)
-                                                  .toMapWithoutDate());
-                                        }
-                                      },
-                                      subtitle: Text(
-                                        _entries[index]
-                                                    .timeTakenToTurnOffTheAlarm ==
+                                        },
+                                        subtitle: Text(_entries[index]
+                                                    .firstAlarmTime ==
                                                 null
                                             ? "-"
-                                            : secondsTommss(_entries[index]
-                                                .timeTakenToTurnOffTheAlarm),
-                                      ),
-                                      trailing: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          IconButton(
-                                            icon: const Icon(Icons.history),
-                                            onPressed: _entries[index]
-                                                        .versionHistory!
-                                                        .where((e) =>
-                                                            e.fieldName ==
-                                                            TrackingFieldName
-                                                                .timeTakenToTurnOffTheAlarm)
-                                                        .length >
-                                                    0
-                                                ? () async {
-                                                    TrackingVersionHistory?
-                                                        selectedHistoricalEntry =
-                                                        await showVersionHistory(
-                                                            _entries[index]
-                                                                .versionHistory!
-                                                                .where((e) =>
-                                                                    e.fieldName ==
-                                                                    TrackingFieldName
-                                                                        .timeTakenToTurnOffTheAlarm)
-                                                                .toList(),
-                                                            TrackingDataType
-                                                                .duration);
+                                            : dateToTimeString(
+                                                _entries[index].firstAlarmTime!,
+                                                excludeSeconds: true)),
+                                        trailing: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            IconButton(
+                                              icon: const Icon(Icons.history),
+                                              onPressed: _entries[index]
+                                                          .versionHistory!
+                                                          .where((e) =>
+                                                              e.fieldName ==
+                                                              TrackingFieldName
+                                                                  .firstAlarmTime)
+                                                          .length >
+                                                      0
+                                                  ? () async {
+                                                      TrackingVersionHistory?
+                                                          selectedHistoricalEntry =
+                                                          await showVersionHistory(
+                                                              _entries[index]
+                                                                  .versionHistory!
+                                                                  .where((e) =>
+                                                                      e.fieldName ==
+                                                                      TrackingFieldName
+                                                                          .firstAlarmTime)
+                                                                  .toList(),
+                                                              TrackingDataType
+                                                                  .timestamp);
 
-                                                    if (selectedHistoricalEntry !=
-                                                        null) {
-                                                      await updateEntry(
-                                                          _entries[index]
-                                                              .date!
-                                                              .toLocal(),
-                                                          TrackingEntry(
-                                                                  timeTakenToTurnOffTheAlarm:
-                                                                      int.tryParse(
-                                                                          selectedHistoricalEntry
-                                                                              .value))
-                                                              .toMapWithoutDate());
+                                                      if (selectedHistoricalEntry !=
+                                                          null) {
+                                                        await updateEntry(
+                                                            _entries[index]
+                                                                .date!
+                                                                .toLocal(),
+                                                            TrackingEntry(
+                                                                    firstAlarmTime:
+                                                                        DateTime.parse(
+                                                                            selectedHistoricalEntry.value))
+                                                                .toMapWithoutDate());
+                                                      }
                                                     }
-                                                  }
-                                                : null,
-                                          ),
-                                        ],
+                                                  : null,
+                                            ),
+                                          ],
+                                        ),
                                       ),
-                                    ),
-                                    ListTile(
-                                      title: const Text("Notka"),
-                                      onTap: () async {
-                                        TextEditingController _notesController =
-                                            TextEditingController();
-                                        _notesController.text =
-                                            _entries[index].notes == null ||
-                                                    _entries[index].notes == " "
-                                                ? ""
-                                                : _entries[index].notes!;
-                                        bool? change = await showDialog(
-                                          context: context,
-                                          barrierDismissible: false,
-                                          builder: (BuildContext context) {
-                                            return AlertDialog(
-                                              title: const Text("Notka"),
-                                              content: TextField(
-                                                controller: _notesController,
-                                                textCapitalization:
-                                                    TextCapitalization
-                                                        .sentences,
-                                                decoration: InputDecoration(
-                                                    hintText: "Wpisz uwagi",
-                                                    suffix: IconButton(
-                                                      icon: const Icon(
-                                                          Icons.clear),
-                                                      onPressed: () =>
-                                                          _notesController
-                                                              .text = "",
-                                                    )),
-                                                maxLines: null,
-                                                keyboardType:
-                                                    TextInputType.multiline,
-                                              ),
-                                              actions: <Widget>[
-                                                TextButton(
-                                                  onPressed: () =>
-                                                      Navigator.of(context)
-                                                          .pop(false),
-                                                  child: const Text("Anuluj"),
+                                      ListTile(
+                                        title: const Text("Obudzenie się"),
+                                        onTap: () async {
+                                          DateTime? selectedTime =
+                                              await askForTime();
+
+                                          if (selectedTime != null) {
+                                            if (selectedTime.compareTo(
+                                                        _entries[index]
+                                                                .getUpTime ??
+                                                            selectedTime) <=
+                                                    0 &&
+                                                selectedTime.compareTo(
+                                                        _entries[index]
+                                                                .sleepTime ??
+                                                            selectedTime) >=
+                                                    0) {
+                                              await updateEntry(
+                                                  _entries[index].date!,
+                                                  TrackingEntry(
+                                                          wakeUpTime:
+                                                              selectedTime)
+                                                      .toMapWithoutDate());
+                                            } else {
+                                              await showDialog(
+                                                context: context,
+                                                builder:
+                                                    (BuildContext context) {
+                                                  return AlertDialog(
+                                                    title: const Text("Błąd"),
+                                                    content: Text(
+                                                        'Czas obudzenia się musi być wcześniejszy od wstania oraz późniejszy od czasu pójścia spać'),
+                                                    actions: <Widget>[
+                                                      TextButton(
+                                                          onPressed: () =>
+                                                              Navigator.of(
+                                                                      context)
+                                                                  .pop(),
+                                                          child:
+                                                              const Text("OK")),
+                                                    ],
+                                                  );
+                                                },
+                                              );
+                                            }
+                                          }
+                                        },
+                                        subtitle: Text(
+                                            _entries[index].wakeUpTime == null
+                                                ? "-"
+                                                : dateToTimeString(
+                                                    _entries[index].wakeUpTime!,
+                                                    excludeSeconds: true)),
+                                        trailing: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            IconButton(
+                                              icon: const Icon(Icons.history),
+                                              onPressed: _entries[index]
+                                                          .versionHistory!
+                                                          .where((e) =>
+                                                              e.fieldName ==
+                                                              TrackingFieldName
+                                                                  .wakeUpTime)
+                                                          .length >
+                                                      0
+                                                  ? () async {
+                                                      TrackingVersionHistory?
+                                                          selectedHistoricalEntry =
+                                                          await showVersionHistory(
+                                                              _entries[index]
+                                                                  .versionHistory!
+                                                                  .where((e) =>
+                                                                      e.fieldName ==
+                                                                      TrackingFieldName
+                                                                          .wakeUpTime)
+                                                                  .toList(),
+                                                              TrackingDataType
+                                                                  .timestamp);
+
+                                                      if (selectedHistoricalEntry !=
+                                                          null) {
+                                                        await updateEntry(
+                                                            _entries[index]
+                                                                .date!
+                                                                .toLocal(),
+                                                            TrackingEntry(
+                                                                    wakeUpTime:
+                                                                        DateTime.parse(
+                                                                            selectedHistoricalEntry.value))
+                                                                .toMapWithoutDate());
+                                                      }
+                                                    }
+                                                  : null,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      ListTile(
+                                        title: const Text("Wstanie"),
+                                        onTap: () async {
+                                          DateTime? selectedTime =
+                                              await askForTime();
+
+                                          if (selectedTime != null) {
+                                            if (selectedTime.compareTo(
+                                                    _entries[index]
+                                                            .wakeUpTime ??
+                                                        selectedTime) >=
+                                                0) {
+                                              await updateEntry(
+                                                  _entries[index].date!,
+                                                  TrackingEntry(
+                                                          getUpTime:
+                                                              selectedTime)
+                                                      .toMapWithoutDate());
+                                            } else {
+                                              await showDialog(
+                                                context: context,
+                                                builder:
+                                                    (BuildContext context) {
+                                                  return AlertDialog(
+                                                    title: const Text("Błąd"),
+                                                    content: Text(
+                                                        'Czas wstania musi być późniejszy lub równy obudzeniu się'),
+                                                    actions: <Widget>[
+                                                      TextButton(
+                                                          onPressed: () =>
+                                                              Navigator.of(
+                                                                      context)
+                                                                  .pop(),
+                                                          child:
+                                                              const Text("OK")),
+                                                    ],
+                                                  );
+                                                },
+                                              );
+                                            }
+                                          }
+                                        },
+                                        subtitle: Text(
+                                            _entries[index].getUpTime == null
+                                                ? "-"
+                                                : dateToTimeString(
+                                                    _entries[index].getUpTime!,
+                                                    excludeSeconds: true)),
+                                        trailing: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            IconButton(
+                                              icon: const Icon(Icons.history),
+                                              onPressed: _entries[index]
+                                                          .versionHistory!
+                                                          .where((e) =>
+                                                              e.fieldName ==
+                                                              TrackingFieldName
+                                                                  .getUpTime)
+                                                          .length >
+                                                      0
+                                                  ? () async {
+                                                      TrackingVersionHistory?
+                                                          selectedHistoricalEntry =
+                                                          await showVersionHistory(
+                                                              _entries[index]
+                                                                  .versionHistory!
+                                                                  .where((e) =>
+                                                                      e.fieldName ==
+                                                                      TrackingFieldName
+                                                                          .getUpTime)
+                                                                  .toList(),
+                                                              TrackingDataType
+                                                                  .timestamp);
+
+                                                      if (selectedHistoricalEntry !=
+                                                          null) {
+                                                        await updateEntry(
+                                                            _entries[index]
+                                                                .date!
+                                                                .toLocal(),
+                                                            TrackingEntry(
+                                                                    getUpTime: DateTime.parse(
+                                                                        selectedHistoricalEntry
+                                                                            .value))
+                                                                .toMapWithoutDate());
+                                                      }
+                                                    }
+                                                  : null,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      ListTile(
+                                        title: const Text("Początek alarmów"),
+                                        onTap: () async {
+                                          DateTime? selectedTime =
+                                              await askForTime();
+
+                                          if (selectedTime != null) {
+                                            if (selectedTime.compareTo(
+                                                    _entries[index]
+                                                            .alarmTimeTo ??
+                                                        selectedTime) <=
+                                                0) {
+                                              await updateEntry(
+                                                  _entries[index].date!,
+                                                  TrackingEntry(
+                                                          alarmTimeFrom:
+                                                              selectedTime)
+                                                      .toMapWithoutDate());
+                                            } else {
+                                              await showDialog(
+                                                context: context,
+                                                builder:
+                                                    (BuildContext context) {
+                                                  return AlertDialog(
+                                                    title: const Text("Błąd"),
+                                                    content: Text(
+                                                        'Czas początku alarmów musi być wcześniejszy niż czas końca alarmów'),
+                                                    actions: <Widget>[
+                                                      TextButton(
+                                                          onPressed: () =>
+                                                              Navigator.of(
+                                                                      context)
+                                                                  .pop(),
+                                                          child:
+                                                              const Text("OK")),
+                                                    ],
+                                                  );
+                                                },
+                                              );
+                                            }
+                                          }
+                                        },
+                                        subtitle: Text(_entries[index]
+                                                    .alarmTimeFrom ==
+                                                null
+                                            ? "-"
+                                            : dateToTimeString(
+                                                _entries[index].alarmTimeFrom!,
+                                                excludeSeconds: true)),
+                                        trailing: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            IconButton(
+                                              icon: const Icon(Icons.history),
+                                              onPressed: _entries[index]
+                                                          .versionHistory!
+                                                          .where((e) =>
+                                                              e.fieldName ==
+                                                              TrackingFieldName
+                                                                  .alarmTimeFrom)
+                                                          .length >
+                                                      0
+                                                  ? () async {
+                                                      TrackingVersionHistory?
+                                                          selectedHistoricalEntry =
+                                                          await showVersionHistory(
+                                                              _entries[index]
+                                                                  .versionHistory!
+                                                                  .where((e) =>
+                                                                      e.fieldName ==
+                                                                      TrackingFieldName
+                                                                          .alarmTimeFrom)
+                                                                  .toList(),
+                                                              TrackingDataType
+                                                                  .timestamp);
+
+                                                      if (selectedHistoricalEntry !=
+                                                          null) {
+                                                        await updateEntry(
+                                                            _entries[index]
+                                                                .date!
+                                                                .toLocal(),
+                                                            TrackingEntry(
+                                                                    alarmTimeFrom:
+                                                                        DateTime.parse(
+                                                                            selectedHistoricalEntry.value))
+                                                                .toMapWithoutDate());
+                                                      }
+                                                    }
+                                                  : null,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      ListTile(
+                                        title: const Text("Koniec alarmów"),
+                                        onTap: () async {
+                                          DateTime? selectedTime =
+                                              await askForTime();
+
+                                          if (selectedTime != null) {
+                                            if (selectedTime.compareTo(
+                                                    _entries[index]
+                                                            .alarmTimeFrom ??
+                                                        selectedTime) >=
+                                                0) {
+                                              await updateEntry(
+                                                  _entries[index].date!,
+                                                  TrackingEntry(
+                                                          alarmTimeTo:
+                                                              selectedTime)
+                                                      .toMapWithoutDate());
+                                            } else {
+                                              await showDialog(
+                                                context: context,
+                                                builder:
+                                                    (BuildContext context) {
+                                                  return AlertDialog(
+                                                    title: const Text("Błąd"),
+                                                    content: Text(
+                                                        'Czas końca alarmów musi być późniejszy lub równy czasu początku alarmów'),
+                                                    actions: <Widget>[
+                                                      TextButton(
+                                                          onPressed: () =>
+                                                              Navigator.of(
+                                                                      context)
+                                                                  .pop(),
+                                                          child:
+                                                              const Text("OK")),
+                                                    ],
+                                                  );
+                                                },
+                                              );
+                                            }
+                                          }
+                                        },
+                                        subtitle: Text(_entries[index]
+                                                    .alarmTimeTo ==
+                                                null
+                                            ? "-"
+                                            : dateToTimeString(
+                                                _entries[index].alarmTimeTo!,
+                                                excludeSeconds: true)),
+                                        trailing: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            IconButton(
+                                              icon: const Icon(Icons.history),
+                                              onPressed: _entries[index]
+                                                          .versionHistory!
+                                                          .where((e) =>
+                                                              e.fieldName ==
+                                                              TrackingFieldName
+                                                                  .alarmTimeTo)
+                                                          .length >
+                                                      0
+                                                  ? () async {
+                                                      TrackingVersionHistory?
+                                                          selectedHistoricalEntry =
+                                                          await showVersionHistory(
+                                                              _entries[index]
+                                                                  .versionHistory!
+                                                                  .where((e) =>
+                                                                      e.fieldName ==
+                                                                      TrackingFieldName
+                                                                          .alarmTimeTo)
+                                                                  .toList(),
+                                                              TrackingDataType
+                                                                  .timestamp);
+
+                                                      if (selectedHistoricalEntry !=
+                                                          null) {
+                                                        await updateEntry(
+                                                            _entries[index]
+                                                                .date!
+                                                                .toLocal(),
+                                                            TrackingEntry(
+                                                                    alarmTimeTo:
+                                                                        DateTime.parse(
+                                                                            selectedHistoricalEntry.value))
+                                                                .toMapWithoutDate());
+                                                      }
+                                                    }
+                                                  : null,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      ListTile(
+                                        title: const Text("Ocena"),
+                                        onTap: () async {
+                                          int rate = _entries[index].rate ?? 1;
+                                          bool? change = await showDialog(
+                                            context: context,
+                                            builder: (BuildContext context) {
+                                              return AlertDialog(
+                                                title:
+                                                    const Text("Wybierz ocenę"),
+                                                content: SelectNumberSlider(
+                                                  min: 1,
+                                                  max: 10,
+                                                  divisions: 10,
+                                                  init: rate,
+                                                  onSelect: (int val) =>
+                                                      rate = val,
                                                 ),
-                                                TextButton(
+                                                actions: <Widget>[
+                                                  TextButton(
                                                     onPressed: () =>
                                                         Navigator.of(context)
-                                                            .pop(true),
-                                                    child:
-                                                        const Text("Zapisz")),
-                                              ],
-                                            );
-                                          },
-                                        );
-                                        if (change == true) {
-                                          await updateEntry(
-                                              _entries[index].date!,
-                                              TrackingEntry(
-                                                      notes: _notesController
-                                                              .text.isEmpty
-                                                          ? " "
-                                                          : _notesController
-                                                              .text)
-                                                  .toMapWithoutDate());
-                                        }
-                                      },
-                                      subtitle: Text(
-                                        _entries[index].notes == null ||
-                                                _entries[index].notes == " "
-                                            ? "Brak"
-                                            : _entries[index].notes!,
-                                      ),
-                                      trailing: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          IconButton(
-                                            icon: const Icon(Icons.history),
-                                            onPressed: _entries[index]
-                                                        .versionHistory!
-                                                        .where((e) =>
-                                                            e.fieldName ==
-                                                            TrackingFieldName
-                                                                .notes)
-                                                        .length >
-                                                    0
-                                                ? () async {
-                                                    TrackingVersionHistory?
-                                                        selectedHistoricalEntry =
-                                                        await showVersionHistory(
-                                                            _entries[index]
-                                                                .versionHistory!
-                                                                .where((e) =>
-                                                                    e.fieldName ==
-                                                                    TrackingFieldName
-                                                                        .notes)
-                                                                .toList(),
-                                                            TrackingDataType
-                                                                .text);
+                                                            .pop(false),
+                                                    child: const Text("Anuluj"),
+                                                  ),
+                                                  TextButton(
+                                                      onPressed: () =>
+                                                          Navigator.of(context)
+                                                              .pop(true),
+                                                      child: const Text(
+                                                          "Wybierz")),
+                                                ],
+                                              );
+                                            },
+                                          );
+                                          if (change == true) {
+                                            await updateEntry(
+                                                _entries[index].date!,
+                                                TrackingEntry(rate: rate)
+                                                    .toMapWithoutDate());
+                                          }
+                                        },
+                                        subtitle: Text(
+                                          _entries[index].rate == null
+                                              ? "-"
+                                              : _entries[index].rate.toString(),
+                                        ),
+                                        trailing: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            IconButton(
+                                              icon: const Icon(Icons.history),
+                                              onPressed: _entries[index]
+                                                          .versionHistory!
+                                                          .where((e) =>
+                                                              e.fieldName ==
+                                                              TrackingFieldName
+                                                                  .rate)
+                                                          .length >
+                                                      0
+                                                  ? () async {
+                                                      TrackingVersionHistory?
+                                                          selectedHistoricalEntry =
+                                                          await showVersionHistory(
+                                                              _entries[index]
+                                                                  .versionHistory!
+                                                                  .where((e) =>
+                                                                      e.fieldName ==
+                                                                      TrackingFieldName
+                                                                          .rate)
+                                                                  .toList(),
+                                                              TrackingDataType
+                                                                  .number);
 
-                                                    if (selectedHistoricalEntry !=
-                                                        null) {
-                                                      await updateEntry(
-                                                          _entries[index]
-                                                              .date!
-                                                              .toLocal(),
-                                                          TrackingEntry(
-                                                                  notes:
-                                                                      selectedHistoricalEntry
-                                                                          .value)
-                                                              .toMapWithoutDate());
+                                                      if (selectedHistoricalEntry !=
+                                                          null) {
+                                                        await updateEntry(
+                                                            _entries[index]
+                                                                .date!
+                                                                .toLocal(),
+                                                            TrackingEntry(
+                                                                    rate: int.tryParse(
+                                                                        selectedHistoricalEntry
+                                                                            .value))
+                                                                .toMapWithoutDate());
+                                                      }
                                                     }
-                                                  }
-                                                : null,
-                                          ),
-                                        ],
+                                                  : null,
+                                            ),
+                                          ],
+                                        ),
                                       ),
-                                    ),
-                                    InkWell(
-                                        onTap: navigateToStatsScreen,
-                                        child: Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: TrackingStatsWidget(
-                                                stats: _stats))),
-                                  ],
-                                );
-                              },
-                            )
-                          : Center(
-                              child: Text(
-                              "Nie znaleziono żadnego snu dla tej daty",
-                              style: const TextStyle(fontSize: 18),
-                              textAlign: TextAlign.center,
-                            )),
-                    ),
+                                      ListTile(
+                                        title: const Text(
+                                            "Czas na wyłączanie alarmów"),
+                                        onTap: () async {
+                                          int timeTakenToTurnOffTheAlarm =
+                                              _entries[index]
+                                                      .timeTakenToTurnOffTheAlarm ??
+                                                  0;
+                                          Duration? selectedDuration =
+                                              await askForLength(0, 9999999,
+                                                  timeTakenToTurnOffTheAlarm); //TODO: Don't do 9999999
+                                          if (selectedDuration != null) {
+                                            await updateEntry(
+                                                _entries[index].date!,
+                                                TrackingEntry(
+                                                        timeTakenToTurnOffTheAlarm:
+                                                            selectedDuration
+                                                                .inSeconds)
+                                                    .toMapWithoutDate());
+                                          }
+                                        },
+                                        subtitle: Text(
+                                          _entries[index]
+                                                      .timeTakenToTurnOffTheAlarm ==
+                                                  null
+                                              ? "-"
+                                              : secondsTommss(_entries[index]
+                                                  .timeTakenToTurnOffTheAlarm),
+                                        ),
+                                        trailing: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            IconButton(
+                                              icon: const Icon(Icons.history),
+                                              onPressed: _entries[index]
+                                                          .versionHistory!
+                                                          .where((e) =>
+                                                              e.fieldName ==
+                                                              TrackingFieldName
+                                                                  .timeTakenToTurnOffTheAlarm)
+                                                          .length >
+                                                      0
+                                                  ? () async {
+                                                      TrackingVersionHistory?
+                                                          selectedHistoricalEntry =
+                                                          await showVersionHistory(
+                                                              _entries[index]
+                                                                  .versionHistory!
+                                                                  .where((e) =>
+                                                                      e.fieldName ==
+                                                                      TrackingFieldName
+                                                                          .timeTakenToTurnOffTheAlarm)
+                                                                  .toList(),
+                                                              TrackingDataType
+                                                                  .duration);
+
+                                                      if (selectedHistoricalEntry !=
+                                                          null) {
+                                                        await updateEntry(
+                                                            _entries[index]
+                                                                .date!
+                                                                .toLocal(),
+                                                            TrackingEntry(
+                                                                    timeTakenToTurnOffTheAlarm:
+                                                                        int.tryParse(
+                                                                            selectedHistoricalEntry.value))
+                                                                .toMapWithoutDate());
+                                                      }
+                                                    }
+                                                  : null,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      ListTile(
+                                        title: const Text("Notka"),
+                                        onTap: () async {
+                                          TextEditingController
+                                              _notesController =
+                                              TextEditingController();
+                                          _notesController.text =
+                                              _entries[index].notes == null ||
+                                                      _entries[index].notes ==
+                                                          " "
+                                                  ? ""
+                                                  : _entries[index].notes!;
+                                          bool? change = await showDialog(
+                                            context: context,
+                                            barrierDismissible: false,
+                                            builder: (BuildContext context) {
+                                              return AlertDialog(
+                                                title: const Text("Notka"),
+                                                content: TextField(
+                                                  controller: _notesController,
+                                                  textCapitalization:
+                                                      TextCapitalization
+                                                          .sentences,
+                                                  decoration: InputDecoration(
+                                                      hintText: "Wpisz uwagi",
+                                                      suffix: IconButton(
+                                                        icon: const Icon(
+                                                            Icons.clear),
+                                                        onPressed: () =>
+                                                            _notesController
+                                                                .text = "",
+                                                      )),
+                                                  maxLines: null,
+                                                  keyboardType:
+                                                      TextInputType.multiline,
+                                                ),
+                                                actions: <Widget>[
+                                                  TextButton(
+                                                    onPressed: () =>
+                                                        Navigator.of(context)
+                                                            .pop(false),
+                                                    child: const Text("Anuluj"),
+                                                  ),
+                                                  TextButton(
+                                                      onPressed: () =>
+                                                          Navigator.of(context)
+                                                              .pop(true),
+                                                      child:
+                                                          const Text("Zapisz")),
+                                                ],
+                                              );
+                                            },
+                                          );
+                                          if (change == true) {
+                                            await updateEntry(
+                                                _entries[index].date!,
+                                                TrackingEntry(
+                                                        notes: _notesController
+                                                                .text.isEmpty
+                                                            ? " "
+                                                            : _notesController
+                                                                .text)
+                                                    .toMapWithoutDate());
+                                          }
+                                        },
+                                        subtitle: Text(
+                                          _entries[index].notes == null ||
+                                                  _entries[index].notes == " "
+                                              ? "Brak"
+                                              : _entries[index].notes!,
+                                        ),
+                                        trailing: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            IconButton(
+                                              icon: const Icon(Icons.history),
+                                              onPressed: _entries[index]
+                                                          .versionHistory!
+                                                          .where((e) =>
+                                                              e.fieldName ==
+                                                              TrackingFieldName
+                                                                  .notes)
+                                                          .length >
+                                                      0
+                                                  ? () async {
+                                                      TrackingVersionHistory?
+                                                          selectedHistoricalEntry =
+                                                          await showVersionHistory(
+                                                              _entries[index]
+                                                                  .versionHistory!
+                                                                  .where((e) =>
+                                                                      e.fieldName ==
+                                                                      TrackingFieldName
+                                                                          .notes)
+                                                                  .toList(),
+                                                              TrackingDataType
+                                                                  .text);
+
+                                                      if (selectedHistoricalEntry !=
+                                                          null) {
+                                                        await updateEntry(
+                                                            _entries[index]
+                                                                .date!
+                                                                .toLocal(),
+                                                            TrackingEntry(
+                                                                    notes: selectedHistoricalEntry
+                                                                        .value)
+                                                                .toMapWithoutDate());
+                                                      }
+                                                    }
+                                                  : null,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      InkWell(
+                                          onTap: navigateToStatsScreen,
+                                          child: Padding(
+                                              padding:
+                                                  const EdgeInsets.all(8.0),
+                                              child: TrackingStatsWidget(
+                                                  stats: _stats))),
+                                    ],
+                                  );
+                                },
+                              )
+                            : Center(
+                                child: Text(
+                                "Nie znaleziono żadnego snu dla tej daty",
+                                style: const TextStyle(fontSize: 18),
+                                textAlign: TextAlign.center,
+                              )),
+                      )
+                    else
+                      Expanded(
+                          child: _allEntries.isNotEmpty
+                              ? SingleChildScrollView(
+                                  scrollDirection: Axis.horizontal,
+                                  child: DataTable(
+                                      columns: [
+                                        DataColumn(
+                                            label: const Text("W łóżku")),
+                                        DataColumn(
+                                            label: const Text("Pójście spać")),
+                                        DataColumn(
+                                            label:
+                                                const Text("Pierwszy budzik")),
+                                        DataColumn(
+                                            label: const Text("Obudzenie się")),
+                                        DataColumn(
+                                            label: const Text("Wstanie")),
+                                        DataColumn(
+                                            label:
+                                                const Text("Początek alarmów")),
+                                        DataColumn(
+                                            label:
+                                                const Text("Koniec alarmów")),
+                                        DataColumn(label: const Text("Ocena")),
+                                        DataColumn(
+                                            label: const Text(
+                                                "Czas na wyłączenie alarmów")),
+                                        DataColumn(label: const Text("Notka")),
+                                      ],
+                                      rows: _allEntries.map((e) {
+                                        return DataRow(cells: [
+                                          DataCell(Text(e.bedTime == null
+                                              ? "-"
+                                              : dateToTimeString(e.bedTime!,
+                                                  excludeSeconds: true))),
+                                          DataCell(Text(e.sleepTime == null
+                                              ? "-"
+                                              : dateToTimeString(e.sleepTime!,
+                                                  excludeSeconds: true))),
+                                          DataCell(Text(e.firstAlarmTime == null
+                                              ? "-"
+                                              : dateToTimeString(
+                                                  e.firstAlarmTime!,
+                                                  excludeSeconds: true))),
+                                          DataCell(Text(e.wakeUpTime == null
+                                              ? "-"
+                                              : dateToTimeString(e.wakeUpTime!,
+                                                  excludeSeconds: true))),
+                                          DataCell(Text(e.getUpTime == null
+                                              ? "-"
+                                              : dateToTimeString(e.getUpTime!,
+                                                  excludeSeconds: true))),
+                                          DataCell(Text(e.alarmTimeFrom == null
+                                              ? "-"
+                                              : dateToTimeString(
+                                                  e.alarmTimeFrom!,
+                                                  excludeSeconds: true))),
+                                          DataCell(Text(e.alarmTimeTo == null
+                                              ? "-"
+                                              : dateToTimeString(e.alarmTimeTo!,
+                                                  excludeSeconds: true))),
+                                          DataCell(Text(e.rate == null
+                                              ? "-"
+                                              : e.rate.toString())),
+                                          DataCell(Text(
+                                              e.timeTakenToTurnOffTheAlarm ==
+                                                      null
+                                                  ? "-"
+                                                  : secondsTommss(e
+                                                      .timeTakenToTurnOffTheAlarm))),
+                                          DataCell(Text(e.notes == null
+                                              ? "-"
+                                              : e.notes.toString())),
+                                        ]);
+                                      }).toList()),
+                                )
+                              : Center(
+                                  child: Text(
+                                  "Nie znaleziono żadnego snu dla tej daty",
+                                  style: const TextStyle(fontSize: 18),
+                                  textAlign: TextAlign.center,
+                                )))
                   ],
                 ),
               )),

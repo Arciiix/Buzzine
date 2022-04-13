@@ -1583,4 +1583,41 @@ class GlobalData {
           "Błąd podczas ${isFavorite ? "dodawania alarmu $id do ulubionych" : "usuwania alarmu $id z ulubionych"}. Status code: ${response.statusCode}, response: ${response.body}");
     }
   }
+
+  static Future<List<TrackingEntry>> getAllTrackingEntries() async {
+    var response = await http.get(
+      Uri.parse("$serverIP/v1/tracking/getAll"),
+    );
+    var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
+
+    if (response.statusCode != 200 || decodedResponse['error'] == true) {
+      throw APIException(
+          "Błąd podczas pobierania wszystkich danych snu. Status code: ${response.statusCode}, response: ${response.body}");
+    } else {
+      List entryData = decodedResponse['response'];
+      List<TrackingEntry> entries = [];
+      for (var e in entryData) {
+        TrackingEntry entry = TrackingEntry(
+            date: DateTime.parse(e['date']),
+            bedTime: DateTime.tryParse(e['bedTime'] ?? ""),
+            sleepTime: DateTime.tryParse(e['sleepTime'] ?? ""),
+            firstAlarmTime: DateTime.tryParse(e['firstAlarmTime'] ?? ""),
+            wakeUpTime: DateTime.tryParse(e['wakeUpTime'] ?? ""),
+            getUpTime: DateTime.tryParse(e['getUpTime'] ?? ""),
+            alarmTimeFrom: DateTime.tryParse(e['alarmTimeFrom'] ?? ""),
+            alarmTimeTo: DateTime.tryParse(e['alarmTimeTo'] ?? ""),
+            rate: e['rate'],
+            timeTakenToTurnOffTheAlarm: e['timeTakenToTurnOffTheAlarm'],
+            notes: e['notes'],
+            isNap: DateTime.parse(e['date']).hour != 0 &&
+                DateTime.parse(e['date']).minute != 0);
+
+        //Don't do tracking history there - it would be so performance-costful
+
+        entries.add(entry);
+      }
+
+      return entries;
+    }
+  }
 }

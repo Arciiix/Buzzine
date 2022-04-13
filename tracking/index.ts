@@ -35,6 +35,13 @@ api.get("/ping", (req, res) => {
   res.send({ error: false, timestamp: new Date() });
 });
 
+api.get("/getAll", async (req, res) => {
+  const allEntries = await TrackingEntryModel.findAll({});
+
+  res.send({ error: false, response: allEntries });
+  logger.info(`Sent all entries`);
+});
+
 api.get("/getDataForDay", async (req, res) => {
   if (!req.query.day || isNaN(new Date(req.query.day as string)?.getTime())) {
     res.status(400).send({ error: true, errorCode: "WRONG_DAY" });
