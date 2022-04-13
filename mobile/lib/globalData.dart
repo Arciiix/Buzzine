@@ -201,7 +201,13 @@ class GlobalData {
     //Favorite inactive alarms first
     inactiveAlarms.sort((a, b) => (a.isFavorite ?? false) ? 1 : -1);
     //Sort the active alarms by invocationDate
-    activeAlarms.sort((a, b) => a.nextInvocation!.compareTo(b.nextInvocation!));
+    activeAlarms.sort((a, b) {
+      if (a.nextInvocation != null && b.nextInvocation != null) {
+        return a.nextInvocation!.compareTo(b.nextInvocation!);
+      } else {
+        return a.hour * 60 + a.minute - b.hour * 60 - b.minute;
+      }
+    });
 
     GlobalData.alarms = [...activeAlarms, ...inactiveAlarms];
 
@@ -253,7 +259,18 @@ class GlobalData {
     //Favorite inactive naps first
     inactiveNaps.sort((a, b) => (a.isFavorite ?? false) ? 1 : -1);
     //Sort the active naps by invocationDate
-    activeNaps.sort((a, b) => a.invocationDate!.compareTo(b.invocationDate!));
+    activeNaps.sort((a, b) {
+      if (a.nextInvocation != null && b.nextInvocation != null) {
+        return a.nextInvocation!.compareTo(b.nextInvocation!);
+      } else {
+        return a.hour * 3600 +
+            a.minute * 60 +
+            a.second! -
+            b.hour * 3600 -
+            b.minute * 60 -
+            b.second!;
+      }
+    });
 
     GlobalData.naps = [...activeNaps, ...inactiveNaps];
   }
@@ -1203,6 +1220,7 @@ class GlobalData {
           alarmTimeFrom: DateTime.tryParse(entryData['alarmTimeFrom'] ?? ""),
           alarmTimeTo: DateTime.tryParse(entryData['alarmTimeTo'] ?? ""),
           rate: entryData['rate'],
+          timeTakenToTurnOffTheAlarm: entryData['timeTakenToTurnOffTheAlarm'],
           notes: entryData['notes'],
           isNap: DateTime.parse(entryData['date']).hour != 0 &&
               DateTime.parse(entryData['date']).minute != 0);
@@ -1238,6 +1256,7 @@ class GlobalData {
             alarmTimeFrom: DateTime.tryParse(e['alarmTimeFrom'] ?? ""),
             alarmTimeTo: DateTime.tryParse(e['alarmTimeTo'] ?? ""),
             rate: e['rate'],
+            timeTakenToTurnOffTheAlarm: e['timeTakenToTurnOffTheAlarm'],
             notes: e['notes'],
             isNap: DateTime.parse(e['date']).hour != 0 &&
                 DateTime.parse(e['date']).minute != 0);
@@ -1308,6 +1327,7 @@ class GlobalData {
             alarmTimeFrom: DateTime.tryParse(e['alarmTimeFrom'] ?? ""),
             alarmTimeTo: DateTime.tryParse(e['alarmTimeTo'] ?? ""),
             rate: e['rate'],
+            timeTakenToTurnOffTheAlarm: e['timeTakenToTurnOffTheAlarm'],
             notes: e['notes'],
             isNap: DateTime.parse(e['date']).hour != 0 &&
                 DateTime.parse(e['date']).minute != 0);

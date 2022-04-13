@@ -260,7 +260,6 @@ class Alarm {
       clearInterval(this.ringingStats?.eventResendingInterval);
       clearTimeout(this.ringingStats?.alarmSilentTimeout);
     }
-    this.ringingStats = null;
     this.toggleEmergencyDevice(false);
     if (!this.repeat) {
       this.cancelJob();
@@ -275,7 +274,12 @@ class Alarm {
     });
     this.snoozes = [];
 
-    io.emit("ALARM_OFF", this.toObject());
+    io.emit("ALARM_OFF", {
+      ...this.toObject(),
+      ...{ timeElapsed: this.ringingStats.timeElapsed },
+    });
+    this.ringingStats = null;
+
     logger.info(
       `Turned the alarm ${this.id} ${
         this.repeat ? "(repeating)" : "(manual)"

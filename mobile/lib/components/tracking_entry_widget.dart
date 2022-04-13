@@ -318,6 +318,33 @@ class TrackingEntryWidgetState extends State<TrackingEntryWidget> {
                           ),
                         ],
                       ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.max,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Padding(
+                                padding: EdgeInsets.all(2),
+                                child: Icon(Icons.timer, size: 24),
+                              ),
+                              Text("Czas na wyłączanie alarmów",
+                                  style: TextStyle(fontSize: 16),
+                                  textAlign: TextAlign.center),
+                              Text("mm:ss",
+                                  style: const TextStyle(fontSize: 12)),
+                              Text(
+                                  _currentEntry.timeTakenToTurnOffTheAlarm ==
+                                          null
+                                      ? "-"
+                                      : secondsTommss(_currentEntry
+                                          .timeTakenToTurnOffTheAlarm),
+                                  style: const TextStyle(fontSize: 24))
+                            ],
+                          ),
+                        ],
+                      ),
                       SizedBox(
                         height: 100,
                         child: Column(

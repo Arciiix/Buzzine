@@ -54,6 +54,31 @@ class TrackingAdapter {
       return;
     }
   }
+
+  static async updateTimeTakenToTurnOffTheAlarm(timeTaken: number) {
+    if (isNaN(timeTaken)) return;
+
+    try {
+      //Associate the alarm with given sound
+      let response = await axios.put(
+        `${TRACKING_URL}/v1/updateTimeTurningOffAlarmForLatest`,
+        {
+          time: timeTaken,
+        }
+      );
+
+      logger.info(
+        `Updated time taken to turn off the alarm for the latest tracking entry (value: ${timeTaken})}`
+      );
+    } catch (err) {
+      logger.error(
+        `Error when trying to update the time taken to turn off the alarm for the latest tracking entry (value: ${timeTaken})} with status ${
+          err?.response?.status
+        }, response: ${JSON.stringify(err?.response?.data)}`
+      );
+      return;
+    }
+  }
 }
 
 interface ITrackingEntryObject {

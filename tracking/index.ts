@@ -151,6 +151,7 @@ api.put("/updateDataForDate", async (req, res) => {
     alarmTimeFrom: dbObject.alarmTimeFrom,
     alarmTimeTo: dbObject.alarmTimeTo,
     rate: dbObject.rate,
+    timeTakenToTurnOffTheAlarm: dbObject.timeTakenToTurnOffTheAlarm,
     notes: dbObject.notes,
   };
 
@@ -180,6 +181,11 @@ api.put("/updateDataForDate", async (req, res) => {
   }
   if (req.body.updateObject.notes) {
     dbObject.notes = req.body.updateObject.notes.toString();
+  }
+  if (req.body.updateObject.timeTakenToTurnOffTheAlarm) {
+    dbObject.timeTakenToTurnOffTheAlarm = parseInt(
+      req.body.updateObject.timeTakenToTurnOffTheAlarm
+    );
   }
   await dbObject.save();
 
@@ -279,6 +285,7 @@ api.put("/updateDataForLatestIfDoesntExist", async (req, res) => {
     getUpTime: dbObject.getUpTime,
     alarmTimeFrom: dbObject.alarmTimeFrom,
     alarmTimeTo: dbObject.alarmTimeTo,
+    timeTakenToTurnOffTheAlarm: dbObject.timeTakenToTurnOffTheAlarm,
     rate: dbObject.rate,
     notes: dbObject.notes,
   };
@@ -385,6 +392,75 @@ api.put("/updateDataForLatestIfDoesntExist", async (req, res) => {
   });
 });
 
+api.put("/updateTimeTurningOffAlarmForLatest", async (req, res) => {
+  if (!req.body.time || isNaN(parseInt(req.body.time))) {
+    res.status(400).send({ error: true, errorCode: "WRONG_TIME" });
+    return;
+  }
+
+  let date = new Date();
+  if (
+    date.getHours() * 60 + date.getMinutes() >
+    TRACKER_DAY_START.hour * 60 + TRACKER_DAY_START.minute
+  ) {
+    date.setDate(date.getDate() + 1);
+  }
+
+  date = dateTimeToDateOnly(date);
+
+  //Find a daytime nap, and if it exists - change the targeted date to it
+  let latest: any = await TrackingEntryModel.findOne({
+    where: {
+      date: {
+        [Op.gt]: date,
+        [Op.lt]: new Date(date.getTime() + 1000 * 60 * 60 * 24),
+      },
+    },
+    order: [["date", "DESC"]],
+  });
+
+  if (latest) {
+    logger.info(
+      `Found newer entry (probably a nap) with date ${toDateTimeString(
+        latest.date
+      )}`
+    );
+    date = latest.date;
+  }
+
+  let dbObject: any = await TrackingEntryModel.findOne({ where: { date } });
+  if (!dbObject) {
+    dbObject = await TrackingEntryModel.create({
+      date: date,
+    });
+  }
+
+  //Update the time taken to turn off the alarm only if user hasn't woken/gotten up yet
+  if (dbObject?.getUpTime) {
+    res.status(200).send({ error: false, response: { updated: false } });
+    return;
+  } else {
+    await saveVersionHistory(
+      dbObject.entryId,
+      new Date(dbObject.date),
+      {
+        timeTakenToTurnOffTheAlarm: dbObject.timeTakenToTurnOffTheAlarm,
+      },
+      {
+        timeTakenToTurnOffTheAlarm:
+          dbObject.timeTakenToTurnOffTheAlarm + parseInt(req.body.time),
+      }
+    );
+    dbObject.timeTakenToTurnOffTheAlarm += parseInt(req.body.time);
+    await dbObject.save();
+    logger.info(
+      `Updated the time taken to turn off the alarm of date ${toDateString(
+        new Date(dbObject.date)
+      )} to ${dbObject.timeTakenToTurnOffTheAlarm}`
+    );
+  }
+});
+
 async function init() {
   await initDatabase();
   Stats.calculateStats();
@@ -409,6 +485,7 @@ interface ITrackingEntryObject {
   getUpTime?: Date;
   alarmTimeFrom?: Date;
   alarmTimeTo?: Date;
+  timeTakenToTurnOffTheAlarm?: number;
   rate?: number;
   notes?: string;
 }

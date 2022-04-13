@@ -314,8 +314,11 @@ function loadFirebaseConfig() {
         alarmTimeFrom: new Date(new Date().setSeconds(0)),
       });
     });
-    socket.on("ALARM_OFF", () => {
+    socket.on("ALARM_OFF", (data) => {
       notificationServiceInstance.clearNotificationHistory();
+      TrackingAdapter.updateTimeTakenToTurnOffTheAlarm(
+        parseInt(data.timeElapsed)
+      );
     });
 
     socket.on("ALARM_MUTE", () => {

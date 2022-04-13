@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:buzzine/components/select_number_slider.dart';
 import 'package:buzzine/components/simple_loading_dialog.dart';
+import 'package:buzzine/components/time_number_picker.dart';
 import 'package:buzzine/components/tracking_stats.dart';
 import 'package:buzzine/globalData.dart';
 import 'package:buzzine/screens/loading.dart';
@@ -134,8 +135,20 @@ class _TrackingScreenState extends State<TrackingScreen> {
     }
   }
 
+  Future<Duration?> askForLength(int min, int max, int init) async {
+    Duration? userSelection =
+        await Navigator.of(context).push(MaterialPageRoute(
+      builder: (context) => TimeNumberPicker(
+        minDuration: min,
+        maxDuration: max,
+        initialTime: init,
+      ),
+    ));
+    return userSelection;
+  }
+
   Future<TrackingVersionHistory?> showVersionHistory(
-      List<TrackingVersionHistory> history, bool isValueTimestamp) async {
+      List<TrackingVersionHistory> history, TrackingDataType dataType) async {
     //Sort the history by timestamp
     history.sort((a, b) => b.timestamp.compareTo(a.timestamp));
 
@@ -154,13 +167,28 @@ class _TrackingScreenState extends State<TrackingScreen> {
                   child: ListView.builder(
                     itemCount: history.length,
                     itemBuilder: (context, index) {
+                      String text = "Brak";
+                      if (history[index].value != null) {
+                        switch (dataType) {
+                          case TrackingDataType.timestamp:
+                            text = dateToDateTimeString(
+                                DateTime.parse(history[index].value));
+                            break;
+                          case TrackingDataType.number:
+                            text = history[index].value.toString();
+                            break;
+                          case TrackingDataType.duration:
+                            text =
+                                secondsTommss(int.parse(history[index].value));
+                            break;
+                          case TrackingDataType.text:
+                            text = history[index].value.toString();
+                            break;
+                        }
+                      }
+
                       return ListTile(
-                          title: Text(history[index].value == null
-                              ? "Brak"
-                              : isValueTimestamp
-                                  ? dateToDateTimeString(
-                                      DateTime.parse(history[index].value))
-                                  : history[index].value.toString()),
+                          title: Text(text),
                           subtitle: Text(
                               dateToDateTimeString(history[index].timestamp)),
                           onTap: () =>
@@ -471,7 +499,8 @@ class _TrackingScreenState extends State<TrackingScreen> {
                                                                     TrackingFieldName
                                                                         .bedTime)
                                                                 .toList(),
-                                                            true);
+                                                            TrackingDataType
+                                                                .timestamp);
 
                                                     if (selectedHistoricalEntry !=
                                                         null) {
@@ -565,7 +594,8 @@ class _TrackingScreenState extends State<TrackingScreen> {
                                                                     TrackingFieldName
                                                                         .sleepTime)
                                                                 .toList(),
-                                                            true);
+                                                            TrackingDataType
+                                                                .timestamp);
 
                                                     if (selectedHistoricalEntry !=
                                                         null) {
@@ -662,7 +692,8 @@ class _TrackingScreenState extends State<TrackingScreen> {
                                                                     TrackingFieldName
                                                                         .firstAlarmTime)
                                                                 .toList(),
-                                                            true);
+                                                            TrackingDataType
+                                                                .timestamp);
 
                                                     if (selectedHistoricalEntry !=
                                                         null) {
@@ -759,7 +790,8 @@ class _TrackingScreenState extends State<TrackingScreen> {
                                                                     TrackingFieldName
                                                                         .wakeUpTime)
                                                                 .toList(),
-                                                            true);
+                                                            TrackingDataType
+                                                                .timestamp);
 
                                                     if (selectedHistoricalEntry !=
                                                         null) {
@@ -848,7 +880,8 @@ class _TrackingScreenState extends State<TrackingScreen> {
                                                                     TrackingFieldName
                                                                         .getUpTime)
                                                                 .toList(),
-                                                            true);
+                                                            TrackingDataType
+                                                                .timestamp);
 
                                                     if (selectedHistoricalEntry !=
                                                         null) {
@@ -939,7 +972,8 @@ class _TrackingScreenState extends State<TrackingScreen> {
                                                                     TrackingFieldName
                                                                         .alarmTimeFrom)
                                                                 .toList(),
-                                                            true);
+                                                            TrackingDataType
+                                                                .timestamp);
 
                                                     if (selectedHistoricalEntry !=
                                                         null) {
@@ -1031,7 +1065,8 @@ class _TrackingScreenState extends State<TrackingScreen> {
                                                                     TrackingFieldName
                                                                         .alarmTimeTo)
                                                                 .toList(),
-                                                            true);
+                                                            TrackingDataType
+                                                                .timestamp);
 
                                                     if (selectedHistoricalEntry !=
                                                         null) {
@@ -1123,7 +1158,8 @@ class _TrackingScreenState extends State<TrackingScreen> {
                                                                     TrackingFieldName
                                                                         .rate)
                                                                 .toList(),
-                                                            false);
+                                                            TrackingDataType
+                                                                .number);
 
                                                     if (selectedHistoricalEntry !=
                                                         null) {
@@ -1135,6 +1171,81 @@ class _TrackingScreenState extends State<TrackingScreen> {
                                                                   rate: int.tryParse(
                                                                       selectedHistoricalEntry
                                                                           .value))
+                                                              .toMapWithoutDate());
+                                                    }
+                                                  }
+                                                : null,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    ListTile(
+                                      title: const Text(
+                                          "Czas na wyłączanie alarmów"),
+                                      onTap: () async {
+                                        int timeTakenToTurnOffTheAlarm =
+                                            _entries[index]
+                                                    .timeTakenToTurnOffTheAlarm ??
+                                                0;
+                                        Duration? selectedDuration =
+                                            await askForLength(0, 9999999,
+                                                timeTakenToTurnOffTheAlarm); //TODO: Don't do 9999999
+                                        if (selectedDuration != null) {
+                                          await updateEntry(
+                                              _entries[index].date!,
+                                              TrackingEntry(
+                                                      timeTakenToTurnOffTheAlarm:
+                                                          selectedDuration
+                                                              .inSeconds)
+                                                  .toMapWithoutDate());
+                                        }
+                                      },
+                                      subtitle: Text(
+                                        _entries[index]
+                                                    .timeTakenToTurnOffTheAlarm ==
+                                                null
+                                            ? "-"
+                                            : secondsTommss(_entries[index]
+                                                .timeTakenToTurnOffTheAlarm),
+                                      ),
+                                      trailing: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          IconButton(
+                                            icon: const Icon(Icons.history),
+                                            onPressed: _entries[index]
+                                                        .versionHistory!
+                                                        .where((e) =>
+                                                            e.fieldName ==
+                                                            TrackingFieldName
+                                                                .timeTakenToTurnOffTheAlarm)
+                                                        .length >
+                                                    0
+                                                ? () async {
+                                                    TrackingVersionHistory?
+                                                        selectedHistoricalEntry =
+                                                        await showVersionHistory(
+                                                            _entries[index]
+                                                                .versionHistory!
+                                                                .where((e) =>
+                                                                    e.fieldName ==
+                                                                    TrackingFieldName
+                                                                        .timeTakenToTurnOffTheAlarm)
+                                                                .toList(),
+                                                            TrackingDataType
+                                                                .duration);
+
+                                                    if (selectedHistoricalEntry !=
+                                                        null) {
+                                                      await updateEntry(
+                                                          _entries[index]
+                                                              .date!
+                                                              .toLocal(),
+                                                          TrackingEntry(
+                                                                  timeTakenToTurnOffTheAlarm:
+                                                                      int.tryParse(
+                                                                          selectedHistoricalEntry
+                                                                              .value))
                                                               .toMapWithoutDate());
                                                     }
                                                   }
@@ -1236,7 +1347,8 @@ class _TrackingScreenState extends State<TrackingScreen> {
                                                                     TrackingFieldName
                                                                         .notes)
                                                                 .toList(),
-                                                            false);
+                                                            TrackingDataType
+                                                                .text);
 
                                                     if (selectedHistoricalEntry !=
                                                         null) {
