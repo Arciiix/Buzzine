@@ -11,6 +11,7 @@ import 'package:buzzine/types/TrackingStats.dart';
 import 'package:buzzine/utils/formatting.dart';
 import 'package:buzzine/utils/show_snackbar.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class TrackingScreen extends StatefulWidget {
   final DateTime initDate;
@@ -299,6 +300,46 @@ class _TrackingScreenState extends State<TrackingScreen> {
       isTableModeOn = !isTableModeOn;
       _allEntries = entries;
     });
+  }
+
+  Future<void> copyCSVToClipboard(TrackingEntry entry) async {
+    List<String> data = [
+      dateToDateString(entry.date!),
+      entry.bedTime != null ? dateToTimeString(entry.bedTime!) : "-",
+      entry.sleepTime != null ? dateToTimeString(entry.sleepTime!) : "-",
+      entry.firstAlarmTime != null
+          ? dateToTimeString(entry.firstAlarmTime!)
+          : "-",
+      entry.wakeUpTime != null ? dateToTimeString(entry.wakeUpTime!) : "-",
+      entry.getUpTime != null ? dateToTimeString(entry.getUpTime!) : "-",
+      entry.alarmTimeFrom != null
+          ? dateToTimeString(entry.alarmTimeFrom!)
+          : "-",
+      entry.alarmTimeTo != null ? dateToTimeString(entry.alarmTimeTo!) : "-",
+      entry.rate != null ? entry.rate!.toString() : "-",
+      entry.timeTakenToTurnOffTheAlarm != null
+          ? secondsTommss(entry.timeTakenToTurnOffTheAlarm)
+          : "-",
+      entry.notes?.toString() ?? ""
+    ];
+
+    String exportedCSV = data.join(",");
+    await Clipboard.setData(ClipboardData(text: exportedCSV));
+  }
+
+  void showCSVCopyInfo() {
+    showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+              title: const Text("Kopiowanie wierszu CSV"),
+              content: Text(
+                  "Funkcja kopiowania wiersza do formatu CSV, oddzielanego przecinkami, umożliwia łatwe impotowanie danych do arkusza kalkulacyjnego. Wystarczy wtedy użyć opcji Data -> Text to Columns (Excel) lub funkcji SPLIT (Google Sheets)."),
+              actions: [
+                TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: const Text("OK"))
+              ],
+            ));
   }
 
   Future<void> refresh() async {
@@ -1410,6 +1451,20 @@ class _TrackingScreenState extends State<TrackingScreen> {
                                                   const EdgeInsets.all(8.0),
                                               child: TrackingStatsWidget(
                                                   stats: _stats))),
+                                      TextButton(
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Icon(Icons.copy),
+                                            Text(
+                                                "Kopiuj wiersz CSV (Excel, Google Sheets)"),
+                                          ],
+                                        ),
+                                        onPressed: () =>
+                                            copyCSVToClipboard(_entries[index]),
+                                        onLongPress: showCSVCopyInfo,
+                                      )
                                     ],
                                   );
                                 },
