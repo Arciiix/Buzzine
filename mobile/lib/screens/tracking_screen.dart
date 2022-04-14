@@ -293,6 +293,8 @@ class _TrackingScreenState extends State<TrackingScreen> {
   Future<void> toggleViewingMode() async {
     List<TrackingEntry> entries = await GlobalData.getAllTrackingEntries();
 
+    entries.sort((a, b) => b.date!.compareTo(a.date!));
+
     setState(() {
       isTableModeOn = !isTableModeOn;
       _allEntries = entries;
@@ -1422,86 +1424,152 @@ class _TrackingScreenState extends State<TrackingScreen> {
                     else
                       Expanded(
                           child: _allEntries.isNotEmpty
-                              ? SingleChildScrollView(
-                                  scrollDirection: Axis.horizontal,
-                                  child: DataTable(
-                                      columns: [
-                                        DataColumn(
-                                            label: const Text("W łóżku")),
-                                        DataColumn(
-                                            label: const Text("Pójście spać")),
-                                        DataColumn(
-                                            label:
-                                                const Text("Pierwszy budzik")),
-                                        DataColumn(
-                                            label: const Text("Obudzenie się")),
-                                        DataColumn(
-                                            label: const Text("Wstanie")),
-                                        DataColumn(
-                                            label:
-                                                const Text("Początek alarmów")),
-                                        DataColumn(
-                                            label:
-                                                const Text("Koniec alarmów")),
-                                        DataColumn(label: const Text("Ocena")),
-                                        DataColumn(
-                                            label: const Text(
-                                                "Czas na wyłączenie alarmów")),
-                                        DataColumn(label: const Text("Notka")),
-                                      ],
-                                      rows: _allEntries.map((e) {
-                                        return DataRow(cells: [
-                                          DataCell(Text(e.bedTime == null
-                                              ? "-"
-                                              : dateToTimeString(e.bedTime!,
-                                                  excludeSeconds: true))),
-                                          DataCell(Text(e.sleepTime == null
-                                              ? "-"
-                                              : dateToTimeString(e.sleepTime!,
-                                                  excludeSeconds: true))),
-                                          DataCell(Text(e.firstAlarmTime == null
-                                              ? "-"
-                                              : dateToTimeString(
-                                                  e.firstAlarmTime!,
-                                                  excludeSeconds: true))),
-                                          DataCell(Text(e.wakeUpTime == null
-                                              ? "-"
-                                              : dateToTimeString(e.wakeUpTime!,
-                                                  excludeSeconds: true))),
-                                          DataCell(Text(e.getUpTime == null
-                                              ? "-"
-                                              : dateToTimeString(e.getUpTime!,
-                                                  excludeSeconds: true))),
-                                          DataCell(Text(e.alarmTimeFrom == null
-                                              ? "-"
-                                              : dateToTimeString(
-                                                  e.alarmTimeFrom!,
-                                                  excludeSeconds: true))),
-                                          DataCell(Text(e.alarmTimeTo == null
-                                              ? "-"
-                                              : dateToTimeString(e.alarmTimeTo!,
-                                                  excludeSeconds: true))),
-                                          DataCell(Text(e.rate == null
-                                              ? "-"
-                                              : e.rate.toString())),
-                                          DataCell(Text(
-                                              e.timeTakenToTurnOffTheAlarm ==
-                                                      null
-                                                  ? "-"
-                                                  : secondsTommss(e
-                                                      .timeTakenToTurnOffTheAlarm))),
-                                          DataCell(Text(e.notes == null
-                                              ? "-"
-                                              : e.notes.toString())),
-                                        ]);
-                                      }).toList()),
+                              ? ListView(
+                                  children: [
+                                    SingleChildScrollView(
+                                      scrollDirection: Axis.horizontal,
+                                      child: DataTable(
+                                          columns: [
+                                            DataColumn(
+                                                label: const Text("Data")),
+                                            DataColumn(
+                                                label: const Text("W łóżku")),
+                                            DataColumn(
+                                                label:
+                                                    const Text("Pójście spać")),
+                                            DataColumn(
+                                                label: const Text(
+                                                    "Pierwszy budzik")),
+                                            DataColumn(
+                                                label: const Text(
+                                                    "Obudzenie się")),
+                                            DataColumn(
+                                                label: const Text("Wstanie")),
+                                            DataColumn(
+                                                label: const Text(
+                                                    "Początek alarmów")),
+                                            DataColumn(
+                                                label: const Text(
+                                                    "Koniec alarmów")),
+                                            DataColumn(
+                                                label: const Text("Ocena")),
+                                            DataColumn(
+                                                label: const Text(
+                                                    "Czas na wyłączenie alarmów")),
+                                            DataColumn(
+                                                label: const Text("Notka")),
+                                          ],
+                                          rows: _allEntries.map((e) {
+                                            return DataRow(
+                                                onLongPress: () async {
+                                                  await getDataForDay(e.date!);
+                                                },
+                                                selected: _selectedDate.day ==
+                                                        e.date!.day &&
+                                                    _selectedDate.month ==
+                                                        e.date!.month &&
+                                                    _selectedDate.year ==
+                                                        e.date!.year,
+                                                cells: [
+                                                  DataCell(Text(
+                                                    "${e.date!.hour == 0 && e.date!.minute == 0 ? dateToDateString(e.date!) : dateToDateTimeString(e.date!)}",
+                                                  )),
+                                                  DataCell(Text(
+                                                    e.bedTime == null
+                                                        ? "W łóżku\n-"
+                                                        : "W łóżku\n" +
+                                                            dateToTimeString(
+                                                                e.bedTime!,
+                                                                excludeSeconds:
+                                                                    true),
+                                                  )),
+                                                  DataCell(Text(
+                                                    e.sleepTime == null
+                                                        ? "Pójście spać\n-"
+                                                        : "Pójście spać\n" +
+                                                            dateToTimeString(
+                                                                e.sleepTime!,
+                                                                excludeSeconds:
+                                                                    true),
+                                                  )),
+                                                  DataCell(Text(
+                                                    e.firstAlarmTime == null
+                                                        ? "Pierwszy budzik\n-"
+                                                        : "Pierwszy budzik\n" +
+                                                            dateToTimeString(
+                                                                e
+                                                                    .firstAlarmTime!,
+                                                                excludeSeconds:
+                                                                    true),
+                                                  )),
+                                                  DataCell(Text(
+                                                    e.wakeUpTime == null
+                                                        ? "Obudzenie się\n-"
+                                                        : "Obudzenie się\n" +
+                                                            dateToTimeString(
+                                                                e.wakeUpTime!,
+                                                                excludeSeconds:
+                                                                    true),
+                                                  )),
+                                                  DataCell(Text(
+                                                    e.getUpTime == null
+                                                        ? "Wstanie\n-"
+                                                        : "Wstanie\n" +
+                                                            dateToTimeString(
+                                                                e.getUpTime!,
+                                                                excludeSeconds:
+                                                                    true),
+                                                  )),
+                                                  DataCell(Text(
+                                                    e.alarmTimeFrom == null
+                                                        ? "Początek alarmów\n-"
+                                                        : "Początek alarmów\n" +
+                                                            dateToTimeString(
+                                                                e
+                                                                    .alarmTimeFrom!,
+                                                                excludeSeconds:
+                                                                    true),
+                                                  )),
+                                                  DataCell(Text(
+                                                    e.alarmTimeTo == null
+                                                        ? "Koniec alarmów\n-"
+                                                        : "Koniec alarmów\n" +
+                                                            dateToTimeString(
+                                                                e.alarmTimeTo!,
+                                                                excludeSeconds:
+                                                                    true),
+                                                  )),
+                                                  DataCell(Text(
+                                                    e.rate == null
+                                                        ? "Ocena\n-"
+                                                        : "Ocena\n" +
+                                                            e.rate.toString(),
+                                                  )),
+                                                  DataCell(Text(
+                                                    e.timeTakenToTurnOffTheAlarm ==
+                                                            null
+                                                        ? "Czas na wyłączenie alarmów\n-"
+                                                        : "Czas na wyłączenie alarmów\n" +
+                                                            secondsTommss(e
+                                                                .timeTakenToTurnOffTheAlarm),
+                                                  )),
+                                                  DataCell(Text(
+                                                    e.notes == null
+                                                        ? "Notka\n-"
+                                                        : "Notka\n" +
+                                                            e.notes.toString(),
+                                                  )),
+                                                ]);
+                                          }).toList()),
+                                    )
+                                  ],
                                 )
                               : Center(
                                   child: Text(
                                   "Nie znaleziono żadnego snu dla tej daty",
                                   style: const TextStyle(fontSize: 18),
                                   textAlign: TextAlign.center,
-                                )))
+                                ))),
                   ],
                 ),
               )),
