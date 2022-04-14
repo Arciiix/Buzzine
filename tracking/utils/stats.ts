@@ -135,10 +135,10 @@ class Stats {
       }
 
       //Used to calculate the average sleep and wake up time
-      if (element.sleepTime) {
+      if (element.sleepTime && isWholeDay) {
         sleepTimes.push(new Date(element.sleepTime));
       }
-      if (element.wakeUpTime) {
+      if (element.wakeUpTime && isWholeDay) {
         wakeUpTimes.push(new Date(element.wakeUpTime));
       }
 
