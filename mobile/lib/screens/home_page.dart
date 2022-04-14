@@ -13,6 +13,7 @@ import 'package:buzzine/components/temperature_widget.dart';
 import 'package:buzzine/components/tracking_entry_widget.dart';
 import 'package:buzzine/components/weather_widget.dart';
 import 'package:buzzine/globalData.dart';
+import 'package:buzzine/screens/alarm_history.dart';
 import 'package:buzzine/screens/alarm_list.dart';
 import 'package:buzzine/screens/audio_manager.dart';
 import 'package:buzzine/screens/download_YouTube_audio.dart';
@@ -202,6 +203,11 @@ class _HomePageState extends State<HomePage> {
   void navigateToTemperature() {
     Navigator.of(context)
         .push(MaterialPageRoute(builder: (context) => TemperatureScreen()));
+  }
+
+  void navigateToAlarmHistory() {
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (context) => AlarmHistoryScreen()));
   }
 
   Future<void> refresh() async {
@@ -797,6 +803,36 @@ class _HomePageState extends State<HomePage> {
                                           : [],
                                     ),
                                   ),
+                                  Section("📜 Historia alarmów"),
+                                  InkWell(
+                                      onTap: navigateToAlarmHistory,
+                                      child: Container(
+                                          width: MediaQuery.of(context)
+                                                  .size
+                                                  .width *
+                                              0.9,
+                                          height: 50,
+                                          padding: const EdgeInsets.all(10),
+                                          margin: const EdgeInsets.all(5),
+                                          decoration: BoxDecoration(
+                                            color: Theme.of(context).cardColor,
+                                            borderRadius:
+                                                BorderRadius.circular(5),
+                                          ),
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: const [
+                                              Padding(
+                                                padding: EdgeInsets.symmetric(
+                                                    horizontal: 2),
+                                                child: Icon(Icons.history),
+                                              ),
+                                              Text("Zobacz historię alarmów",
+                                                  style:
+                                                      TextStyle(fontSize: 24)),
+                                            ],
+                                          ))),
                                   Section(
                                     "🛡️ Ochrona",
                                   ),

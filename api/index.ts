@@ -824,6 +824,22 @@ api.put("/toggleFavorite", async (req, res) => {
   );
 });
 
+api.get("/getAlarmHistory", async (req, res) => {
+  socket.emit("CMD/GET_ALARM_HISTORY", async (response) => {
+    if (response.error) {
+      res.status(500).send(response);
+      logger.warn(
+        `Response error when getting alarm history: ${JSON.stringify(response)}`
+      );
+    } else {
+      res.status(200).send(response);
+      logger.info(
+        `Got alarm history successfully. Response: ${JSON.stringify(response)}`
+      );
+    }
+  });
+});
+
 audioRouter.put("/tempMuteAudio", async (req, res) => {
   //It's just the same request sent to the audio microservice
   try {

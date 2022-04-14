@@ -3,6 +3,7 @@ import 'package:buzzine/components/temperature_chart.dart';
 import 'package:buzzine/types/API_exception.dart';
 import 'package:buzzine/types/Constants.dart';
 import 'package:buzzine/types/EmergencyStatus.dart';
+import 'package:buzzine/types/HistoricalAlarm.dart';
 import 'package:buzzine/types/Nap.dart';
 import 'package:buzzine/types/PingResult.dart';
 import 'package:buzzine/types/Repeat.dart';
@@ -1619,5 +1620,30 @@ class GlobalData {
 
       return entries;
     }
+  }
+
+  static Future<List<HistoricalAlarm>> getAlarmHistory() async {
+    var response = await http.get(
+      Uri.parse("$serverIP/v1/getAlarmHistory"),
+    );
+    var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
+
+    if (response.statusCode != 200 || decodedResponse['error'] == true) {
+      throw APIException(
+          "Błąd podczas pobierania historii alarmów. Status code: ${response.statusCode}, response: ${response.body}");
+    }
+
+    List responseData = decodedResponse['response'] ?? [];
+
+    List<HistoricalAlarm> _alarmHistory = responseData
+        .map((elem) => HistoricalAlarm(
+              id: elem['alarmId'],
+              invocationDate: DateTime.parse(elem['invocationDate']),
+              name: elem['name'],
+              notes: elem['notes'],
+            ))
+        .toList();
+
+    return _alarmHistory;
   }
 }

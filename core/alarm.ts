@@ -13,6 +13,7 @@ import AlarmModel from "./models/Alarm.model";
 import { saveUpcomingAlarms, sendEmergency } from "./utils/alarmProtection";
 import shortUUID from "short-uuid";
 import UpcomingAlarmModel from "./models/UpcomingAlarm.model";
+import { addAlarmToHistory } from "./utils/alarmHistory";
 
 //Load environment variables from file
 dotenv.config();
@@ -423,6 +424,9 @@ class Alarm {
       clearInterval(this.ringingStats?.eventResendingInterval);
       clearTimeout(this.ringingStats?.alarmSilentTimeout);
     }
+
+    addAlarmToHistory(this);
+
     this.ringingStats = {
       timeElapsed: 0,
       dateStarted: new Date(),

@@ -57,6 +57,7 @@ The database used in this project is [`SQLite`](https://www.sqlite.org/index.htm
 | DEFAULT_SNOOZE_LENGTH     | 300           | Default snooze length if nothing is provided as `Alarm.snoozeAlarm()` method param                                               | seconds |
 | MAX_TOTAL_SNOOZE_DURATION | 900           | App won't allow to snooze longer than the provided time - the `Alarm` class param, and if it's null - this environment variable. | seconds |
 | DISABLE_EMERGENCY         | false         | Disable the emergency alerts (not recommended)                                                                                   | boolean |
+| MAX_ALARM_HISTORY_AGE     | 30            | The alarm in the alarm history will delete itself after that amount of days                                                      | days    |
 
 #### API
 

@@ -18,6 +18,7 @@ import Nap, { INap } from "./nap";
 import NapModel from "./models/Nap.model";
 import UpcomingAlarmModel from "./models/UpcomingAlarm.model";
 import UpcomingNapModel from "./models/UpcomingNapModel";
+import { getAlarmHistory } from "./utils/alarmHistory";
 
 //Load environment variables from file
 dotenv.config();
@@ -577,6 +578,15 @@ io.on("connection", (socket: Socket) => {
 
     if (cb) {
       cb({ error: false, response: obj });
+    }
+  });
+
+  socket.on("CMD/GET_ALARM_HISTORY", async (cb) => {
+    let alarmHistory = await getAlarmHistory();
+    if (cb) {
+      cb({ error: false, response: alarmHistory });
+    } else {
+      logger.warn("Missing callback on GET request - GET_ALARM_HISTORY");
     }
   });
 });
