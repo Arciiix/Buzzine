@@ -31,6 +31,10 @@ class _TrackingScreenState extends State<TrackingScreen> {
 
   bool isTableModeOn = false;
   List<TrackingEntry> _allEntries = [];
+  List<TrackingEntry> _allEntriesFiltered = [];
+
+  bool displayAlarmsInTable = true;
+  bool displayNapsInTable = true;
 
   GlobalKey<RefreshIndicatorState> _refreshState =
       GlobalKey<RefreshIndicatorState>();
@@ -299,7 +303,33 @@ class _TrackingScreenState extends State<TrackingScreen> {
     setState(() {
       isTableModeOn = !isTableModeOn;
       _allEntries = entries;
+      _allEntriesFiltered =
+          filterAllEntries(entries, displayAlarmsInTable, displayNapsInTable);
     });
+  }
+
+  void changeTableFilteringSettings(bool displayAlarms, bool displayNaps) {
+    setState(() {
+      displayAlarmsInTable = displayAlarms;
+      displayNapsInTable = displayNaps;
+      _allEntriesFiltered =
+          filterAllEntries(_allEntries, displayAlarms, displayNaps);
+    });
+  }
+
+  List<TrackingEntry> filterAllEntries(
+      List<TrackingEntry> allEntries, bool alarms, bool naps) {
+    List<TrackingEntry> filteredEntries = [];
+
+    allEntries.forEach((element) {
+      if ((element.isNap ?? false) && naps) {
+        filteredEntries.add(element);
+      } else if (!(element.isNap ?? false) && alarms) {
+        filteredEntries.add(element);
+      }
+    });
+
+    return filteredEntries;
   }
 
   Future<void> copyCSVToClipboard(TrackingEntry entry) async {
@@ -1477,8 +1507,43 @@ class _TrackingScreenState extends State<TrackingScreen> {
                               )),
                       )
                     else
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          InkWell(
+                            onTap: () => changeTableFilteringSettings(
+                                !displayAlarmsInTable, displayNapsInTable),
+                            child: Row(
+                              children: [
+                                Checkbox(
+                                    value: displayAlarmsInTable,
+                                    onChanged: (value) =>
+                                        changeTableFilteringSettings(
+                                            value ?? true, displayNapsInTable)),
+                                Text("Alarmy"),
+                              ],
+                            ),
+                          ),
+                          InkWell(
+                            onTap: () => changeTableFilteringSettings(
+                                displayAlarmsInTable, !displayNapsInTable),
+                            child: Row(
+                              children: [
+                                Checkbox(
+                                    value: displayNapsInTable,
+                                    onChanged: (value) =>
+                                        changeTableFilteringSettings(
+                                            displayAlarmsInTable,
+                                            value ?? true)),
+                                Text("Drzemki"),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    if (isTableModeOn)
                       Expanded(
-                          child: _allEntries.isNotEmpty
+                          child: _allEntriesFiltered.isNotEmpty
                               ? ListView(
                                   children: [
                                     SingleChildScrollView(
@@ -1514,7 +1579,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
                                             DataColumn(
                                                 label: const Text("Notka")),
                                           ],
-                                          rows: _allEntries.map((e) {
+                                          rows: _allEntriesFiltered.map((e) {
                                             return DataRow(
                                                 onLongPress: () async {
                                                   await getDataForDay(e.date!);
