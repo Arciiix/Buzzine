@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:buzzine/components/select_number_slider.dart';
 import 'package:buzzine/components/simple_loading_dialog.dart';
+import 'package:buzzine/components/sortable_list_view.dart';
 import 'package:buzzine/components/time_number_picker.dart';
 import 'package:buzzine/components/tracking_stats.dart';
 import 'package:buzzine/globalData.dart';
@@ -334,37 +335,83 @@ class _TrackingScreenState extends State<TrackingScreen> {
   }
 
   Future<void> copyCSVToClipboard(TrackingEntry entry) async {
-    List<String> data = [
-      dateToDateString(entry.date!),
-      entry.bedTime != null ? dateToTimeString(entry.bedTime!) : "-",
-      entry.sleepTime != null ? dateToTimeString(entry.sleepTime!) : "-",
-      entry.firstAlarmTime != null
+    Map<String, String> csvData = {
+      "Data": dateToDateString(entry.date!),
+      "W łóżku": entry.bedTime != null ? dateToTimeString(entry.bedTime!) : "-",
+      "Pójście spać":
+          entry.sleepTime != null ? dateToTimeString(entry.sleepTime!) : "-",
+      "Pierwszy budzik": entry.firstAlarmTime != null
           ? dateToTimeString(entry.firstAlarmTime!)
           : "-",
-      entry.wakeUpTime != null ? dateToTimeString(entry.wakeUpTime!) : "-",
-      entry.getUpTime != null ? dateToTimeString(entry.getUpTime!) : "-",
-      entry.alarmTimeFrom != null
+      "Obudzenie się":
+          entry.wakeUpTime != null ? dateToTimeString(entry.wakeUpTime!) : "-",
+      "Wstanie":
+          entry.getUpTime != null ? dateToTimeString(entry.getUpTime!) : "-",
+      "Początek alarmów": entry.alarmTimeFrom != null
           ? dateToTimeString(entry.alarmTimeFrom!)
           : "-",
-      entry.alarmTimeTo != null ? dateToTimeString(entry.alarmTimeTo!) : "-",
-      entry.rate != null ? entry.rate!.toString() : "-",
-      entry.timeTakenToTurnOffTheAlarm != null
+      "Koniec alarmów": entry.alarmTimeTo != null
+          ? dateToTimeString(entry.alarmTimeTo!)
+          : "-",
+      "Ocena": entry.rate != null ? entry.rate!.toString() : "-",
+      "Czas na wyłączenie alarmów": entry.timeTakenToTurnOffTheAlarm != null
           ? secondsTommss(entry.timeTakenToTurnOffTheAlarm)
           : "-",
-      entry.notes?.toString() ?? ""
-    ];
+      "Notka": entry.notes?.toString() ?? ""
+    };
+
+    List<String>? result = await showDialog(
+      context: context,
+      builder: (context) {
+        return SortableListView(
+            items: csvData.keys.toList(), title: "Wybierz właściwości");
+      },
+    );
+
+    if (result == null || result.length < 1) {
+      return;
+    }
+
+    List<String> data = [];
+    result.forEach((element) {
+      data.add(csvData[element.toString()]!);
+    });
 
     String exportedCSV = data.join(",");
-    await Clipboard.setData(ClipboardData(text: exportedCSV));
+    showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+              title: Text(result.join(",")),
+              content: Text(exportedCSV),
+              actions: [
+                TextButton(
+                    onPressed: () {
+                      Clipboard.setData(ClipboardData(text: result.join(",")));
+                      showSnackbar(context, "Skopiowano do schowka");
+                    },
+                    child: const Text("Kopiuj nagłówek")),
+                TextButton(
+                    onPressed: () {
+                      Clipboard.setData(ClipboardData(text: exportedCSV));
+                      showSnackbar(context, "Skopiowano do schowka");
+                    },
+                    child: const Text("Kopiuj")),
+                TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: const Text("OK"))
+              ],
+            ));
+
+    // await Clipboard.setData(ClipboardData(text: exportedCSV));
   }
 
   void showCSVCopyInfo() {
     showDialog(
         context: context,
         builder: (_) => AlertDialog(
-              title: const Text("Kopiowanie wierszu CSV"),
+              title: const Text("Eksportowanie wierszu CSV"),
               content: Text(
-                  "Funkcja kopiowania wiersza do formatu CSV, oddzielanego przecinkami, umożliwia łatwe impotowanie danych do arkusza kalkulacyjnego. Wystarczy wtedy użyć opcji Data -> Text to Columns (Excel) lub funkcji SPLIT (Google Sheets)."),
+                  "Funkcja eksportowania wiersza do formatu CSV, oddzielanego przecinkami, umożliwia łatwe impotowanie danych do arkusza kalkulacyjnego. Wystarczy wtedy użyć opcji Data -> Text to Columns (Excel) lub funkcji SPLIT (Google Sheets)."),
               actions: [
                 TextButton(
                     onPressed: () => Navigator.of(context).pop(),
@@ -1512,7 +1559,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
                                           children: [
                                             Icon(Icons.copy),
                                             Text(
-                                                "Kopiuj wiersz CSV (Excel, Google Sheets)"),
+                                                "Eksportuj wiersz CSV (Excel, Google Sheets)"),
                                           ],
                                         ),
                                         onPressed: () =>
