@@ -56,25 +56,22 @@ class _AlarmHistoryScreenState extends State<AlarmHistoryScreen> {
                 await getAlarmHistory();
               },
               child: _alarms.isNotEmpty
-                  ? Expanded(
-                      child: ListView.builder(
-                        padding: const EdgeInsets.only(bottom: 72),
-                        itemCount: _alarms.length,
-                        itemBuilder: (context, index) {
-                          return ListTile(
-                            title: Text(dateToDateTimeString(
-                                _alarms[index].invocationDate)),
-                            trailing: _alarms[index].id.contains("NAP/")
-                                ? Icon(Icons.snooze)
-                                : Icon(Icons.alarm),
-                            subtitle: Text(
-                                (_alarms[index].name ?? "Bez nazwy") +
-                                    "\n" +
-                                    (_alarms[index].notes ?? "")),
-                            isThreeLine: true,
-                          );
-                        },
-                      ),
+                  ? ListView.builder(
+                      padding: const EdgeInsets.only(bottom: 72),
+                      itemCount: _alarms.length,
+                      itemBuilder: (context, index) {
+                        return ListTile(
+                          title: Text(dateToDateTimeString(
+                              _alarms[index].invocationDate)),
+                          trailing: _alarms[index].id.contains("NAP/")
+                              ? Icon(Icons.snooze)
+                              : Icon(Icons.alarm),
+                          subtitle: Text((_alarms[index].name ?? "Bez nazwy") +
+                              "\n" +
+                              (_alarms[index].notes ?? "")),
+                          isThreeLine: true,
+                        );
+                      },
                     )
                   : Center(
                       child: Text(
