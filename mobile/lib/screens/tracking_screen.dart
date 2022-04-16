@@ -102,12 +102,13 @@ class _TrackingScreenState extends State<TrackingScreen> {
     }
   }
 
-  Future<DateTime?> askForTime() async {
+  Future<DateTime?> askForTime({DateTime? initialDate}) async {
     DateTime? datePickerResponse = await showDatePicker(
         context: context,
-        initialDate: _selectedDate.isAfter(DateTime.now())
-            ? DateTime.now()
-            : _selectedDate,
+        initialDate: initialDate ??
+            (_selectedDate.isAfter(DateTime.now())
+                ? DateTime.now()
+                : _selectedDate),
         lastDate: DateTime.now().add(const Duration(days: 1)),
         cancelText: "Anuluj",
         confirmText: "Zatwierdź",
@@ -719,7 +720,13 @@ class _TrackingScreenState extends State<TrackingScreen> {
                                         title: const Text("Pierwszy budzik"),
                                         onTap: () async {
                                           DateTime? selectedTime =
-                                              await askForTime();
+                                              await askForTime(
+                                                  initialDate: DateTime(
+                                                      _selectedDate.year,
+                                                      _selectedDate.month,
+                                                      _selectedDate.day,
+                                                      DateTime.now().hour,
+                                                      DateTime.now().minute));
 
                                           if (selectedTime != null) {
                                             if (selectedTime.compareTo(
@@ -731,6 +738,11 @@ class _TrackingScreenState extends State<TrackingScreen> {
                                                         _entries[index]
                                                                 .sleepTime ??
                                                             selectedTime) >=
+                                                    0 &&
+                                                selectedTime.compareTo(_entries[
+                                                                index]
+                                                            .firstAlarmTime ??
+                                                        selectedTime) >=
                                                     0) {
                                               await updateEntry(
                                                   _entries[index].date!,
@@ -746,7 +758,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
                                                   return AlertDialog(
                                                     title: const Text("Błąd"),
                                                     content: Text(
-                                                        'Czas pierwszego alarmu musi być wcześniejszy lub równy czasowi obudzenia się oraz późniejszy od czasu pójścia spać'),
+                                                        'Czas pierwszego alarmu musi być wcześniejszy lub równy czasowi obudzenia się oraz późniejszy od czasu pójścia spać i pierwszego budzika'),
                                                     actions: <Widget>[
                                                       TextButton(
                                                           onPressed: () =>
@@ -1009,7 +1021,13 @@ class _TrackingScreenState extends State<TrackingScreen> {
                                         title: const Text("Początek alarmów"),
                                         onTap: () async {
                                           DateTime? selectedTime =
-                                              await askForTime();
+                                              await askForTime(
+                                                  initialDate: DateTime(
+                                                      _selectedDate.year,
+                                                      _selectedDate.month,
+                                                      _selectedDate.day,
+                                                      DateTime.now().hour,
+                                                      DateTime.now().minute));
 
                                           if (selectedTime != null) {
                                             if (selectedTime.compareTo(
@@ -1103,7 +1121,13 @@ class _TrackingScreenState extends State<TrackingScreen> {
                                         title: const Text("Koniec alarmów"),
                                         onTap: () async {
                                           DateTime? selectedTime =
-                                              await askForTime();
+                                              await askForTime(
+                                                  initialDate: DateTime(
+                                                      _selectedDate.year,
+                                                      _selectedDate.month,
+                                                      _selectedDate.day,
+                                                      DateTime.now().hour,
+                                                      DateTime.now().minute));
 
                                           if (selectedTime != null) {
                                             if (selectedTime.compareTo(
