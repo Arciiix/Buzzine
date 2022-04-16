@@ -25,6 +25,9 @@
         padding: 20px 100px;
         border-radius: 10px;
       }
+      .name {
+        font-size: 2em;
+      }
       .hash {
         font-size: 1.5em;
       }
@@ -65,7 +68,8 @@
   </head>
   <body>
     <div class="container">
-      <img src="/v1/guard/qrCode?size=200" width="200" height="200" />
+      <img src="img?size=200" width="200" height="200" />
+      <span class="name"></span>
       <span class="hash"></span>
       <span class="date"></span>
       <div class="appName">
@@ -81,14 +85,15 @@
         ).innerText = `${new Date().toLocaleString("pl-PL")}`;
       }
       async function updateHash() {
-        let request = await fetch("/v1/guard/getCurrentQRCodeHash");
+        let request = await fetch("info");
         let response = await request.json();
         if (request.status !== 200 || response.error) {
           document.querySelector(".hash").innerText = `Error; Status code: ${
             request.status
           }; response: ${JSON.stringify(response)}`;
         } else {
-          document.querySelector(".hash").innerText = response.currentHash;
+          document.querySelector(".hash").innerText = response.response.hash;
+          document.querySelector(".name").innerText = response.response.name;
         }
       }
       document

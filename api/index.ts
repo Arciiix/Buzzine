@@ -3,7 +3,7 @@ import { io } from "socket.io-client";
 import dotenv from "dotenv";
 import logger, { logHTTPEndpoints } from "./utils/logger";
 import axios, { Method } from "axios";
-import guardRouter, { checkQRCode } from "./guard";
+import guardRouter, { generateDefaultQRCodeIfDoesntExist } from "./guard";
 import { initDatabase } from "./utils/db";
 import cdn from "./utils/cdn";
 import weatherRouter from "./weather";
@@ -420,20 +420,6 @@ api.post("/addNap", async (req, res) => {
 });
 
 api.put("/cancelAlarm", async (req, res) => {
-  await cancelAlarm(req, res);
-});
-
-api.put("/cancelAlarmSecured", async (req, res, next) => {
-  if (!req.body.data) {
-    res.status(400).send({ error: true, errorCode: "MISSING_QR_DATA" });
-    return;
-  }
-
-  if (!(await checkQRCode(req.body.data))) {
-    res.status(400).send({ error: true, errorCode: "WRONG_QR_CODE" });
-    return;
-  }
-
   await cancelAlarm(req, res);
 });
 
@@ -982,6 +968,7 @@ async function toggleEmergencyDevice(isTurnedOn: boolean): Promise<void> {
 async function init() {
   await initDatabase();
   await getServicesConstants();
+  await generateDefaultQRCodeIfDoesntExist();
   await initSleepAsAndroidIntegration();
   loadFirebaseConfig();
 }

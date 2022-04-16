@@ -15,4 +15,8 @@ cdn.get("/iconRegular", (req, res) => {
   res.sendFile(path.join(__dirname, "..", "assets", "icon-1024-regular.png"));
 });
 
+cdn.get("/astronaut", (req, res) => {
+  res.sendFile(path.join(__dirname, "..", "assets", "astronaut.png"));
+});
+
 export default cdn;

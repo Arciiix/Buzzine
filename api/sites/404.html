@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" container="IE=edge" />
+    <meta name="viewport" container="width=device-width, initial-scale=1.0" />
+    <title>Buzzine - nie znaleziono</title>
+
+    <style>
+      * {
+        overflow: hidden !important;
+
+        text-align: center;
+      }
+      body {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        margin: 0;
+        padding: 0;
+        height: 100vh !important;
+        width: 100vw !important;
+        background-image: linear-gradient(
+          to top,
+          #2b1153,
+          #1a1147,
+          #121542,
+          #0b0e29,
+          #030514
+        );
+        overflow: hidden;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+      }
+      .container {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .error {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+      }
+      .container span {
+        color: #0078f2;
+        font-size: 80px;
+      }
+      .logo {
+        animation: ring 5s infinite;
+        animation-delay: 2s;
+      }
+      .star {
+        position: absolute;
+        width: 5px;
+        height: 5px;
+        right: 0;
+        animation: starAnim 3s infinite;
+      }
+      .astronaut {
+        width: 100px;
+        position: absolute;
+        top: 5%;
+        animation: astronautAnim 10s infinite;
+      }
+      @keyframes astronautAnim {
+        0% {
+          left: 5px;
+          top: 5px;
+        }
+        25% {
+          top: 50%;
+          transform: rotate(30deg);
+        }
+        50% {
+          transform: rotate(60deg);
+          top: 55%;
+        }
+        75% {
+          top: 5%;
+          transform: rotate(0deg);
+          left: 80%;
+        }
+        100% {
+          left: 5px;
+          top: 5px;
+        }
+      }
+      @keyframes starAnim {
+        from {
+          background: rgba(255, 255, 255, 0.4);
+        }
+        50% {
+          background: rgb(0, 132, 255);
+        }
+        to {
+          background: rgba(255, 255, 255, 0.4);
+        }
+      }
+
+      /* Taken from https://codepen.io/Mrshcom/pen/kNmBGm */
+      @keyframes ring {
+        0% {
+          transform: rotateZ(0);
+        }
+        1% {
+          transform: rotateZ(30deg);
+        }
+        3% {
+          transform: rotateZ(-28deg);
+        }
+        5% {
+          transform: rotateZ(34deg);
+        }
+        7% {
+          transform: rotateZ(-32deg);
+        }
+        9% {
+          transform: rotateZ(30deg);
+        }
+        11% {
+          transform: rotateZ(-28deg);
+        }
+        13% {
+          transform: rotateZ(26deg);
+        }
+        15% {
+          transform: rotateZ(-24deg);
+        }
+        17% {
+          transform: rotateZ(22deg);
+        }
+        19% {
+          transform: rotateZ(-20deg);
+        }
+        21% {
+          transform: rotateZ(18deg);
+        }
+        23% {
+          transform: rotateZ(-16deg);
+        }
+        25% {
+          transform: rotateZ(14deg);
+        }
+        27% {
+          transform: rotateZ(-12deg);
+        }
+        29% {
+          transform: rotateZ(10deg);
+        }
+        31% {
+          transform: rotateZ(-8deg);
+        }
+        33% {
+          transform: rotateZ(6deg);
+        }
+        35% {
+          transform: rotateZ(-4deg);
+        }
+        37% {
+          transform: rotateZ(2deg);
+        }
+        39% {
+          transform: rotateZ(-1deg);
+        }
+        41% {
+          transform: rotateZ(1deg);
+        }
+
+        43% {
+          transform: rotateZ(0);
+        }
+        100% {
+          transform: rotateZ(0);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <img class="astronaut" src="/cdn/astronaut" alt="404" />
+      <div class="error">
+        <span>4</span>
+        <img src="/cdn/iconRegular" width="100" height="100" class="logo" />
+        <span>4</span>
+      </div>
+      <span>Nie znaleziono</span>
+    </div>
+
+    <script>
+      class Star {
+        offset = Math.random() * 600;
+        starObj = null;
+        starMovingInterval = null;
+
+        constructor() {
+          this.starObj = document.createElement("div");
+          this.starObj.classList.add("star");
+
+          this.starMovingInterval = setInterval(() => this.move(), 10);
+          this.starObj.style.top = `${Math.random() * screen.height}px`;
+
+          document.body.appendChild(this.starObj);
+        }
+
+        move() {
+          if (this.offset >= screen.width) {
+            this.starObj.remove();
+            clearInterval(this.starMovingInterval);
+          }
+          this.offset += 4;
+          this.starObj.style.left = `${this.offset}px`;
+        }
+      }
+      setTimeout(() => {
+        setInterval(() => {
+          new Star();
+        }, 100);
+      }, 1000);
+    </script>
+  </body>
+</html>
