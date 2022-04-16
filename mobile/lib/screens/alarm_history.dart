@@ -22,6 +22,9 @@ class _AlarmHistoryScreenState extends State<AlarmHistoryScreen> {
   late List<HistoricalAlarm> _alarms;
   late DateTime _selectedDate;
 
+  DateTime _lastEntryDate =
+      DateTime.fromMillisecondsSinceEpoch(0); //Used to build the ListView
+
   double leftIconOffset = 0;
   double rightIconOffset = 0;
 
@@ -60,7 +63,30 @@ class _AlarmHistoryScreenState extends State<AlarmHistoryScreen> {
                       padding: const EdgeInsets.only(bottom: 72),
                       itemCount: _alarms.length,
                       itemBuilder: (context, index) {
-                        return ListTile(
+                        List<Widget> widgetsToRender = [];
+                        if (_alarms[index].invocationDate.month !=
+                                _lastEntryDate.month ||
+                            _alarms[index].invocationDate.year !=
+                                _lastEntryDate.year) {
+                          widgetsToRender.add(Text(
+                            dateToDateString(_alarms[index].invocationDate)
+                                .substring(3),
+                            style: const TextStyle(fontSize: 32),
+                          ));
+                        }
+                        if (_alarms[index].invocationDate.day !=
+                                _lastEntryDate.day ||
+                            _alarms[index].invocationDate.month !=
+                                _lastEntryDate.month ||
+                            _alarms[index].invocationDate.year !=
+                                _lastEntryDate.year) {
+                          widgetsToRender.add(Text(
+                            dateToDateString(_alarms[index].invocationDate),
+                            style: const TextStyle(fontSize: 24),
+                          ));
+                        }
+
+                        widgetsToRender.add(ListTile(
                           title: Text(dateToDateTimeString(
                               _alarms[index].invocationDate)),
                           trailing: _alarms[index].id.contains("NAP/")
@@ -68,9 +94,16 @@ class _AlarmHistoryScreenState extends State<AlarmHistoryScreen> {
                               : Icon(Icons.alarm),
                           subtitle: Text((_alarms[index].name ?? "Bez nazwy") +
                               "\n" +
-                              (_alarms[index].notes ?? "")),
+                              (_alarms[index].notes != null
+                                  ? _alarms[index].notes!.toString() + "\n"
+                                  : "") +
+                              "[ID: ${_alarms[index].id}]"),
                           isThreeLine: true,
-                        );
+                        ));
+
+                        _lastEntryDate = _alarms[index].invocationDate;
+
+                        return Column(children: widgetsToRender);
                       },
                     )
                   : Center(

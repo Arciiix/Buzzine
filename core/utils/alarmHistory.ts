@@ -6,7 +6,9 @@ import logger from "./logger";
 dotenv.config();
 
 async function getAlarmHistory(): Promise<IHistoricalAlarm[]> {
-  let alarms = await AlarmHistoryModel.findAll({});
+  let alarms = await AlarmHistoryModel.findAll({
+    order: [["invocationDate", "DESC"]],
+  });
   clearOldAlarmHistory();
   return alarms.map((elem: any): IHistoricalAlarm => {
     return {
