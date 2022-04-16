@@ -53,7 +53,7 @@ class _TrackingStatsScreenState extends State<TrackingStatsScreen> {
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Hero(
-                tag: "TRACKING_STATS",
+                tag: "TRACKINGstats",
                 child: Material(
                   color: Colors.transparent,
                   child: Column(
