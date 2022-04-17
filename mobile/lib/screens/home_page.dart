@@ -3,6 +3,7 @@ import 'package:buzzine/components/alarm_card.dart';
 import 'package:buzzine/components/audio_widget.dart';
 import 'package:buzzine/components/carousel.dart';
 import 'package:buzzine/components/emergency_device_status.dart';
+import 'package:buzzine/components/guard_widget.dart';
 import 'package:buzzine/components/logo.dart';
 import 'package:buzzine/components/ping_result_indicator.dart';
 import 'package:buzzine/components/simple_loading_dialog.dart';
@@ -19,6 +20,7 @@ import 'package:buzzine/screens/audio_manager.dart';
 import 'package:buzzine/screens/download_YouTube_audio.dart';
 import 'package:buzzine/screens/loading.dart';
 import 'package:buzzine/screens/nap_list.dart';
+import 'package:buzzine/screens/qr_codes_manager.dart';
 import 'package:buzzine/screens/ringing_alarm.dart';
 import 'package:buzzine/screens/scan_qr_code.dart';
 import 'package:buzzine/screens/settings.dart';
@@ -56,7 +58,6 @@ class _HomePageState extends State<HomePage> {
   List<Nap> upcomingNaps = [];
   List<RingingAlarmEntity> ringingNaps = [];
   List<Snooze> activeSnoozes = [];
-  late String qrCodeHash;
   PingResult? pingResult;
   late EmergencyStatus emergencyStatus;
   late StreamSubscription _intentData;
@@ -94,6 +95,12 @@ class _HomePageState extends State<HomePage> {
   void navigateToAudioManager() async {
     await Navigator.of(context).push(MaterialPageRoute(
         builder: (context) => const AudioManager(selectAudio: false)));
+    await refresh();
+  }
+
+  void navigateToQRCodesManager() async {
+    await Navigator.of(context).push(MaterialPageRoute(
+        builder: (context) => const QRCodesManager(selectCode: false)));
     await refresh();
   }
 
@@ -154,45 +161,42 @@ class _HomePageState extends State<HomePage> {
       );
       await GlobalData.generateQRCode();
       Navigator.of(context).pop();
-      setState(() {
-        qrCodeHash = GlobalData.qrCodeHash;
-      });
     }
   }
 
   void testQRCode() async {
-    String? result = await Navigator.of(context).push(MaterialPageRoute(
-        builder: (context) => ScanQRCode(targetHash: qrCodeHash)));
+    // String? result = await Navigator.of(context).push(MaterialPageRoute(
+    //     builder: (context) => ScanQRCode(targetName: qrCodeHash)));
 
-    if (result != null) {
-      if (validateQRCode(result, qrCodeHash)) {
-        showDialog(
-            context: context,
-            builder: (_) => AlertDialog(
-                  title: const Text("Prawidłowy kod QR"),
-                  content: const Text(
-                      "Ten kod QR jest prawidłowym kodem Buzzine. Możesz go używać do wyłączania alarmu."),
-                  actions: [
-                    TextButton(
-                        onPressed: () => Navigator.of(context).pop(),
-                        child: const Text("OK"))
-                  ],
-                ));
-      } else {
-        showDialog(
-            context: context,
-            builder: (_) => AlertDialog(
-                  title: const Text("Błędy kod QR"),
-                  content: const Text(
-                      "Ten kod QR nie jest prawidłowym kodem Buzzine. Może to być np. stary, nieaktualny już kod."),
-                  actions: [
-                    TextButton(
-                        onPressed: () => Navigator.of(context).pop(),
-                        child: const Text("OK"))
-                  ],
-                ));
-      }
-    }
+    // if (result != null) {
+    //   if (validateQRCode(result, qrCodeHash)) {
+    //     showDialog(
+    //         context: context,
+    //         builder: (_) => AlertDialog(
+    //               title: const Text("Prawidłowy kod QR"),
+    //               content: const Text(
+    //                   "Ten kod QR jest prawidłowym kodem Buzzine. Możesz go używać do wyłączania alarmu."),
+    //               actions: [
+    //                 TextButton(
+    //                     onPressed: () => Navigator.of(context).pop(),
+    //                     child: const Text("OK"))
+    //               ],
+    //             ));
+    //   } else {
+    //     showDialog(
+    //         context: context,
+    //         builder: (_) => AlertDialog(
+    //               title: const Text("Błędy kod QR"),
+    //               content: const Text(
+    //                   "Ten kod QR nie jest prawidłowym kodem Buzzine. Może to być np. stary, nieaktualny już kod."),
+    //               actions: [
+    //                 TextButton(
+    //                     onPressed: () => Navigator.of(context).pop(),
+    //                     child: const Text("OK"))
+    //               ],
+    //             ));
+    //   }
+    // }
   }
 
   void navigateToWeather() {
@@ -227,7 +231,10 @@ class _HomePageState extends State<HomePage> {
 
   void turnOffEmergency() async {
     bool? unlocked = await Navigator.of(context).push(MaterialPageRoute(
-      builder: (context) => const UnlockAlarm(),
+      builder: (context) => UnlockAlarm(
+        qrCode: GlobalData.qrCodes
+            .firstWhere((element) => element.name == "default"),
+      ),
     ));
     if (unlocked != true) {
       return;
@@ -334,7 +341,7 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       _isLoaded = true;
       upcomingAlarms = GlobalData.upcomingAlarms;
-      qrCodeHash = GlobalData.qrCodeHash;
+      // qrCodeHash = GlobalData.qrCodeHash;
       ringingAlarms = GlobalData.ringingAlarms;
       ringingNaps = GlobalData.ringingNaps;
       upcomingNaps = GlobalData.upcomingNaps;
@@ -394,7 +401,7 @@ class _HomePageState extends State<HomePage> {
                         await GlobalData.getData();
                         setState(() {
                           upcomingAlarms = GlobalData.upcomingAlarms;
-                          qrCodeHash = GlobalData.qrCodeHash;
+                          // qrCodeHash = GlobalData.qrCodeHash;
                           ringingAlarms = GlobalData.ringingAlarms;
                           ringingNaps = GlobalData.ringingNaps;
                           upcomingNaps = GlobalData.upcomingNaps;
@@ -517,6 +524,7 @@ class _HomePageState extends State<HomePage> {
                                                       emergencyAlarmTimeoutSeconds: e
                                                           .alarm
                                                           .emergencyAlarmTimeoutSeconds,
+                                                      qrCode: e.alarm.qrCode,
                                                       isFavorite:
                                                           e.alarm.isFavorite,
                                                       hideSwitch: true);
@@ -561,6 +569,7 @@ class _HomePageState extends State<HomePage> {
                                                       emergencyAlarmTimeoutSeconds: e
                                                           .alarm
                                                           .emergencyAlarmTimeoutSeconds,
+                                                      qrCode: e.alarm.qrCode,
                                                       isFavorite:
                                                           e.alarm.isFavorite,
                                                       hideSwitch: true,
@@ -663,6 +672,7 @@ class _HomePageState extends State<HomePage> {
                                                       repeat: e.repeat,
                                                       emergencyAlarmTimeoutSeconds:
                                                           e.emergencyAlarmTimeoutSeconds,
+                                                      qrCode: e.qrCode,
                                                       isFavorite: e.isFavorite,
                                                       refresh: refresh);
                                                 }).toList()),
@@ -697,6 +707,7 @@ class _HomePageState extends State<HomePage> {
                                                     isFavorite: e.isFavorite,
                                                     emergencyAlarmTimeoutSeconds:
                                                         e.emergencyAlarmTimeoutSeconds,
+                                                    qrCode: e.qrCode,
                                                   );
                                                 }).toList()),
                                           ]
@@ -708,65 +719,70 @@ class _HomePageState extends State<HomePage> {
                                   SleepCalculationsWidget(
                                     onRefresh: refresh,
                                   ),
+                                  Section("🔒 Ochrona"),
+                                  InkWell(
+                                      onTap: navigateToQRCodesManager,
+                                      child: GuardWidget()),
                                   Section("🎵 Audio"),
                                   InkWell(
                                       onTap: navigateToAudioManager,
                                       child: AudioWidget()),
-                                  Section("🔒 Ochrona"),
-                                  Container(
-                                      width: MediaQuery.of(context).size.width *
-                                          0.9,
-                                      height: 200,
-                                      padding: const EdgeInsets.all(10),
-                                      margin: const EdgeInsets.all(5),
-                                      decoration: BoxDecoration(
-                                        color: Theme.of(context).cardColor,
-                                        borderRadius: BorderRadius.circular(5),
-                                      ),
-                                      child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Text(
-                                            qrCodeHash,
-                                            style:
-                                                const TextStyle(fontSize: 30),
-                                            textAlign: TextAlign.center,
-                                          ),
-                                          const Text("Hash kodu QR",
-                                              style: TextStyle(fontSize: 24)),
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceAround,
-                                            children: [
-                                              TextButton(
-                                                  onPressed: generateQRCode,
-                                                  child: Row(
-                                                    children: const [
-                                                      Icon(Icons.refresh),
-                                                      Text("Wygeneruj")
-                                                    ],
-                                                  )),
-                                              TextButton(
-                                                  onPressed: printQRCode,
-                                                  child: Row(
-                                                    children: const [
-                                                      Icon(Icons.print),
-                                                      Text("Wydrukuj")
-                                                    ],
-                                                  )),
-                                              TextButton(
-                                                  onPressed: testQRCode,
-                                                  child: Row(
-                                                    children: const [
-                                                      Icon(Icons.quiz),
-                                                      Text("Przetestuj")
-                                                    ],
-                                                  )),
-                                            ],
-                                          )
-                                        ],
-                                      )),
+                                  // Section("🔒 Ochrona [LEGACY]"),
+                                  // Container(
+                                  //     width: MediaQuery.of(context).size.width *
+                                  //         0.9,
+                                  //     height: 200,
+                                  //     padding: const EdgeInsets.all(10),
+                                  //     margin: const EdgeInsets.all(5),
+                                  //     decoration: BoxDecoration(
+                                  //       color: Theme.of(context).cardColor,
+                                  //       borderRadius: BorderRadius.circular(5),
+                                  //     ),
+                                  //     child: Column(
+                                  //       mainAxisAlignment:
+                                  //           MainAxisAlignment.center,
+                                  //       children: [
+                                  //         Text(
+                                  //           // qrCodeHash,
+                                  //           "DEV",
+                                  //           style:
+                                  //               const TextStyle(fontSize: 30),
+                                  //           textAlign: TextAlign.center,
+                                  //         ),
+                                  //         const Text("Hash kodu QR",
+                                  //             style: TextStyle(fontSize: 24)),
+                                  //         Row(
+                                  //           mainAxisAlignment:
+                                  //               MainAxisAlignment.spaceAround,
+                                  //           children: [
+                                  //             TextButton(
+                                  //                 onPressed: generateQRCode,
+                                  //                 child: Row(
+                                  //                   children: const [
+                                  //                     Icon(Icons.refresh),
+                                  //                     Text("Wygeneruj")
+                                  //                   ],
+                                  //                 )),
+                                  //             TextButton(
+                                  //                 onPressed: printQRCode,
+                                  //                 child: Row(
+                                  //                   children: const [
+                                  //                     Icon(Icons.print),
+                                  //                     Text("Wydrukuj")
+                                  //                   ],
+                                  //                 )),
+                                  //             TextButton(
+                                  //                 onPressed: testQRCode,
+                                  //                 child: Row(
+                                  //                   children: const [
+                                  //                     Icon(Icons.quiz),
+                                  //                     Text("Przetestuj")
+                                  //                   ],
+                                  //                 )),
+                                  //           ],
+                                  //         )
+                                  //       ],
+                                  //     )),
                                   Container(
                                     margin: const EdgeInsets.all(10),
                                     child: Column(

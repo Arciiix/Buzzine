@@ -1,4 +1,5 @@
 import 'package:buzzine/types/Audio.dart';
+import 'package:buzzine/types/QRCode.dart';
 import 'package:buzzine/types/Repeat.dart';
 
 class Alarm {
@@ -25,6 +26,8 @@ class Alarm {
   Repeat? repeat;
   int? emergencyAlarmTimeoutSeconds;
 
+  QRCode qrCode;
+
   bool? isFavorite;
 
   Alarm(
@@ -44,6 +47,7 @@ class Alarm {
       this.isRepeating,
       this.repeat,
       this.emergencyAlarmTimeoutSeconds,
+      required this.qrCode,
       this.isFavorite});
 
   Map toMap() {
@@ -62,6 +66,7 @@ class Alarm {
       'notes': notes,
       'isRepeating': isRepeating,
       'repeat': (isRepeating ?? false) ? repeat?.toMap() : null,
+      'qrCode': qrCode.toMap(),
       'emergencyAlarmTimeoutSeconds': emergencyAlarmTimeoutSeconds,
       'isFavorite': isFavorite,
     };

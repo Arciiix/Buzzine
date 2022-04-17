@@ -60,7 +60,7 @@ class _RingingAlarmState extends State<RingingAlarm>
       if (protectedAlarm.isNotEmpty ||
           widget.ringingAlarm.alarm.isGuardEnabled) {
         bool? unlocked = await Navigator.of(context).push(MaterialPageRoute(
-          builder: (context) => const UnlockAlarm(),
+          builder: (context) => UnlockAlarm(qrCode: protectedAlarm[0].qrCode),
         ));
         if (unlocked != true) {
           return false;
@@ -92,14 +92,20 @@ class _RingingAlarmState extends State<RingingAlarm>
       return false;
     } else {
       //If any ringing alarm is protected, ask for the QR code
-      List<Alarm>? protectedAlarm = GlobalData.ringingAlarms
-          .where((element) => element.alarm.isGuardEnabled)
-          .map((e) => e.alarm)
-          .toList();
+      List<Alarm>? protectedAlarm = [
+        ...GlobalData.ringingAlarms
+            .where((element) => element.alarm.isGuardEnabled)
+            .map((e) => e.alarm)
+            .toList(),
+        ...GlobalData.ringingNaps
+            .where((element) => element.alarm.isGuardEnabled)
+            .map((e) => e.alarm)
+            .toList()
+      ];
       if (protectedAlarm.isNotEmpty ||
           widget.ringingAlarm.alarm.isGuardEnabled) {
         bool? unlocked = await Navigator.of(context).push(MaterialPageRoute(
-          builder: (context) => const UnlockAlarm(),
+          builder: (context) => UnlockAlarm(qrCode: protectedAlarm[0].qrCode),
         ));
         if (unlocked != true) {
           return false;

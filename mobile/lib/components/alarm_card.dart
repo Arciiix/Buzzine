@@ -4,6 +4,7 @@ import 'package:buzzine/globalData.dart';
 import 'package:buzzine/screens/tracking_screen.dart';
 import 'package:buzzine/types/AlarmType.dart';
 import 'package:buzzine/types/Audio.dart';
+import 'package:buzzine/types/QRCode.dart';
 import 'package:buzzine/types/Repeat.dart';
 import 'package:buzzine/types/TrackingEntry.dart';
 import 'package:buzzine/utils/formatting.dart';
@@ -32,6 +33,8 @@ class AlarmCard extends StatefulWidget {
   final Repeat? repeat;
   final int? emergencyAlarmTimeoutSeconds;
 
+  final QRCode qrCode;
+
   final bool? hideSwitch;
 
   final Function? refresh;
@@ -58,6 +61,7 @@ class AlarmCard extends StatefulWidget {
       this.isRepeating,
       this.repeat,
       this.emergencyAlarmTimeoutSeconds,
+      required this.qrCode,
       this.hideSwitch,
       this.refresh,
       this.alarmType,
@@ -380,8 +384,9 @@ class _AlarmCardState extends State<AlarmCard> {
                 Icon(widget.isGuardEnabled ? Icons.lock : Icons.lock_open),
                 Padding(
                     padding: const EdgeInsets.all(5),
-                    child: Text(
-                        "Ochrona ${widget.isGuardEnabled ? "włączona" : "wyłączona"}"))
+                    child: Text(widget.isGuardEnabled
+                        ? widget.qrCode.name
+                        : "Ochrona wyłączona"))
               ]),
               Column(
                   children: widget.isRepeating == true

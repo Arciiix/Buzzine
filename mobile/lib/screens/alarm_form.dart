@@ -4,9 +4,11 @@ import 'package:buzzine/components/time_number_picker.dart';
 import 'package:buzzine/globalData.dart';
 import 'package:buzzine/screens/audio_manager.dart';
 import 'package:buzzine/screens/loading.dart';
+import 'package:buzzine/screens/qr_codes_manager.dart';
 import 'package:buzzine/types/Alarm.dart';
 import 'package:buzzine/types/AlarmType.dart';
 import 'package:buzzine/types/Audio.dart';
+import 'package:buzzine/types/QRCode.dart';
 import 'package:buzzine/types/Repeat.dart';
 import 'package:buzzine/utils/formatting.dart';
 import "package:flutter/material.dart";
@@ -37,6 +39,9 @@ class _AlarmFormState extends State<AlarmForm> {
 
   bool _isSnoozeEnabled = true;
   int? _maxTotalSnoozeDuration = 15;
+
+  QRCode _qrCode =
+      GlobalData.qrCodes.firstWhere((element) => element.name == "default");
 
   Audio? _sound;
 
@@ -111,6 +116,7 @@ class _AlarmFormState extends State<AlarmForm> {
             ? _maxTotalSnoozeDuration! * 60
             : null,
         sound: _sound,
+        qrCode: _qrCode,
         isGuardEnabled: _isGuardEnabled,
         deleteAfterRinging: _deleteAfterRinging,
         notes: _notesController.text,
@@ -164,6 +170,20 @@ class _AlarmFormState extends State<AlarmForm> {
     if (selectedAudio != null) {
       setState(() {
         _sound = selectedAudio;
+      });
+    }
+  }
+
+  void chooseQRCode() async {
+    QRCode? selectedCode = await Navigator.of(context).push(MaterialPageRoute(
+      builder: (context) => const QRCodesManager(
+        selectCode: true,
+      ),
+    ));
+
+    if (selectedCode != null) {
+      setState(() {
+        _qrCode = selectedCode;
       });
     }
   }
@@ -252,6 +272,8 @@ class _AlarmFormState extends State<AlarmForm> {
       _maxTotalSnoozeDuration =
           ((widget.baseAlarm?.maxTotalSnoozeDuration ?? 300) / 60).floor();
       _sound = widget.baseAlarm?.sound;
+      _qrCode = widget.baseAlarm?.qrCode ??
+          GlobalData.qrCodes.firstWhere((element) => element.name == "default");
       _isGuardEnabled = widget.baseAlarm!.isGuardEnabled;
       _deleteAfterRinging = widget.baseAlarm!.deleteAfterRinging ?? false;
       _notesController.text = widget.baseAlarm?.notes ?? "";
@@ -398,6 +420,25 @@ class _AlarmFormState extends State<AlarmForm> {
                                     },
                                   )
                                 ])),
+                        if (_isGuardEnabled)
+                          InkWell(
+                              onTap: chooseQRCode,
+                              child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Flexible(
+                                        child: Row(
+                                      children: [
+                                        const Icon(Icons.qr_code_rounded),
+                                        Expanded(child: Text(_qrCode.name))
+                                      ],
+                                    )),
+                                    IconButton(
+                                      icon: const Icon(Icons.edit),
+                                      onPressed: chooseQRCode,
+                                    )
+                                  ])),
                         InkWell(
                             onTap: () {
                               setState(() {

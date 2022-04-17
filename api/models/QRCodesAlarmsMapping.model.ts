@@ -6,7 +6,7 @@ const QRCodeAlarmsMappingModel = db.define("QRCodeAlarmsMapping", {
   name: {
     allowNull: false,
     type: DataTypes.STRING,
-    unique: true,
+    unique: false,
   },
   alarmId: {
     allowNull: false,

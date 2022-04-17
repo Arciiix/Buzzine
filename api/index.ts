@@ -3,7 +3,12 @@ import { io } from "socket.io-client";
 import dotenv from "dotenv";
 import logger, { logHTTPEndpoints } from "./utils/logger";
 import axios, { Method } from "axios";
-import guardRouter, { generateDefaultQRCodeIfDoesntExist } from "./guard";
+import guardRouter, {
+  changeAlarmQRCode,
+  generateDefaultQRCodeIfDoesntExist,
+  getAllQRCodes,
+  getQRCodeByName,
+} from "./guard";
 import { initDatabase } from "./utils/db";
 import cdn from "./utils/cdn";
 import weatherRouter from "./weather";
@@ -218,7 +223,7 @@ async function getServicesConstants(): Promise<IServicesConstants> {
   servicesConstants = newServicesConstants;
   return newServicesConstants;
 }
-async function fetchAlarmsAudio(response): Promise<any> {
+async function fetchAlarmsAudioAndCode(response): Promise<any> {
   //Fetch the assigned audio to each nap
   //Set the default one by default
   response = response.map((elem) => {
@@ -234,10 +239,28 @@ async function fetchAlarmsAudio(response): Promise<any> {
     };
   });
 
+  let qrCodes = await getAllQRCodes(true);
+  let defaultQRCode = await (await getQRCodeByName("default")).response;
+
+  response.forEach((element, index) => {
+    //Match the QR code with the alarm
+    let qrCode = qrCodes.find((e) => e.alarmsIds.includes(element.id));
+
+    if (!qrCode) {
+      response[index].qrCode = defaultQRCode;
+    } else {
+      response[index].qrCode = {
+        name: qrCode.name,
+        hash: qrCode.hash,
+      };
+    }
+  });
+
   //Fetch the naps audios
   try {
     let audiosReq = await axios.get(`${AUDIO_URL}/v1/getAlarmSoundList`);
     let audiosRes = audiosReq.data.data;
+
     response.forEach((element) => {
       //Match the audios with the naps
       let audioIndex = audiosRes.findIndex((e) => e.alarmId === element.id);
@@ -363,6 +386,10 @@ api.post("/addAlarm", async (req, res) => {
           return;
         }
       }
+
+      if (req.body?.qrCode?.name && req.body.qrCode.name !== "default") {
+        await changeAlarmQRCode(response.id, req.body.qrCode.name);
+      }
       res.status(201).send({ error: false, response });
       logger.info(
         `Created alarm successfully. Response: ${JSON.stringify(response)}`
@@ -410,6 +437,10 @@ api.post("/addNap", async (req, res) => {
           );
           return;
         }
+      }
+
+      if (req.body?.qrCode?.name && req.body.qrCode.name !== "default") {
+        await changeAlarmQRCode(response.id, req.body.qrCode.name);
       }
       res.status(201).send({ error: false, response });
       logger.info(
@@ -621,6 +652,10 @@ api.post("/updateAlarm", async (req, res) => {
           return;
         }
       }
+
+      if (req.body?.qrCode?.name && req.body.qrCode.name !== "default") {
+        await changeAlarmQRCode(response.id, req.body.qrCode.name);
+      }
       res.status(200).send({ error: false, response });
       logger.info(
         `Updated alarm successfully. Response: ${JSON.stringify(response)}`
@@ -675,6 +710,10 @@ api.post("/updateNap", async (req, res) => {
           return;
         }
       }
+
+      if (req.body?.qrCode?.name && req.body.qrCode.name !== "default") {
+        await changeAlarmQRCode(response.id, req.body.qrCode.name);
+      }
       res.status(200).send({ error: false, response });
       logger.info(
         `Updated nap successfully. Response: ${JSON.stringify(response)}`
@@ -711,9 +750,12 @@ api.get("/getAllAlarms", (req, res) => {
         `Response error when getting all alarms: ${JSON.stringify(response)}`
       );
     } else {
-      let alarmsAudios = await fetchAlarmsAudio(response.alarms);
-      let napsAudios = await fetchAlarmsAudio(response.naps);
-      response = { alarms: alarmsAudios, naps: napsAudios };
+      let alarmsAudiosAndCodes = await fetchAlarmsAudioAndCode(response.alarms);
+      let napsAudiosAndCodes = await fetchAlarmsAudioAndCode(response.naps);
+      response = {
+        alarms: alarmsAudiosAndCodes,
+        naps: napsAudiosAndCodes,
+      };
 
       res.status(200).send({ error: false, response });
       logger.info(
@@ -733,9 +775,9 @@ api.get("/getRingingAlarms", (req, res) => {
         )}`
       );
     } else {
-      let alarmsAudios = await fetchAlarmsAudio(response.alarms);
-      let napsAudios = await fetchAlarmsAudio(response.naps);
-      response = { alarms: alarmsAudios, naps: napsAudios };
+      let alarmsAudiosAndCodes = await fetchAlarmsAudioAndCode(response.alarms);
+      let napsAudiosAndCodes = await fetchAlarmsAudioAndCode(response.naps);
+      response = { alarms: alarmsAudiosAndCodes, naps: napsAudiosAndCodes };
 
       res.status(200).send({ error: false, response });
       logger.info(

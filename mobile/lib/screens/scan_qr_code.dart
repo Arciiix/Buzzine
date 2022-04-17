@@ -4,9 +4,9 @@ import 'package:flutter/services.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 
 class ScanQRCode extends StatefulWidget {
-  final String targetHash;
+  final String targetName;
 
-  const ScanQRCode({Key? key, required this.targetHash}) : super(key: key);
+  const ScanQRCode({Key? key, required this.targetName}) : super(key: key);
 
   @override
   _ScanQRCodeState createState() => _ScanQRCodeState();
@@ -46,7 +46,7 @@ class _ScanQRCodeState extends State<ScanQRCode> {
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.only(left: 50),
-                    child: Text(widget.targetHash,
+                    child: Text(widget.targetName,
                         textAlign: TextAlign.center,
                         style:
                             const TextStyle(fontSize: 24, color: Colors.white)),

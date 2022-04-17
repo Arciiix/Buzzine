@@ -31,7 +31,7 @@ class Stats {
 
     //Calculated from all entries
     let allEntries: any[] = await TrackingEntryModel.findAll({});
-    this.lifetimeStats = this.calculateForElements(allEntries);
+    this.lifetimeStats = Stats.calculateForElements(allEntries);
 
     logger.info("Calculated lifetime stats. Waiting for monthly...");
 

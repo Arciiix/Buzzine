@@ -47,6 +47,7 @@ class _NapListState extends State<NapList> {
         notes: nap.notes,
         emergencyAlarmTimeoutSeconds: nap.emergencyAlarmTimeoutSeconds,
         isActive: false,
+        qrCode: nap.qrCode,
       );
 
       showDialog(
@@ -244,6 +245,7 @@ class _NapListState extends State<NapList> {
                                             isRepeating: false,
                                             emergencyAlarmTimeoutSeconds:
                                                 e.emergencyAlarmTimeoutSeconds,
+                                            qrCode: e.qrCode,
                                             refresh: () async {
                                               await _refreshState.currentState!
                                                   .show();

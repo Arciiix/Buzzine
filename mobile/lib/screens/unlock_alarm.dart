@@ -1,10 +1,12 @@
 import 'package:buzzine/globalData.dart';
 import 'package:buzzine/screens/scan_qr_code.dart';
+import 'package:buzzine/types/QRCode.dart';
 import 'package:buzzine/utils/validate_qr_code.dart';
 import "package:flutter/material.dart";
 
 class UnlockAlarm extends StatefulWidget {
-  const UnlockAlarm({Key? key}) : super(key: key);
+  final QRCode qrCode;
+  const UnlockAlarm({Key? key, required this.qrCode}) : super(key: key);
 
   @override
   _UnlockAlarmState createState() => _UnlockAlarmState();
@@ -17,10 +19,12 @@ class _UnlockAlarmState extends State<UnlockAlarm> {
 
   void navigateToScanningQR() async {
     String? scannedData = await Navigator.of(context).push(MaterialPageRoute(
-        builder: (context) => ScanQRCode(targetHash: GlobalData.qrCodeHash)));
+        builder: (context) => ScanQRCode(targetName: widget.qrCode.name)));
 
     if (scannedData != null) {
       _inputController.text = extractHashFromQRData(scannedData);
+
+      handleAccept();
     }
   }
 
@@ -45,17 +49,25 @@ class _UnlockAlarmState extends State<UnlockAlarm> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(
+                        widget.qrCode.name,
+                        style: const TextStyle(
+                          fontSize: 24,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
                     TextFormField(
                       controller: _inputController,
                       key: _fieldKey,
                       validator: (value) {
-                        return value == GlobalData.qrCodeHash
-                            ? null
-                            : "Zły hash";
+                        return value == widget.qrCode.hash ? null : "Zły hash";
                       },
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         border: OutlineInputBorder(),
-                        hintText: 'Podaj kod',
+                        hintText: 'Podaj hash powyższego kodu',
                       ),
                     ),
                     OutlinedButton(

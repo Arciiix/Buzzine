@@ -1,5 +1,6 @@
 import 'package:buzzine/types/Alarm.dart';
 import 'package:buzzine/types/Audio.dart';
+import 'package:buzzine/types/QRCode.dart';
 
 class Nap extends Alarm {
   String? id;
@@ -24,6 +25,8 @@ class Nap extends Alarm {
 
   DateTime? invocationDate;
 
+  QRCode qrCode;
+
   bool? isFavorite;
 
   Nap(
@@ -41,6 +44,7 @@ class Nap extends Alarm {
       this.notes,
       this.emergencyAlarmTimeoutSeconds,
       this.invocationDate,
+      required this.qrCode,
       this.isFavorite})
       : super(
             id: id,
@@ -57,6 +61,7 @@ class Nap extends Alarm {
             notes: notes,
             emergencyAlarmTimeoutSeconds: emergencyAlarmTimeoutSeconds,
             isRepeating: false,
+            qrCode: qrCode,
             isFavorite: isFavorite);
 
   @override
@@ -76,6 +81,7 @@ class Nap extends Alarm {
       'notes': notes,
       'emergencyAlarmTimeoutSeconds': emergencyAlarmTimeoutSeconds,
       'invocationDate': invocationDate,
+      'qrCode': qrCode.toMap(),
       'isFavorite': isFavorite
     };
   }

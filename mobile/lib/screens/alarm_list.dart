@@ -223,6 +223,7 @@ class _AlarmListState extends State<AlarmList> {
                                             isRepeating: e.isRepeating,
                                             emergencyAlarmTimeoutSeconds:
                                                 e.emergencyAlarmTimeoutSeconds,
+                                            qrCode: e.qrCode,
                                             repeat: e.repeat,
                                             isFavorite: e.isFavorite,
                                             // refresh: () async =>       await _refreshState.currentState?.show()

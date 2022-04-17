@@ -224,7 +224,12 @@ async function getAllQRCodes(includeAlarms: boolean): Promise<IQRCode[]> {
   });
   if (includeAlarms) {
     for await (const qrCode of qrCodes) {
-      qrCode.alarms = await getAlarmsForQRCode(qrCode.name);
+      let alarmsResponse = await getAlarmsForQRCode(qrCode.dataValues.name);
+      qrCode.alarms = alarmsResponse.response;
+
+      if (alarmsResponse.error) {
+        logger.error(`Couldn't get alarm response for ${qrCode.name}`);
+      }
     }
   }
   return qrCodes.map((elem: any): IQRCode => {
@@ -242,10 +247,14 @@ async function getAlarmsForQRCode(
   let alarms: any = await QRCodeAlarmsMappingModel.findAll({
     where: { name: qrCodeName },
   });
-  if (!alarms) {
-    return { error: true };
+
+  if (alarms) {
+    alarms = alarms.map((e) => e.alarmId);
+  } else {
+    alarms = [];
   }
-  return { error: false, response: alarms.map((e) => e.alarmId) };
+
+  return { error: false, response: alarms };
 }
 
 async function getQRCodeForAlarm(alarmId: string): Promise<IQRCode> {
@@ -273,7 +282,8 @@ async function getQRCodeForAlarm(alarmId: string): Promise<IQRCode> {
 }
 
 async function getQRCodeByName(
-  name: string
+  name: string,
+  includeAlarms?: boolean
 ): Promise<{ error: boolean; response?: IQRCode }> {
   let qrCode: any = await QRCodeModel.findOne({
     where: {
@@ -283,7 +293,23 @@ async function getQRCodeByName(
   if (!qrCode) {
     return { error: true };
   }
-  return { error: false, response: { name: qrCode.name, hash: qrCode.hash } };
+
+  if (includeAlarms) {
+    let alarmsResponse = await getAlarmsForQRCode(qrCode.name);
+    qrCode.alarms = alarmsResponse.response;
+
+    if (alarmsResponse.error) {
+      logger.error(`Couldn't get alarm response for ${qrCode.name}`);
+    }
+  }
+  return {
+    error: false,
+    response: {
+      name: qrCode.name,
+      hash: qrCode.hash,
+      alarmsIds: qrCode.alarms,
+    },
+  };
 }
 
 async function generateQRCode(name?: string): Promise<IQRCode> {
@@ -307,6 +333,42 @@ async function generateQRCode(name?: string): Promise<IQRCode> {
   logger.info(
     `Generated new QR code ${qrCode.name} with hash ${generatedHash}`
   );
+  return {
+    name: qrCode.name,
+    hash: qrCode.hash,
+  };
+}
+
+async function changeAlarmQRCode(
+  alarmId: string,
+  qrCodeName?: string
+): Promise<IQRCode> {
+  qrCodeName ??= "default";
+
+  let qrCode: any = await QRCodeModel.findOne({ where: { name: qrCodeName } });
+  if (!qrCode) {
+    logger.error(`Couldn't find QR code ${qrCodeName}`);
+    return;
+  }
+
+  let alarm: any = await QRCodeAlarmsMappingModel.findOne({
+    where: { alarmId: alarmId },
+  });
+
+  if (alarm) {
+    await QRCodeAlarmsMappingModel.update(
+      { name: qrCodeName },
+      { where: { alarmId: alarmId } }
+    );
+  } else {
+    await QRCodeAlarmsMappingModel.create({
+      alarmId: alarmId,
+      name: qrCodeName,
+    });
+  }
+
+  logger.info(`Changed alarm ${alarmId} to QR code ${qrCodeName}`);
+
   return {
     name: qrCode.name,
     hash: qrCode.hash,
@@ -383,6 +445,10 @@ async function changeQRCodeName(
   errorCode?: string;
   statusCode: number;
 }> {
+  if (newName.length > 30) {
+    return { error: true, errorCode: "NAME_TOO_LONG", statusCode: 400 };
+  }
+
   //Names have to be unique
   let nameCheck = await QRCodeModel.findOne({
     where: {
@@ -455,4 +521,9 @@ interface IQRCode {
 }
 
 export default guardRouter;
-export { generateDefaultQRCodeIfDoesntExist };
+export {
+  generateDefaultQRCodeIfDoesntExist,
+  getAllQRCodes,
+  getQRCodeByName,
+  changeAlarmQRCode,
+};

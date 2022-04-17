@@ -59,7 +59,9 @@ class _SleepAsAndroidIntegrationState extends State<SleepAsAndroidIntegration> {
 
   Future<void> turnOffSleepAsAndroidAlarm() async {
     bool? unlocked = await Navigator.of(context).push(MaterialPageRoute(
-      builder: (context) => const UnlockAlarm(),
+      builder: (context) => UnlockAlarm(
+        qrCode: GlobalData.qrCodes[0],
+      ),
     ));
     if (unlocked != true) {
       return;
