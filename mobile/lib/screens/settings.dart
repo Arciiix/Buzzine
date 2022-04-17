@@ -446,10 +446,10 @@ class _SettingsState extends State<Settings> {
                         "Jeżeli zmieniłeś jakieś ustawienia, nie zostaną one zapisane - użyj przycisku zapisu, aby wyjść."),
                     actions: [
                       TextButton(
-                          child: const Text("Nie"),
+                          child: const Text("Anuluj"),
                           onPressed: () => Navigator.of(c).pop(false)),
                       TextButton(
-                          child: const Text("Tak"),
+                          child: const Text("Wyjdź"),
                           onPressed: () => Navigator.of(c).pop(true)),
                     ],
                   ));
