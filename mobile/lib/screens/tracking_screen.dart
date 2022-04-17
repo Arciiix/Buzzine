@@ -335,28 +335,75 @@ class _TrackingScreenState extends State<TrackingScreen> {
   }
 
   Future<void> copyCSVToClipboard(TrackingEntry entry) async {
+    bool? emptySpacesInsteadOfHyphens = await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("W przypadku pustego pola"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextButton(
+                child: const Text("pomiń (nic)"),
+                onPressed: () => Navigator.of(context).pop(true),
+              ),
+              TextButton(
+                child: const Text("myślnik (-)"),
+                onPressed: () => Navigator.of(context).pop(false),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+
     Map<String, String> csvData = {
       "Data": dateToDateString(entry.date!),
-      "W łóżku": entry.bedTime != null ? dateToTimeString(entry.bedTime!) : "-",
-      "Pójście spać":
-          entry.sleepTime != null ? dateToTimeString(entry.sleepTime!) : "-",
+      "W łóżku": entry.bedTime != null
+          ? dateToTimeString(entry.bedTime!)
+          : emptySpacesInsteadOfHyphens == true
+              ? ""
+              : "-",
+      "Pójście spać": entry.sleepTime != null
+          ? dateToTimeString(entry.sleepTime!)
+          : emptySpacesInsteadOfHyphens == true
+              ? ""
+              : "-",
       "Pierwszy budzik": entry.firstAlarmTime != null
           ? dateToTimeString(entry.firstAlarmTime!)
-          : "-",
-      "Obudzenie się":
-          entry.wakeUpTime != null ? dateToTimeString(entry.wakeUpTime!) : "-",
-      "Wstanie":
-          entry.getUpTime != null ? dateToTimeString(entry.getUpTime!) : "-",
+          : emptySpacesInsteadOfHyphens == true
+              ? ""
+              : "-",
+      "Obudzenie się": entry.wakeUpTime != null
+          ? dateToTimeString(entry.wakeUpTime!)
+          : emptySpacesInsteadOfHyphens == true
+              ? ""
+              : "-",
+      "Wstanie": entry.getUpTime != null
+          ? dateToTimeString(entry.getUpTime!)
+          : emptySpacesInsteadOfHyphens == true
+              ? ""
+              : "-",
       "Początek alarmów": entry.alarmTimeFrom != null
           ? dateToTimeString(entry.alarmTimeFrom!)
-          : "-",
+          : emptySpacesInsteadOfHyphens == true
+              ? ""
+              : "-",
       "Koniec alarmów": entry.alarmTimeTo != null
           ? dateToTimeString(entry.alarmTimeTo!)
-          : "-",
-      "Ocena": entry.rate != null ? entry.rate!.toString() : "-",
+          : emptySpacesInsteadOfHyphens == true
+              ? ""
+              : "-",
+      "Ocena": entry.rate != null
+          ? entry.rate!.toString()
+          : emptySpacesInsteadOfHyphens == true
+              ? ""
+              : "-",
       "Czas na wyłączenie alarmów": entry.timeTakenToTurnOffTheAlarm != null
           ? secondsTommss(entry.timeTakenToTurnOffTheAlarm)
-          : "-",
+          : emptySpacesInsteadOfHyphens == true
+              ? ""
+              : "-",
       "Notka": entry.notes?.toString() ?? ""
     };
 
