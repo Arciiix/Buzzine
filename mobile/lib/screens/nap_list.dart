@@ -54,7 +54,7 @@ class _NapListState extends State<NapList> {
         context: context,
         barrierDismissible: false,
         builder: (BuildContext context) {
-          return SimpleLoadingDialog("Trwa twozrenie drzemki...");
+          return SimpleLoadingDialog("Trwa tworzenie drzemki...");
         },
       );
       await GlobalData.addNap(castedNap.toMap(), selectedNap != null);
